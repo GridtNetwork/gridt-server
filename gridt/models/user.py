@@ -5,6 +5,8 @@ from flask import current_app
 from passlib.apps import custom_app_context as pwd_context
 from db import db
 
+from models.association_movement_users import association_movement_users
+
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -12,6 +14,8 @@ class User(db.Model):
     username = db.Column(db.String(32), index = True)
     password_hash = db.Column(db.String(128))
     role = db.Column(db.String(32))
+    movements = db.relationship('Movement',
+        secondary=association_movement_users)
 
     def __init__(self, username, password, role='user'):
         self.username = username
