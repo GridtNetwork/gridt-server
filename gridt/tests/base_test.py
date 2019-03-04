@@ -1,10 +1,50 @@
 import os
+import logging
 from unittest import TestCase
 
 from app import create_app
 from db import db
 
-class BaseTest(TestCase):
+# LoggedTestCase and LogThisTestCase accredited to:
+# https://stackoverflow.com/a/15969985/1051438
+class LogThisTestCase(type):
+    def __new__(cls, name, bases, dct):
+        # if the TestCase already provides setUp, wrap it
+        if 'setUp' in dct:
+            setUp = dct['setUp']
+        else:
+            setUp = lambda self: None
+            print("creating setUp...")
+
+        def wrappedSetUp(self):
+            # for hdlr in self.logger.handlers:
+            #    self.logger.removeHandler(hdlr)
+            self.hdlr = logging.StreamHandler(sys.stdout)
+            self.logger.addHandler(self.hdlr)
+            setUp(self)
+        dct['setUp'] = wrappedSetUp
+
+        # same for tearDown
+        if 'tearDown' in dct:
+            tearDown = dct['tearDown']
+        else:
+            tearDown = lambda self: None
+
+        def wrappedTearDown(self):
+            tearDown(self)
+            self.logger.removeHandler(self.hdlr)
+        dct['tearDown'] = wrappedTearDown
+
+        # return the class instance with the replaced setUp/tearDown
+        return type.__new__(cls, name, bases, dct)
+
+class LoggedTestCase(TestCase):
+    __metaclass__ = LogThisTestCase
+    logger = logging.getLogger()
+    ## Uncomment below to enable logging while testing
+    # logger.setLevel(logging.INFO)
+
+class BaseTest(LoggedTestCase):
     def setUp(self):
         app = create_app(overwrite_conf="testing")
 
@@ -15,7 +55,8 @@ class BaseTest(TestCase):
             db.init_app(app)
             db.create_all()
         # Get a test client
-        self.app = app.test_client()
+        self.app = app
+        self.client = app.test_client()
         self.app_context = app.app_context
 
     def tearDown(self):
