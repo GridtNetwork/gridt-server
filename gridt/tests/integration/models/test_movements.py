@@ -16,16 +16,3 @@ class MovementTest(BaseTest):
             movement.delete_from_db()
 
             self.assertIsNone(Movement.query.filter_by(name='flossing').first())
-
-    def test_movement_user_relations(self):
-        with self.app_context():
-            user = User('username', 'password')
-            user.save_to_db()
-
-            movement = Movement('flossing')
-            movement.save_to_db()
-
-            movement.users.append(user)
-            self.assertTrue(user in movement.users)
-            self.assertTrue(movement in user.movements)
-

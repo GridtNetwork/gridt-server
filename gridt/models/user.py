@@ -1,21 +1,23 @@
-from itsdangerous import (TimedJSONWebSignatureSerializer
-                                  as Serializer, BadSignature, SignatureExpired)
+from sqlalchemy.ext.associationproxy import association_proxy
 from flask import current_app
 
+from itsdangerous import (TimedJSONWebSignatureSerializer
+                                  as Serializer, BadSignature, SignatureExpired)
 from passlib.apps import custom_app_context as pwd_context
-from db import db
 
-from models.association_movement_users import association_movement_users
+from db import db
 
 
 class User(db.Model):
     __tablename__ = 'users'
+
     id = db.Column(db.Integer, primary_key = True)
     username = db.Column(db.String(32), index = True)
     password_hash = db.Column(db.String(128))
     role = db.Column(db.String(32))
-    movements = db.relationship('Movement',
-        secondary=association_movement_users)
+
+    follower_associations = db.relationship("MovementUserAssociation", foreign_keys="MovementUserAssociation.follower_id")
+    movements = association_proxy("follower_associations", "movement")
 
     def __init__(self, username, password, role='user'):
         self.username = username

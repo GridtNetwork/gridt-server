@@ -42,7 +42,7 @@ class LoggedTestCase(TestCase):
     __metaclass__ = LogThisTestCase
     logger = logging.getLogger()
     ## Uncomment below to enable logging while testing
-    # logger.setLevel(logging.INFO)
+    # logger.setLevel(logging.DEBUG)
 
 class BaseTest(LoggedTestCase):
     def setUp(self):
