@@ -1,6 +1,7 @@
 import random
 from sqlalchemy import not_, and_
 from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy.orm import joinedload
 
 from db import db
 
@@ -9,7 +10,7 @@ from models.movement_user_association import MovementUserAssociation
 
 
 class Movement(db.Model):
-    __tablename__ = 'movements'
+    __tablename__ = "movements"
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
@@ -17,10 +18,9 @@ class Movement(db.Model):
     description = db.Column(db.String(1000))
 
     user_associations = db.relationship(
-        'MovementUserAssociation',
-        back_populates='movement'
+        "MovementUserAssociation", back_populates="movement"
     )
-    users = association_proxy('user_associations', 'follower')
+    users = association_proxy("user_associations", "follower")
 
     def __init__(self, name, short_description=None):
         self.name = name
@@ -36,27 +36,28 @@ class Movement(db.Model):
 
     def add_user(self, user):
         for i in range(4):
+
             def get_association_leader(association):
                 if association.leader:
                     return association.leader.id
 
             associations_in_movement = filter(
-                lambda m: m == self,
-                user.follower_associations
+                lambda m: m == self, user.follower_associations
             )
 
             current_leader_ids = list(
-                map(
-                    get_association_leader,
-                    associations_in_movement
-                )
+                map(get_association_leader, associations_in_movement)
             )
-            possible_leaders = db.session.query(User).filter(
-                and_(
-                    not_(User.id == user.id),
-                    not_(User.id.in_(current_leader_ids))
+            possible_leaders = (
+                db.session.query(User)
+                .filter(
+                    and_(
+                        not_(User.id == user.id), not_(User.id.in_(current_leader_ids)),
+                        User.movements.any(id=self.id)
+                    )
                 )
-            ).all()
+                .all()
+            )
 
             assoc = MovementUserAssociation(self, user)
             if possible_leaders:
