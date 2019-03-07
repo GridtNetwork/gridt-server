@@ -33,5 +33,6 @@ class AssociationTest(BaseTest):
             pieters_flossing_leaders = list(
                 map(lambda a: a.leader, pieter.follower_associations)
             )
+            self.assertEqual(pieters_flossing_leaders, [robin, None, None, None])
             self.assertTrue(robin in pieters_flossing_leaders)
             self.assertFalse(jorn in pieters_flossing_leaders)

@@ -41,19 +41,21 @@ class Movement(db.Model):
                 if association.leader:
                     return association.leader.id
 
-            associations_in_movement = filter(
-                lambda m: m == self, user.follower_associations
+            associations_in_movement = list(
+                filter(lambda a: a.movement == self, user.follower_associations)
             )
 
             current_leader_ids = list(
                 map(get_association_leader, associations_in_movement)
             )
+
             possible_leaders = (
                 db.session.query(User)
                 .filter(
                     and_(
-                        not_(User.id == user.id), not_(User.id.in_(current_leader_ids)),
-                        User.movements.any(id=self.id)
+                        not_(User.id == user.id),
+                        not_(User.id.in_(current_leader_ids)),
+                        User.movements.any(id=self.id),
                     )
                 )
                 .all()
