@@ -1,6 +1,6 @@
 import random
 from sqlalchemy import not_, and_
-from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy.ext.associationproxy import association_proxy, AssociationProxy
 from sqlalchemy.orm import joinedload
 
 from db import db
@@ -18,9 +18,16 @@ class Movement(db.Model):
     description = db.Column(db.String(1000))
 
     user_associations = db.relationship(
-        "MovementUserAssociation", back_populates="movement"
+        "MovementUserAssociation",
+        back_populates="movement",
+        cascade="all, delete-orphan",
     )
-    users = association_proxy("user_associations", "follower")
+
+    users = association_proxy(
+        "user_associations",
+        "follower",
+        creator=lambda user: MovementUserAssociation(follower=user)
+    )
 
     def __init__(self, name, short_description=None):
         self.name = name
@@ -66,3 +73,9 @@ class Movement(db.Model):
                 assoc.leader = random.choice(possible_leaders)
 
             assoc.save_to_db()
+
+    def remove_user(self, user):
+        for asso in self.user_associations:
+            if asso.follower == user:
+                asso.delete_from_db()
+        self.users = list(filter(lambda u: u != user, self.users))

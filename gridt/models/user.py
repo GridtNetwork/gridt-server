@@ -29,6 +29,9 @@ class User(db.Model):
         self.hash_password(password)
         self.role = role
 
+    def __repr__(self):
+        return f"<User {self.username}>"
+
     @classmethod
     def find_by_name(cls, query_username):
         return cls.query.filter_by(username=query_username).one_or_none()
