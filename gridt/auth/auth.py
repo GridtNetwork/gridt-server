@@ -7,6 +7,7 @@ from models.user import User
 
 auth = HTTPBasicAuth()
 
+
 @auth.verify_password
 def verify_password(username, password):
     user = User.find_by_name(username)

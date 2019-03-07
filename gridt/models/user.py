@@ -1,25 +1,30 @@
 from sqlalchemy.ext.associationproxy import association_proxy
 from flask import current_app
 
-from itsdangerous import (TimedJSONWebSignatureSerializer
-                                  as Serializer, BadSignature, SignatureExpired)
+from itsdangerous import (
+    TimedJSONWebSignatureSerializer as Serializer,
+    BadSignature,
+    SignatureExpired,
+)
 from passlib.apps import custom_app_context as pwd_context
 
 from db import db
 
 
 class User(db.Model):
-    __tablename__ = 'users'
+    __tablename__ = "users"
 
-    id = db.Column(db.Integer, primary_key = True)
-    username = db.Column(db.String(32), index = True)
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(32), index=True)
     password_hash = db.Column(db.String(128))
     role = db.Column(db.String(32))
 
-    follower_associations = db.relationship("MovementUserAssociation", foreign_keys="MovementUserAssociation.follower_id")
+    follower_associations = db.relationship(
+        "MovementUserAssociation", foreign_keys="MovementUserAssociation.follower_id"
+    )
     movements = association_proxy("follower_associations", "movement")
 
-    def __init__(self, username, password, role='user'):
+    def __init__(self, username, password, role="user"):
         self.username = username
         self.hash_password(password)
         self.role = role
@@ -36,7 +41,7 @@ class User(db.Model):
 
     def generate_auth_token(self, expiration=600):
         s = Serializer(current_app.config["SECRET_KEY"])
-        return s.dumps({'id': self.id})
+        return s.dumps({"id": self.id})
 
     @classmethod
     def verify_auth_token(cls, token):
@@ -48,9 +53,9 @@ class User(db.Model):
         except BadSignature:
             return None
 
-        user = cls.query.get(data['id'])
+        user = cls.query.get(data["id"])
 
-        if data['id'] == None:
+        if data["id"] == None:
             return None
         return user
 

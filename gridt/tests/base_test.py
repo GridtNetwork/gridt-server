@@ -10,8 +10,8 @@ from db import db
 class LogThisTestCase(type):
     def __new__(cls, name, bases, dct):
         # if the TestCase already provides setUp, wrap it
-        if 'setUp' in dct:
-            setUp = dct['setUp']
+        if "setUp" in dct:
+            setUp = dct["setUp"]
         else:
             setUp = lambda self: None
             print("creating setUp...")
@@ -22,27 +22,31 @@ class LogThisTestCase(type):
             self.hdlr = logging.StreamHandler(sys.stdout)
             self.logger.addHandler(self.hdlr)
             setUp(self)
-        dct['setUp'] = wrappedSetUp
+
+        dct["setUp"] = wrappedSetUp
 
         # same for tearDown
-        if 'tearDown' in dct:
-            tearDown = dct['tearDown']
+        if "tearDown" in dct:
+            tearDown = dct["tearDown"]
         else:
             tearDown = lambda self: None
 
         def wrappedTearDown(self):
             tearDown(self)
             self.logger.removeHandler(self.hdlr)
-        dct['tearDown'] = wrappedTearDown
+
+        dct["tearDown"] = wrappedTearDown
 
         # return the class instance with the replaced setUp/tearDown
         return type.__new__(cls, name, bases, dct)
+
 
 class LoggedTestCase(TestCase):
     __metaclass__ = LogThisTestCase
     logger = logging.getLogger()
     ## Uncomment below to enable logging while testing
     # logger.setLevel(logging.DEBUG)
+
 
 class BaseTest(LoggedTestCase):
     def setUp(self):
