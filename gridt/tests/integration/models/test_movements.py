@@ -4,7 +4,7 @@ from models.user import User
 
 
 class MovementTest(BaseTest):
-    def test_save_to_db(self):
+    def test_crud(self):
         with self.app_context():
             movement = Movement("flossing")
 

@@ -26,7 +26,7 @@ class Movement(db.Model):
     users = association_proxy(
         "user_associations",
         "follower",
-        creator=lambda user: MovementUserAssociation(follower=user)
+        creator=lambda user: MovementUserAssociation(follower=user),
     )
 
     def __init__(self, name, short_description=None):
