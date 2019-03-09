@@ -17,6 +17,7 @@ class User(db.Model):
 
     :param str username: Username that the user has chosen.
     :param str password: Password that the user has chosen.
+
     Right now, to find the leaders of a user the following code snippet can be used: ::
 
         user = Users.find_by_id(1)
