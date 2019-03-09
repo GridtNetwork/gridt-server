@@ -1,4 +1,5 @@
 from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy.orm.collections import attribute_mapped_collection
 from flask import current_app
 
 from itsdangerous import (
@@ -12,7 +13,7 @@ from db import db
 
 
 class User(db.Model):
-    '''
+    """
     Intuitive representation of users in the database.
 
     :param str username: Username that the user has chosen.
@@ -30,8 +31,9 @@ class User(db.Model):
     :attribute movements: List of all movements that the user is subscribed to.
 
     :todo: Make a user.leaders dictionary attribute that has movements as the keys and lists of leaders as the values.
-    '''
-    __tablename__ = 'users'
+    """
+
+    __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(32), index=True)
@@ -39,18 +41,21 @@ class User(db.Model):
     role = db.Column(db.String(32))
 
     follower_associations = db.relationship(
-        'MovementUserAssociation', foreign_keys='MovementUserAssociation.follower_id'
+        "MovementUserAssociation", foreign_keys="MovementUserAssociation.follower_id"
     )
-    movements = association_proxy('follower_associations', 'movement',
-            creator=lambda movement: MovementUserAssociation(movement=movement))
+    movements = association_proxy(
+        "follower_associations",
+        "movement",
+        creator=lambda movement: MovementUserAssociation(movement=movement),
+    )
 
-    def __init__(self, username, password, role='user'):
+    def __init__(self, username, password, role="user"):
         self.username = username
         self.hash_password(password)
         self.role = role
 
     def __repr__(self):
-        return f'<User {self.username}>'
+        return f"<User {self.username}>"
 
     @classmethod
     def find_by_name(cls, query_username):
@@ -61,37 +66,37 @@ class User(db.Model):
         return cls.query.get(id)
 
     def hash_password(self, password):
-        '''
+        """
         Hash password and set it as the password_hash.
         :param str password: Password that is to be hashed.
-        '''
+        """
         self.password_hash = pwd_context.hash(password)
 
     def verify_password(self, password):
-        '''
+        """
         Verify that this password matches with the hashed version in the database.
         :rtype bool:
-        '''
+        """
         return pwd_context.verify(password, self.password_hash)
 
     def generate_auth_token(self):
-        '''
+        """
         Create an auth token that will be used to authenticate using the JWT scheme.
         :returns: serialized dictionary that contains the user id.
         :rtype str:
-        '''
-        s = Serializer(current_app.config['SECRET_KEY'])
-        return s.dumps({'id': self.id})
+        """
+        s = Serializer(current_app.config["SECRET_KEY"])
+        return s.dumps({"id": self.id})
 
     @classmethod
     def verify_auth_token(cls, token):
-        '''
+        """
         Verify that the auth token is valid and not expired.
 
         :param str token: Token that is to be verified
         :rtype bool:
-        '''
-        s = Serializer(current_app.config['SECRET_KEY'])
+        """
+        s = Serializer(current_app.config["SECRET_KEY"])
         try:
             data = s.loads(token)
         except SignatureExpired:
@@ -99,9 +104,9 @@ class User(db.Model):
         except BadSignature:
             return None
 
-        user = cls.query.get(data['id'])
+        user = cls.query.get(data["id"])
 
-        if data['id'] == None:
+        if data["id"] == None:
             return None
         return user
 

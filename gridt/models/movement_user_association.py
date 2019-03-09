@@ -13,6 +13,7 @@ class MovementUserAssociation(db.Model):
     :attribute follower: The following user.
     :attribute movement: The movement in which this connection happens.
     """
+
     __tablename__ = "assoc"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -51,17 +52,17 @@ class MovementUserAssociation(db.Model):
         return cls.query.filter_by(movement=movement).one_or_none()
 
     def save_to_db(self):
-        '''
+        """
         Save this association to the database.
-        '''
+        """
         db.session.add(self)
         db.session.commit()
 
     def delete_from_db(self):
-        '''
+        """
         Delete this association from the database.
 
         :warning: This action is permanent and can not be undone.
-        '''
+        """
         db.session.delete(self)
         db.session.commit()

@@ -3,10 +3,11 @@ from models.updates import Update
 from models.user import User
 from models.movement import Movement
 
+
 class UpdateTest(BaseTest):
     def test_create(self):
-        leader = User('leader', 'password')
-        movement = Movement('movement')
+        leader = User("leader", "password")
+        movement = Movement("movement")
         update = Update(leader, movement)
 
         self.assertEqual(leader, update.leader)
