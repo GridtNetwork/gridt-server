@@ -10,7 +10,25 @@ from models.movement_user_association import MovementUserAssociation
 
 
 class Movement(db.Model):
-    __tablename__ = "movements"
+    '''
+    Intuitive representation of movements in the database. ::
+
+        flossing = Movement('flossing')
+        robin = User.find_by_id(1)
+        pieter = User.find_by_id(2)
+        jorn = User.find_by_id(3)
+        flossing.users = [robin, pieter, jorn]
+        flossing.save_to_db()
+
+    :Note: changes are only saved to the database when :func:`Movement.save_to_db` is called.
+
+    :param name: Name of the movement
+    :param short_description: Give a short description for your movement.
+    :attribute description: More elaborate description of your movement.
+    :attribute users: All user that have been subscribed to this movement.
+    :attribute user_associations: All instances of :class:`models.movement_user_association.MovementUserAssociation` with that link to this movement.
+    '''
+    __tablename__ = 'movements'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
@@ -18,14 +36,14 @@ class Movement(db.Model):
     description = db.Column(db.String(1000))
 
     user_associations = db.relationship(
-        "MovementUserAssociation",
-        back_populates="movement",
-        cascade="all, delete-orphan",
+        'MovementUserAssociation',
+        back_populates='movement',
+        cascade='all, delete-orphan',
     )
 
     users = association_proxy(
-        "user_associations",
-        "follower",
+        'user_associations',
+        'follower',
         creator=lambda user: MovementUserAssociation(follower=user),
     )
 
@@ -34,14 +52,29 @@ class Movement(db.Model):
         self.short_description = short_description
 
     def save_to_db(self):
+        '''
+        Store this movement in the database, making changes to the movement permanent.
+        '''
         db.session.add(self)
         db.session.commit()
 
     def delete_from_db(self):
+        '''
+        Delete this movement from the database.
+
+        :warning: This is permanent and irrevocable.
+        '''
         db.session.delete(self)
         db.session.commit()
 
     def add_user(self, user):
+        '''
+        Add a new user to self.users and give it appropriate leaders.
+
+        :param user: the user that is to be subscribed to this movement
+
+        :todo: Move find leader logic into private function.
+        '''
         for i in range(4):
 
             def get_association_leader(association):
@@ -75,6 +108,14 @@ class Movement(db.Model):
             assoc.save_to_db()
 
     def remove_user(self, user):
+        '''
+        Remove any relationship this user previously had with this movement.
+        Deleting any leader as well as follower relationship.
+
+        :param user: user to be deleted.
+        '''
+        # This must be done so that no empty user associations with just a
+        # movement and a leader are left.
         for asso in self.user_associations:
             if asso.follower == user:
                 asso.delete_from_db()

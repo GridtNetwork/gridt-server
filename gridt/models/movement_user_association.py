@@ -2,6 +2,17 @@ from db import db
 
 
 class MovementUserAssociation(db.Model):
+    """
+    Association class that lies at the foundation of the network. Think of this class as the arrows that connect followers with leaders within their respective circle of the movement.
+
+    :param model.user.User follower: User that will be following.
+    :param model.user.User leader: User that will lead.
+    :param model.movement.Movement movement: Movement in which this relationship is happening.
+
+    :attribute leader: The leading user.
+    :attribute follower: The following user.
+    :attribute movement: The movement in which this connection happens.
+    """
     __tablename__ = "assoc"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -40,9 +51,17 @@ class MovementUserAssociation(db.Model):
         return cls.query.filter_by(movement=movement).one_or_none()
 
     def save_to_db(self):
+        '''
+        Save this association to the database.
+        '''
         db.session.add(self)
         db.session.commit()
 
     def delete_from_db(self):
+        '''
+        Delete this association from the database.
+
+        :warning: This action is permanent and can not be undone.
+        '''
         db.session.delete(self)
         db.session.commit()

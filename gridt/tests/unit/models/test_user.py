@@ -1,6 +1,8 @@
 from tests.base_test import BaseTest
 from db import db
 from models.user import User
+from models.movement import Movement
+from models.movement_user_association import MovementUserAssociation
 
 
 class UserTest(BaseTest):
@@ -26,7 +28,6 @@ class UserTest(BaseTest):
             self.assertEqual(User.find_by_name("username"), user1)
 
     def test_hash(self):
-        user = User("username", "password")
-        user.hash_password("test")
+        user = User("username", "test")
 
         self.assertEqual(user.verify_password("test"), True)
