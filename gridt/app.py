@@ -12,7 +12,7 @@ import os
 import sys
 import click
 
-sys.path.append('/home/robin/Documents/work/gridt/gridt-server/gridt/')
+sys.path.append("/home/robin/Documents/work/gridt/gridt-server/gridt/")
 
 from flask import Flask, jsonify
 from flask.cli import FlaskGroup
@@ -23,7 +23,7 @@ from flask_restful import Api
 from db import db
 
 from auth.security import authenticate, identify
-from auth.login import Login, LoggedIn
+from resources.register import LoggedInResource, RegisterResource
 
 def create_app(overwrite_conf=None):
     """
@@ -45,15 +45,20 @@ def create_app(overwrite_conf=None):
     db.init_app(app)
 
     JWT(app, authenticate, identify)
+
     api = Api(app)
+    api.add_resource(LoggedInResource, '/logged_in')
+    api.add_resource(RegisterResource, '/register')
 
     @app.cli.command()
     def initdb():
-        app.logger.debug(f"Writing to database '{app.config['SQLALCHEMY_DATABASE_URI']}'")
+        app.logger.debug(
+            f"Writing to database '{app.config['SQLALCHEMY_DATABASE_URI']}'"
+        )
         db.create_all()
 
     return app
 
-if __name__ == '__main__':
-    cli()
 
+if __name__ == "__main__":
+    cli()

@@ -12,6 +12,7 @@ passlib = "*"
 sphinx = "*"
 flask-jwt = "*"
 click = "*"
+marshmallow = "*"
 
 [requires]
 python_version = "3.7"
