@@ -8,9 +8,10 @@ verify_ssl = true
 [packages]
 flask-restful = "*"
 flask-sqlalchemy = "*"
-flask-httpauth = "*"
 passlib = "*"
 sphinx = "*"
+flask-jwt = "*"
+click = "*"
 
 [requires]
 python_version = "3.7"

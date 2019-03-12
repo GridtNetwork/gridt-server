@@ -9,16 +9,25 @@ test environment.
 """
 
 import os
+import sys
+import click
 
-from flask import Flask
+sys.path.append('/home/robin/Documents/work/gridt/gridt-server/gridt/')
+
+from flask import Flask, jsonify
+from flask.cli import FlaskGroup
 from flask_sqlalchemy import SQLAlchemy
+from flask_jwt import JWT, jwt_required, current_identity
+from flask_restful import Api
 
-db = SQLAlchemy()
+from db import db
 
+from auth.security import authenticate, identify
+from auth.login import Login, LoggedIn
 
 def create_app(overwrite_conf=None):
     """
-    :param overwrite_conf: default None, argument should be one of the files in `conf/`.
+    :param overwrite_conf: default None, argument should be one of: development, testing, default.
     """
     app = Flask(__name__)
     config = {
@@ -31,7 +40,20 @@ def create_app(overwrite_conf=None):
     if overwrite_conf:
         config_name = overwrite_conf
 
-    app.logger.info(f"Starting flask with {config_name} config.")
+    app.logger.debug(f"Starting flask with {config_name} config.")
     app.config.from_pyfile(config[config_name])
+    db.init_app(app)
+
+    JWT(app, authenticate, identify)
+    api = Api(app)
+
+    @app.cli.command()
+    def initdb():
+        app.logger.debug(f"Writing to database '{app.config['SQLALCHEMY_DATABASE_URI']}'")
+        db.create_all()
 
     return app
+
+if __name__ == '__main__':
+    cli()
+

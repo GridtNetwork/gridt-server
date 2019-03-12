@@ -28,10 +28,6 @@ class MovementUserAssociation(db.Model):
     leader = db.relationship("User", foreign_keys=[leader_id])
 
     def __init__(self, movement=None, follower=None, leader=None):
-        if follower:
-            follower.follower_associations
-        if movement:
-            movement.user_associations
         self.follower = follower
         self.movement = movement
         self.leader = leader
