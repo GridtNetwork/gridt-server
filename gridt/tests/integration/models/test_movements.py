@@ -1,6 +1,6 @@
-from tests.base_test import BaseTest
-from models.movement import Movement
-from models.user import User
+from gridt.tests.base_test import BaseTest
+from gridt.models.movement import Movement
+from gridt.models.user import User
 
 
 class MovementTest(BaseTest):

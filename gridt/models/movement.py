@@ -3,10 +3,10 @@ from sqlalchemy import not_, and_
 from sqlalchemy.ext.associationproxy import association_proxy, AssociationProxy
 from sqlalchemy.orm import joinedload
 
-from db import db
+from gridt.db import db
 
-from models.user import User
-from models.movement_user_association import MovementUserAssociation
+from gridt.models.user import User
+from gridt.models.movement_user_association import MovementUserAssociation
 
 
 class Movement(db.Model):

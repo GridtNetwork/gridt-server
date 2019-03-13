@@ -10,6 +10,7 @@ test environment.
 
 import os
 import sys
+import logging
 import pathlib
 import click
 
@@ -19,10 +20,11 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_jwt import JWT, jwt_required, current_identity
 from flask_restful import Api
 
-from db import db
+from gridt.db import db
 
-from auth.security import authenticate, identify
-from resources.register import LoggedInResource, RegisterResource
+from gridt.auth.security import authenticate, identify
+from gridt.resources.register import LoggedInResource, RegisterResource
+
 
 def create_app(overwrite_conf=None):
     """
@@ -46,21 +48,26 @@ def create_app(overwrite_conf=None):
         config_name = overwrite_conf
 
     try:
-        path = pathlib.Path('conf/') / (config_name + '.conf')
-        path = os.getcwd() / path
+        path = (
+            os.path.dirname(os.path.realpath(__file__))
+            / pathlib.Path("conf/")
+            / (config_name + ".conf")
+        )
         app.config.from_pyfile(str(path))
     except FileNotFoundError:
         app.logger.error(f"Could not find file conf/{config_name}.conf, exiting.")
         sys.exit(1)
 
+    app.logger.setLevel(logging.INFO)
     app.logger.debug(f"Starting flask with {config_name} config.")
 
     db.init_app(app)
-    JWT(app, authenticate, identify)
 
     api = Api(app)
-    api.add_resource(LoggedInResource, '/logged_in')
-    api.add_resource(RegisterResource, '/register')
+    api.add_resource(LoggedInResource, "/logged_in")
+    api.add_resource(RegisterResource, "/register")
+
+    JWT(app, authenticate, identify)
 
     @app.cli.command()
     def initdb():

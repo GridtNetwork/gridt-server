@@ -1,6 +1,6 @@
 import logging
 
-from models import *
+from gridt.models import *
 
 
 def authenticate(username, password):

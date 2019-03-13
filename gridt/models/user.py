@@ -9,7 +9,7 @@ from itsdangerous import (
 )
 from passlib.apps import custom_app_context as pwd_context
 
-from db import db
+from gridt.db import db
 
 
 class User(db.Model):

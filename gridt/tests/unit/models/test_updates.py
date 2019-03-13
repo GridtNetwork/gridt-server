@@ -1,7 +1,7 @@
-from tests.base_test import BaseTest
-from models.updates import Update
-from models.user import User
-from models.movement import Movement
+from gridt.tests.base_test import BaseTest
+from gridt.models.updates import Update
+from gridt.models.user import User
+from gridt.models.movement import Movement
 
 
 class UpdateTest(BaseTest):

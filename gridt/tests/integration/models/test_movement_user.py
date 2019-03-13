@@ -1,11 +1,11 @@
 import unittest
-from db import db
+from gridt.db import db
 
-from tests.base_test import BaseTest
+from gridt.tests.base_test import BaseTest
 
-from models.movement_user_association import MovementUserAssociation
-from models.user import User
-from models.movement import Movement
+from gridt.models.movement_user_association import MovementUserAssociation
+from gridt.models.user import User
+from gridt.models.movement import Movement
 
 
 class AssociationTest(BaseTest):
@@ -26,6 +26,7 @@ class AssociationTest(BaseTest):
             user = User("user", "password")
             user.save_to_db()
             movement = Movement("movement_name")
+            movement.save_to_db()
 
             self.assertIsNone(MovementUserAssociation.find_by_id(1))
             self.assertIsNone(MovementUserAssociation.find_by_follower(user))

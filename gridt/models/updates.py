@@ -1,4 +1,4 @@
-from db import db
+from gridt.db import db
 
 
 class Update(db.Model):

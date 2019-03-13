@@ -1,5 +1,5 @@
-from tests.base_test import BaseTest
-from models.movement import Movement
+from gridt.tests.base_test import BaseTest
+from gridt.models.movement import Movement
 
 
 class MovementTest(BaseTest):

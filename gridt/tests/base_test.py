@@ -2,8 +2,8 @@ import os
 import logging
 from unittest import TestCase
 
-from app import create_app
-from db import db
+from gridt.app import create_app
+from gridt.db import db
 
 # LoggedTestCase and LogThisTestCase accredited to:
 # https://stackoverflow.com/a/15969985/1051438
@@ -50,7 +50,7 @@ class LoggedTestCase(TestCase):
 
 class BaseTest(LoggedTestCase):
     def setUp(self):
-        app = create_app(overwrite_conf="testing")
+        app = create_app(overwrite_conf="test")
 
         self.assertEqual(app.config["SQLALCHEMY_DATABASE_URI"], "sqlite://")
 

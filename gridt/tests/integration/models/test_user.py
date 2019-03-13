@@ -1,5 +1,5 @@
-from tests.base_test import BaseTest
-from models.user import User
+from gridt.tests.base_test import BaseTest
+from gridt.models.user import User
 
 
 class UserTest(BaseTest):
