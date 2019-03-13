@@ -1,7 +1,7 @@
 import random
 from sqlalchemy import not_, and_
-from sqlalchemy.ext.associationproxy import association_proxy, AssociationProxy
-from sqlalchemy.orm import joinedload
+from sqlalchemy.types import Interval
+from sqlalchemy.ext.associationproxy import association_proxy
 
 from gridt.db import db
 
@@ -33,6 +33,7 @@ class Movement(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
+    interval = db.Column(db.Interval, nullable=False)
     short_description = db.Column(db.String(100))
     description = db.Column(db.String(1000))
 
@@ -48,8 +49,9 @@ class Movement(db.Model):
         creator=lambda user: MovementUserAssociation(follower=user),
     )
 
-    def __init__(self, name, short_description=None):
+    def __init__(self, name, interval, short_description=None):
         self.name = name
+        self.interval = interval
         self.short_description = short_description
 
     def save_to_db(self):
