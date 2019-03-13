@@ -14,7 +14,7 @@ from gridt.auth import security
 class AuthTest(BaseTest):
     def test_verify(self):
         with self.app_context():
-            user = User("username", "password")
+            user = User("username", "test@test.com", "password")
             user.save_to_db()
 
             @self.app.route("/test")

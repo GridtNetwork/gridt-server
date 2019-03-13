@@ -52,8 +52,6 @@ class BaseTest(LoggedTestCase):
     def setUp(self):
         app = create_app(overwrite_conf="test")
 
-        self.assertEqual(app.config["SQLALCHEMY_DATABASE_URI"], "sqlite://")
-
         # Make sure db exists
         with app.app_context():
             db.init_app(app)

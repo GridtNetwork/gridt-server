@@ -1,4 +1,6 @@
 import unittest
+from datetime import timedelta
+
 from gridt.db import db
 
 from gridt.tests.base_test import BaseTest
@@ -12,12 +14,12 @@ class AssociationTest(BaseTest):
     # @unittest.skip("For speed")
     def test_add_user_to_movement(self):
         with self.app_context():
-            robin = User("robin", "password")
-            pieter = User("pieter", "password")
-            jorn = User("jorn", "password")
+            robin = User("robin", "test@test.com", "password")
+            pieter = User("pieter", "test@test.com", "password")
+            jorn = User("jorn", "test@test.com", "password")
 
-            flossing = Movement("flossing")
-            running = Movement("running")
+            flossing = Movement("flossing", timedelta(days=1))
+            running = Movement("running", timedelta(days=1))
 
             flossing.add_user(robin)
             running.add_user(jorn)
@@ -40,10 +42,10 @@ class AssociationTest(BaseTest):
     # @unittest.skip("For speed")
     def test_remove_user_from_movement(self):
         with self.app_context():
-            robin = User("robin", "password")
-            pieter = User("pieter", "password")
+            robin = User("robin", "test@test.com", "password")
+            pieter = User("pieter", "test@test.com", "password")
 
-            flossing = Movement("flossing")
+            flossing = Movement("flossing", timedelta(days=1))
 
             flossing.add_user(robin)
             flossing.add_user(pieter)
@@ -60,10 +62,10 @@ class AssociationTest(BaseTest):
     # @unittest.skip("For speed")
     def test_remove_leader_from_movement(self):
         with self.app_context():
-            robin = User("robin", "password")
-            pieter = User("pieter", "password")
+            robin = User("robin", "test@test.com", "password")
+            pieter = User("pieter", "test@test.com", "password")
 
-            flossing = Movement("flossing")
+            flossing = Movement("flossing", timedelta(days=1))
 
             flossing.add_user(robin)
             flossing.add_user(pieter)

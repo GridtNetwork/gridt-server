@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from gridt.tests.base_test import BaseTest
 from gridt.models.movement import Movement
 from gridt.models.user import User
@@ -6,7 +8,7 @@ from gridt.models.user import User
 class MovementTest(BaseTest):
     def test_crud(self):
         with self.app_context():
-            movement = Movement("flossing")
+            movement = Movement("flossing", timedelta(days=2))
 
             self.assertIsNone(User.query.filter_by(username="username").first())
 

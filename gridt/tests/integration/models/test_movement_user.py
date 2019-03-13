@@ -1,4 +1,5 @@
 import unittest
+from datetime import timedelta
 from gridt.db import db
 
 from gridt.tests.base_test import BaseTest
@@ -23,9 +24,9 @@ class AssociationTest(BaseTest):
 
     def test_find_by(self):
         with self.app_context():
-            user = User("user", "password")
+            user = User("user", "test@test.com", "password")
             user.save_to_db()
-            movement = Movement("movement_name")
+            movement = Movement("movement_name", timedelta(days=1))
             movement.save_to_db()
 
             self.assertIsNone(MovementUserAssociation.find_by_id(1))

@@ -13,7 +13,8 @@ class Movement(db.Model):
     """
     Intuitive representation of movements in the database. ::
 
-        flossing = Movement('flossing')
+        from datetime import timedelta
+        flossing = Movement('flossing', timedelta(days=2))
         robin = User.find_by_id(1)
         pieter = User.find_by_id(2)
         jorn = User.find_by_id(3)

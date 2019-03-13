@@ -17,6 +17,7 @@ class User(db.Model):
     Intuitive representation of users in the database.
 
     :param str username: Username that the user has chosen.
+    :param str email: Email that the user has chosen.
     :param str password: Password that the user has chosen.
 
     Right now, to find the leaders of a user the following code snippet can be used: ::
@@ -37,6 +38,7 @@ class User(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(32), index=True)
+    email = db.Column(db.String(40), nullable=False)
     password_hash = db.Column(db.String(128))
     role = db.Column(db.String(32))
 
@@ -49,8 +51,9 @@ class User(db.Model):
         creator=lambda movement: MovementUserAssociation(movement=movement),
     )
 
-    def __init__(self, username, password, role="user"):
+    def __init__(self, username, email, password, role="user"):
         self.username = username
+        self.email = email
         self.hash_password(password)
         self.role = role
 
