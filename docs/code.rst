@@ -15,6 +15,9 @@ which will run your development server. This will grab :func:`create_app`
 .. automodule:: gridt.app
    :members:
    :show-inheritance:
+.. automodule:: gridt.db
+   :members:
+   :show-inheritance:
 
 Conf files
 ==========
