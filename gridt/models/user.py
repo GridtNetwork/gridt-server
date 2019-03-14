@@ -10,6 +10,9 @@ from itsdangerous import (
 from passlib.apps import custom_app_context as pwd_context
 
 from gridt.db import db
+from gridt.models.movement_user_association import (
+    MovementUserAssociation,
+)  # Needed for association creator
 
 
 class User(db.Model):
@@ -19,13 +22,6 @@ class User(db.Model):
     :param str username: Username that the user has chosen.
     :param str email: Email that the user has chosen.
     :param str password: Password that the user has chosen.
-
-    Right now, to find the leaders of a user the following code snippet can be used: ::
-
-        user = Users.find_by_id(1)
-        user_leaders = list(
-            map(lambda a: a.leader, user.follower_associations)
-        )
 
     :attribute password_hash: Hashed version of the users's password.
     :attribute follower_associations: All associations to movements where the follower is this user. Useful for determining the leaders of a user.
@@ -113,10 +109,38 @@ class User(db.Model):
             return None
         return user
 
+    def leaders(self, movement):
+        """
+        Find all the leaders of this user in the provided movement.
+
+        :param gridt.models.movement.Movement movement: The movement that the user is to retrieve the leaders from.
+        :returns: List of users or None if this user is not in the movement.
+        """
+        if movement not in self.movements:
+            return None
+
+        relevant_associations = list(
+            filter(
+                lambda a: a.movement == movement and a.leader is not None,
+                self.follower_associations,
+            )
+        )
+        leaders = list(map(lambda a: a.leader, relevant_associations))
+
+        return leaders
+
     def save_to_db(self):
+        """
+        Save this user and all of the changes made to it to the database.
+        """
         db.session.add(self)
         db.session.commit()
 
     def delete_from_db(self):
+        """
+        Delete this user from the database.
+
+        :warning: This is a permanent action and cannot be undone.
+        """
         db.session.delete(self)
         db.session.commit()

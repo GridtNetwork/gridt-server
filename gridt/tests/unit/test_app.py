@@ -6,6 +6,7 @@ from flask import Config
 from util.nostderr import nostderr
 from gridt.app import create_app
 
+
 class AppTest(TestCase):
     @patch.object(Config, "from_pyfile")
     def test_overwrite_conf(self, mocked_fun):

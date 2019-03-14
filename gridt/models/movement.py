@@ -23,9 +23,9 @@ class Movement(db.Model):
 
     :Note: changes are only saved to the database when :func:`Movement.save_to_db` is called.
 
-    :param name: Name of the movement
-    :param short_description: Give a short description for your movement.
-    :attribute description: More elaborate description of your movement.
+    :param str name: Name of the movement
+    :param str short_description: Give a short description for your movement.
+    :attribute str description: More elaborate description of your movement.
     :attribute users: All user that have been subscribed to this movement.
     :attribute user_associations: All instances of :class:`models.movement_user_association.MovementUserAssociation` with that link to this movement.
     """
@@ -71,43 +71,85 @@ class Movement(db.Model):
         db.session.delete(self)
         db.session.commit()
 
+    def _find_possible_leaders_ids(self, user, exclude=None):
+        """
+        Private function to look for ids of leaders that this user could use.
+
+        :param gridt.models.user.User user: User that needs new leaders.
+        :param list exclude: List of users (can be a user model or an id) to exclude from search.
+        :returns: A list of ids of users, or None if the user is not in this movement.
+        """
+
+        if user.leaders(self) is None:
+            return None
+
+        current_leader_ids = [leader.id for leader in user.leaders(self)]
+
+        possible_leaders = [
+            tup[0]
+            for tup in db.session.query(User.id)
+            .filter(
+                and_(
+                    not_(User.id == user.id),
+                    not_(User.id.in_(current_leader_ids)),
+                    User.movements.any(id=self.id),
+                )
+            )
+            .all()
+        ]
+
+        if exclude:
+
+            if type(exclude[0]) == int:
+                exclude_ids = exclude
+            if type(exclude[0]) == type(user):
+                exclude_ids = [user.id for user in exclude]
+
+            possible_leaders = list(
+                filter(lambda l: l not in exclude_ids, possible_leaders)
+            )
+
+        return possible_leaders
+
+    def swap_leader(self, user, leader):
+        """
+        Swap out the presented leader in the users leaders.
+
+        :param user: User who's leader will be swapped.
+        :param leader: The leader that will be swapped.
+        :return: True if successful, False if unsuccesful.
+        :rtype bool:
+        """
+        # We can not change someone's leader if they are not already following that leader.
+        if leader and leader not in user.leaders(self):
+            return False
+
+        # If there is no other possible leaders than we can't perform the swap.
+        possible_leaders = self._find_possible_leaders_ids(user, user.leaders(self))
+        if not possible_leaders:
+            return False
+
+        new_leader = User.find_by_id(random.choice(possible_leaders))
+        for association in user.follower_associations:
+            if association.leader == leader:
+                association.leader = new_leader
+
+        return True
+
     def add_user(self, user):
         """
         Add a new user to self.users and give it appropriate leaders.
 
-        :param user: the user that is to be subscribed to this movement
+        :param gridt.models.user.User user: the user that is to be subscribed to this movement
 
         :todo: Move find leader logic into private function.
         """
         for i in range(4):
-
-            def get_association_leader(association):
-                if association.leader:
-                    return association.leader.id
-
-            associations_in_movement = list(
-                filter(lambda a: a.movement == self, user.follower_associations)
-            )
-
-            current_leader_ids = list(
-                map(get_association_leader, associations_in_movement)
-            )
-
-            possible_leaders = (
-                db.session.query(User)
-                .filter(
-                    and_(
-                        not_(User.id == user.id),
-                        not_(User.id.in_(current_leader_ids)),
-                        User.movements.any(id=self.id),
-                    )
-                )
-                .all()
-            )
+            possible_leaders = self._find_possible_leaders_ids(user)
 
             assoc = MovementUserAssociation(self, user)
             if possible_leaders:
-                assoc.leader = random.choice(possible_leaders)
+                assoc.leader = User.find_by_id(random.choice(possible_leaders))
 
             assoc.save_to_db()
 
