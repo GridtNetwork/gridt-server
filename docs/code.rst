@@ -12,7 +12,7 @@ Then run in your terminal::
 
 which will run your development server. This will grab :func:`create_app`
 
-.. automodule:: app
+.. automodule:: gridt.app
    :members:
    :show-inheritance:
 

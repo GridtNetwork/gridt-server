@@ -16,7 +16,7 @@ import os
 import sys
 
 # I edited this, check if it is correct
-sys.path.insert(0, os.path.abspath("../gridt"))
+sys.path.insert(0, os.path.abspath("../"))
 
 # -- Project information -----------------------------------------------------
 
