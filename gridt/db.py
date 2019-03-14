@@ -15,9 +15,7 @@ send models to the database use the following piece of code: ::
 
 
 For more information on the use of db read the `flask sqlalchemy docs <http://flask-sqlalchemy.pocoo.org/>`_.
-
 """
-
 from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
