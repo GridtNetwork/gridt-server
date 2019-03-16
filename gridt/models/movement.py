@@ -71,6 +71,15 @@ class Movement(db.Model):
         db.session.delete(self)
         db.session.commit()
 
+    @classmethod
+    def find_by_name(cls, name):
+        """
+        Find a movement by it's name.
+        :param name: Name of movement that is being queried.
+        :rtype: None or gridt.models.movement.Movement
+        """
+        return cls.query.filter_by(name=name).one_or_none()
+
     def _find_possible_leaders_ids(self, user, exclude=None):
         """
         Private function to look for ids of leaders that this user could use.

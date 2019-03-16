@@ -13,6 +13,7 @@ import sys
 import logging
 import pathlib
 import click
+from datetime import timedelta
 
 from flask import Flask, jsonify
 from flask.cli import FlaskGroup
@@ -21,6 +22,8 @@ from flask_jwt import JWT, jwt_required, current_identity
 from flask_restful import Api
 
 from gridt.db import db
+
+from gridt.models.movement import Movement
 
 from gridt.auth.security import authenticate, identify
 from gridt.resources.register import LoggedInResource, RegisterResource
@@ -69,12 +72,44 @@ def create_app(overwrite_conf=None):
 
     JWT(app, authenticate, identify)
 
-    @app.cli.command()
-    def initdb():
+    @app.cli.command('initdb')
+    def initialize_database():
+        """
+        Initialize the database.
+
+        Mainly consists of creating the tables.
+        """
         app.logger.info(
             f"Writing to database '{app.config['SQLALCHEMY_DATABASE_URI']}'."
         )
         db.create_all()
+
+    @app.cli.command('insert-test-data')
+    def insert_test_data():
+        """
+        Insert test data into the database.
+
+        Current dataset is very limited.
+        """
+        movement = Movement('test', timedelta(days=2))
+        movement.save_to_db()
+
+    @app.cli.command('delete-movement')
+    @click.argument('movement_name')
+    def delete_movement(movement_name):
+        """ Delete a movement from the database. """
+        movement = Movement.find_by_name(movement_name)
+        if not movement:
+            app.logger.error(f"Could not find movement with name '{movement_name}.'")
+            return 1
+
+        q = 'neither'
+        while not q in ['', 'y', 'n', 'Y', 'N', 'yes', 'no']:
+            q = input(f"Do you really want to delete the movement with name '{movement_name}'? [y/N]")
+        if q in ['', 'n', 'N', 'no']:
+            return
+
+        movement.delete_from_db()
 
     return app
 
