@@ -1,7 +1,8 @@
 # gridt-server
+This repository contains all the files necessary for creating a gridt network.
 
-## Config files
-When you have your local install of the gridt-server, you will have to add a secret key to at least one config file, to which you will have to refer using the environment variable `FLASK_CONFIGURATION`. The suggested folder for this is `conf/`.
+## Documentation
+Our documentation is hosted on [readthedocs.io](https://gridt-server.readthedocs.io/).
 
-## Run
-To run the application make sure you are in the correct environment by running `$pipenv shell` in (a subfolder of) gridt-server. Alternatively you can use `pipenv run <your command>`. Then you can start the application by giving the `$flask run` command.
+## Contribution
+Great that you are considering contributing to our project. Feel free to donate [money](gridt.opencollective.com) or [code](CONTRIBUTION_GUIDELINES).
