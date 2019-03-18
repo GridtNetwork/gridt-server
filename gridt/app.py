@@ -61,10 +61,12 @@ def create_app(overwrite_conf=None):
         app.logger.error(f"Could not find file conf/{config_name}.conf, exiting.")
         sys.exit(1)
 
-    app.logger.setLevel(logging.INFO)
-    app.logger.debug(f"Starting flask with {config_name} config.")
+    app.logger.info(f"Starting flask with {config_name} config.")
 
     db.init_app(app)
+    if app.config.get('FLASK_DEBUG', True):
+        with app.app_context():
+            db.create_all()
 
     api = Api(app)
     api.add_resource(LoggedInResource, "/logged_in")
