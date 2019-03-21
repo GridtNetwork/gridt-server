@@ -1,7 +1,7 @@
 info:
   title: The Gridt Network API
   version: 0.0.0
-  description: Interact with the gridt network via this API. It provides several endpoints for creating, subscribing. 
+  description: Interact with the gridt network via this API. It provides several endpoints for creating, subscribing and switching leaders.
   contact:
     url: gridt.org
     name: Robin A. Dorstijn
@@ -77,18 +77,20 @@ paths:
   /movements:
     get:
       summary: List of all movements
+      description: Lists all movements on the server.
       responses:
         200:
+          description: Succesful response
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/movements'
-          description: Succesful response
-      description: 'Lists all movements on the server.'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
     post:
       summary: Create a new movement
       responses:
-        '201':
+        201:
           description: Sucessfully created the new movement.
           content:
             application/json:
@@ -100,6 +102,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/message'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
       requestBody:
         description: Description of the movement that is to be created.
         required: true
@@ -119,12 +123,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/movement'
-        default:
-          description: Error payload
+        400:
+          description: Movement id does not exist.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/message'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
   /movements/{movementId}/subscriber:
     put:
       summary: Subscribe user to movement
@@ -144,6 +150,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/message'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
     delete:
       summary: Unsubscribe user from movement
       description: The user that is currently logged in will be removed from the movement subscribers
@@ -162,12 +170,33 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/message'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+  /movements/{movementId}/leaders:
+    get:
+      summary: Get the leaders of this user in this movement
+      parameters:
+      - $ref: '#/components/parameters/movementId'
+      responses:
+        200:
+          description: Succesfully found the leaders of this user
+          content:
+            application/json:
+              schema:
+                title: placeholder
 components:
+  responses:
+    UnauthorizedError:
+      description: Access token is missing or invalid
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/message'
   securitySchemes:
-    bearerAuth:            
+    bearerAuth:
       type: http
       scheme: bearer
-      bearerFormat: JWT 
+      bearerFormat: JWT
   parameters:
     movementId:
       required: true
