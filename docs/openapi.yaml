@@ -1,7 +1,7 @@
 info:
   title: The Gridt Network API
-  version: 0.0.0
-  description: Interact with the gridt network via this API. It provides several endpoints for creating, subscribing and switching leaders.
+  version: 0.0.1
+  description: Interact with the gridt network via this API. It provides several endpoints for creating and subscribing (to) movements and switching leaders.
   contact:
     url: gridt.org
     name: Robin A. Dorstijn
@@ -95,7 +95,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/movement'
+                $ref: '#/components/schemas/movement-with-subscribed'
         400:
           description: Could not create movement, because it already exists.
           content:
@@ -110,7 +110,25 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/movement'
+              $ref: '#/components/schemas/movement-with-subscribed'
+  /movements/subscriptions:
+    get:
+      summary: Movements the user is subscribed to.
+      description: >
+        This will return a list of all the movements this user is subscribed to
+        and all his leaders in this movements. This is the **only** place where
+        the information of his leader can be obtained.
+      responses:
+        200:
+          description: Succesfully found the leaders of this user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/movement-with-leaders'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
   /movements/{movementId}:
     get:
       summary: Get a movement
@@ -122,7 +140,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/movement'
+                $ref: '#/components/schemas/movement-with-subscribed'
         400:
           description: Movement id does not exist.
           content:
@@ -172,18 +190,65 @@ paths:
                 $ref: '#/components/schemas/message'
         401:
           $ref: '#/components/responses/UnauthorizedError'
-  /movements/{movementId}/leaders:
-    get:
-      summary: Get the leaders of this user in this movement
+  /movements/{movementId}/leaders/{userId}/{swap}:
+    post:
+      summary: Swap leader in movement
+      description: Swap a leader in a movement with a different one.
       parameters:
       - $ref: '#/components/parameters/movementId'
+      - name: userId
+        in: path
+        required: true
+        description: Identifier (name or id) of the leader that is to be replaced.
+        schema:
+          $ref: '#/components/schemas/userId'
+      - name: swap
+        required: true
+        in: path
+        description: >
+          This can be an idenitifier (name or id) of a leader that the user wants
+          to replace his leader with, or it can be just the string 'random' in
+          in which case he will be assigned a new user.
+        schema:
+          $ref: '#/components/schemas/userId'
       responses:
-        200:
-          description: Succesfully found the leaders of this user
+        201:
+          description: Succesfully swapped leaders, returns the newly user
           content:
             application/json:
               schema:
-                title: placeholder
+                $ref: '#/components/schemas/user'
+        400:
+          description: User is not subscribed to this movement.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/message'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+  /movements/{movementId}/update:
+    post:
+      summary: Post a new update in movement
+      description: >
+        Tell the server that the user has performed the action related to this
+        movement.
+      parameters:
+      - $ref: '#/components/parameters/movementId'
+      responses:
+        201:
+          description: Successfully created update
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/message'
+        400:
+          description: User is not subscribed to this movement.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/message'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
 components:
   responses:
     UnauthorizedError:
@@ -215,7 +280,7 @@ components:
       title: Message from the server
     movements:
       items:
-        $ref: '#/components/schemas/movement'
+        $ref: '#/components/schemas/movement-with-subscribed'
       type: array
       title: List of movements
     id:
@@ -225,20 +290,18 @@ components:
         - type: string
       description: identifier, can be it's name or an id.
       example: 1
-    movement:
-      title: A single movement
+    movement-with-leaders:
+      title: Movement with leader information
       type: object
       properties:
         name:
           type: string
           description: Name of the movement
           example: flossing
-        interval-days:
-          type: integer
-          description: >-
-            Amount of days in between which a follower of this movement is
-            expected to perform the action
-          example: 1
+        leaders:
+          type: array
+          items:
+            $ref: '#/components/schemas/user'
         short-description:
           type: string
           description: A comprehensive description of the movement
@@ -251,6 +314,12 @@ components:
           example: >-
             Flossing once a day has been shown to reduce almost any dental issue
             and can greatly reduce risks for all kinds of diseases.
+        interval-days:
+          type: integer
+          description: >-
+            Amount of days in between which a follower of this movement is
+            expected to perform the action
+          example: 1
         interval-weeks:
           type: integer
           description: >-
@@ -268,6 +337,77 @@ components:
           description: >-
             Amount of months in between which a follower of this movement is
             expected to perform the action.
+    movement-with-subscribed:
+      title: Movement with subscription information
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the movement
+          example: flossing
+        subscribed:
+          type: boolean
+          description: True if the user is subscribed to this movement.
+          example: True
+        short-description:
+          type: string
+          description: A comprehensive description of the movement
+          example: Flossing once a day keeps the dentist away.
+        long-description:
+          type: string
+          description: >-
+            A much longer description that is used to 'sell' a movement to it's
+            users.
+          example: >-
+            Flossing once a day has been shown to reduce almost any dental issue
+            and can greatly reduce risks for all kinds of diseases.
+        interval-days:
+          type: integer
+          description: >-
+            Amount of days in between which a follower of this movement is
+            expected to perform the action
+          example: 1
+        interval-weeks:
+          type: integer
+          description: >-
+            Amount of weeks in between which a follower of this movement is
+            expected to perform the action.
+          example: 0
+        interval-hours:
+          type: integer
+          description: >-
+            Amount of hours in between which a follower of this movement is
+            expected to perform the action.
+          example: 0
+        interval-months:
+          type: integer
+          description: >-
+            Amount of months in between which a follower of this movement is
+            expected to perform the action.
+    user:
+      title: User
+      type: object
+      properties:
+        id:
+          type: integer
+          description: The user's id
+          example: 1021031
+        username:
+          type: string
+          description: The user's username
+          example: robin
+        last-update:
+          type: object
+          description: This is the last update that the user has given in this movement.
+          properties:
+            time-stamp:
+              type: string
+              description: Date time of the last update of the user.
+    userId:
+      title: User id
+      oneOf:
+        - type: integer
+        - type: string
 openapi: 3.0.2
 externalDocs:
   url: 'http://gridt-server.readthedocs.io'
