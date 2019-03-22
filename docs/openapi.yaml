@@ -190,7 +190,7 @@ paths:
                 $ref: '#/components/schemas/message'
         401:
           $ref: '#/components/responses/UnauthorizedError'
-  /movements/{movementId}/leaders/{userId}/{swap}:
+  /movements/{movementId}/leaders/{userId}/:
     post:
       summary: Swap leader in movement
       description: Swap a leader in a movement with a different one.
@@ -202,18 +202,9 @@ paths:
         description: Identifier (name or id) of the leader that is to be replaced.
         schema:
           $ref: '#/components/schemas/userId'
-      - name: swap
-        required: true
-        in: path
-        description: >
-          This can be an idenitifier (name or id) of a leader that the user wants
-          to replace his leader with, or it can be just the string 'random' in
-          in which case he will be assigned a new user.
-        schema:
-          $ref: '#/components/schemas/userId'
       responses:
         201:
-          description: Succesfully swapped leaders, returns the newly user
+          description: Succesfully swapped leaders, returns the new leader
           content:
             application/json:
               schema:
