@@ -1,0 +1,785 @@
+<!doctype html>
+<html>
+  <head>
+    <title>The Gridt Network API</title>
+    <style type="text/css">
+      body {
+      	font-family: Trebuchet MS, sans-serif;
+      	font-size: 15px;
+      	color: #444;
+      	margin-right: 24px;
+      }
+      
+      h1	{
+      	font-size: 25px;
+      }
+      h2	{
+      	font-size: 20px;
+      }
+      h3	{
+      	font-size: 16px;
+      	font-weight: bold;
+      }
+      hr	{
+      	height: 1px;
+      	border: 0;
+      	color: #ddd;
+      	background-color: #ddd;
+      }
+      
+      .app-desc {
+        clear: both;
+        margin-left: 20px;
+      }
+      .param-name {
+        width: 100%;
+      }
+      .license-info {
+        margin-left: 20px;
+      }
+      
+      .license-url {
+        margin-left: 20px;
+      }
+      
+      .model {
+        margin: 0 0 0px 20px;
+      }
+      
+      .method {
+        margin-left: 20px;
+      }
+      
+      .method-notes	{
+      	margin: 10px 0 20px 0;
+      	font-size: 90%;
+      	color: #555;
+      }
+      
+      pre {
+        padding: 10px;
+        margin-bottom: 2px;
+      }
+      
+      .http-method {
+       text-transform: uppercase;
+      }
+      
+      pre.get {
+        background-color: #0f6ab4;
+      }
+      
+      pre.post {
+        background-color: #10a54a;
+      }
+      
+      pre.put {
+        background-color: #c5862b;
+      }
+      
+      pre.delete {
+        background-color: #a41e22;
+      }
+      
+      .huge	{
+      	color: #fff;
+      }
+      
+      pre.example {
+        background-color: #f3f3f3;
+        padding: 10px;
+        border: 1px solid #ddd;
+      }
+      
+      code {
+        white-space: pre;
+      }
+      
+      .nickname {
+        font-weight: bold;
+      }
+      
+      .method-path {
+        font-size: 1.5em;
+        background-color: #0f6ab4;
+      }
+      
+      .up {
+        float:right;
+      }
+      
+      .parameter {
+        width: 500px;
+      }
+      
+      .param {
+        width: 500px;
+        padding: 10px 0 0 20px;
+        font-weight: bold;
+      }
+      
+      .param-desc {
+        width: 700px;
+        padding: 0 0 0 20px;
+        color: #777;
+      }
+      
+      .param-type {
+        font-style: italic;
+      }
+      
+      .param-enum-header {
+      width: 700px;
+      padding: 0 0 0 60px;
+      color: #777;
+      font-weight: bold;
+      }
+      
+      .param-enum {
+      width: 700px;
+      padding: 0 0 0 80px;
+      color: #777;
+      font-style: italic;
+      }
+      
+      .field-label {
+        padding: 0;
+        margin: 0;
+        clear: both;
+      }
+      
+      .field-items	{
+      	padding: 0 0 15px 0;
+      	margin-bottom: 15px;
+      }
+      
+      .return-type {
+        clear: both;
+        padding-bottom: 10px;
+      }
+      
+      .param-header {
+        font-weight: bold;
+      }
+      
+      .method-tags {
+        text-align: right;
+      }
+      
+      .method-tag {
+        background: none repeat scroll 0% 0% #24A600;
+        border-radius: 3px;
+        padding: 2px 10px;
+        margin: 2px;
+        color: #FFF;
+        display: inline-block;
+        text-decoration: none;
+      }
+    </style>
+  </head>
+  <body>
+  <h1>The Gridt Network API</h1>
+    <div class="app-desc">Interact with the gridt network via this API. It provides several endpoints for creating and subscribing (to) movements and switching leaders.</div>
+    <div class="app-desc">More information: <a href="gridt.org">gridt.org</a></div>
+    <div class="app-desc">Contact Info: <a href="robin@gridt.org">robin@gridt.org</a></div>
+    <div class="app-desc">Version: 0.0.1</div>
+    
+    <div class="license-info">All rights reserved</div>
+    <div class="license-url">http://apache.org/licenses/LICENSE-2.0.html</div>
+  <h2>Access</h2>
+    <ol>
+      <li></li>
+    </ol>
+
+  <h2><a name="__Methods">Methods</a></h2>
+  [ Jump to <a href="#__Models">Models</a> ]
+
+  <h3>Table of Contents </h3>
+  <div class="method-summary"></div>
+  <h4><a href="#Default">Default</a></h4>
+  <ul>
+  <li><a href="#authPost"><code><span class="http-method">post</span> /auth</code></a></li>
+  <li><a href="#movementsGet"><code><span class="http-method">get</span> /movements</code></a></li>
+  <li><a href="#movementsMovementIdGet"><code><span class="http-method">get</span> /movements/{movementId}</code></a></li>
+  <li><a href="#movementsMovementIdLeadersUserIdPost"><code><span class="http-method">post</span> /movements/{movementId}/leaders/{userId}/</code></a></li>
+  <li><a href="#movementsMovementIdSubscriberDelete"><code><span class="http-method">delete</span> /movements/{movementId}/subscriber</code></a></li>
+  <li><a href="#movementsMovementIdSubscriberPut"><code><span class="http-method">put</span> /movements/{movementId}/subscriber</code></a></li>
+  <li><a href="#movementsMovementIdUpdatePost"><code><span class="http-method">post</span> /movements/{movementId}/update</code></a></li>
+  <li><a href="#movementsPost"><code><span class="http-method">post</span> /movements</code></a></li>
+  <li><a href="#movementsSubscriptionsGet"><code><span class="http-method">get</span> /movements/subscriptions</code></a></li>
+  <li><a href="#registerPost"><code><span class="http-method">post</span> /register</code></a></li>
+  </ul>
+
+  <h1><a name="Default">Default</a></h1>
+  <div class="method"><a name="authPost"></a>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /auth</code></pre></div>
+    <div class="method-summary">Login to the gridt network (<span class="nickname">authPost</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body <a href="#body">body</a> (required)</div>
+      
+            <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#inline_response_200">inline_response_200</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successfully logged in.
+        <a href="#inline_response_200">inline_response_200</a>
+    <h4 class="field-label">401</h4>
+    Failed to login, incorrect credentials.
+        <a href="#message">message</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="movementsGet"></a>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /movements</code></pre></div>
+    <div class="method-summary">List of all movements (<span class="nickname">movementsGet</span>)</div>
+    <div class="method-notes">Lists all movements on the server.</div>
+
+
+
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#movements">movements</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Succesful response
+        <a href="#movements">movements</a>
+    <h4 class="field-label">401</h4>
+    Access token is missing or invalid
+        <a href="#message">message</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="movementsMovementIdGet"></a>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /movements/{movementId}</code></pre></div>
+    <div class="method-summary">Get a movement (<span class="nickname">movementsMovementIdGet</span>)</div>
+    <div class="method-notes"></div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">movementId (required)</div>
+      
+            <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Name or id of a movement. </div>    </div>  <!-- field-items -->
+
+
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#movement-with-subscribed">movement-with-subscribed</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Succesful response
+        <a href="#movement-with-subscribed">movement-with-subscribed</a>
+    <h4 class="field-label">400</h4>
+    Movement id does not exist.
+        <a href="#message">message</a>
+    <h4 class="field-label">401</h4>
+    Access token is missing or invalid
+        <a href="#message">message</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="movementsMovementIdLeadersUserIdPost"></a>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /movements/{movementId}/leaders/{userId}/</code></pre></div>
+    <div class="method-summary">Swap leader in movement (<span class="nickname">movementsMovementIdLeadersUserIdPost</span>)</div>
+    <div class="method-notes">Swap a leader in a movement with a different one.</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">movementId (required)</div>
+      
+            <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Name or id of a movement. </div>      <div class="param">userId (required)</div>
+      
+            <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Identifier (name or id) of the leader that is to be replaced. </div>    </div>  <!-- field-items -->
+
+
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#user">user</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">201</h4>
+    Succesfully swapped leaders, returns the new leader
+        <a href="#user">user</a>
+    <h4 class="field-label">400</h4>
+    User is not subscribed to this movement.
+        <a href="#message">message</a>
+    <h4 class="field-label">401</h4>
+    Access token is missing or invalid
+        <a href="#message">message</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="movementsMovementIdSubscriberDelete"></a>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="delete"><code class="huge"><span class="http-method">delete</span> /movements/{movementId}/subscriber</code></pre></div>
+    <div class="method-summary">Unsubscribe user from movement (<span class="nickname">movementsMovementIdSubscriberDelete</span>)</div>
+    <div class="method-notes">The user that is currently logged in will be removed from the movement subscribers</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">movementId (required)</div>
+      
+            <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Name or id of a movement. </div>    </div>  <!-- field-items -->
+
+
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#message">message</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Sucessfully unsubscribed from this movement.
+        <a href="#message">message</a>
+    <h4 class="field-label">400</h4>
+    This movement does not exist.
+        <a href="#message">message</a>
+    <h4 class="field-label">401</h4>
+    Access token is missing or invalid
+        <a href="#message">message</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="movementsMovementIdSubscriberPut"></a>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="put"><code class="huge"><span class="http-method">put</span> /movements/{movementId}/subscriber</code></pre></div>
+    <div class="method-summary">Subscribe user to movement (<span class="nickname">movementsMovementIdSubscriberPut</span>)</div>
+    <div class="method-notes">The user that is currently logged in will be added to the subscribers of this movement.</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">movementId (required)</div>
+      
+            <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Name or id of a movement. </div>    </div>  <!-- field-items -->
+
+
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#message">message</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Sucessfully subscribed to this movement.
+        <a href="#message">message</a>
+    <h4 class="field-label">400</h4>
+    This movement does not exist.
+        <a href="#message">message</a>
+    <h4 class="field-label">401</h4>
+    Access token is missing or invalid
+        <a href="#message">message</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="movementsMovementIdUpdatePost"></a>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /movements/{movementId}/update</code></pre></div>
+    <div class="method-summary">Post a new update in movement (<span class="nickname">movementsMovementIdUpdatePost</span>)</div>
+    <div class="method-notes">Tell the server that the user has performed the action related to this  movement.</div>
+
+    <h3 class="field-label">Path parameters</h3>
+    <div class="field-items">
+      <div class="param">movementId (required)</div>
+      
+            <div class="param-desc"><span class="param-type">Path Parameter</span> &mdash; Name or id of a movement. </div>    </div>  <!-- field-items -->
+
+
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#message">message</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">201</h4>
+    Successfully created update
+        <a href="#message">message</a>
+    <h4 class="field-label">400</h4>
+    User is not subscribed to this movement.
+        <a href="#message">message</a>
+    <h4 class="field-label">401</h4>
+    Access token is missing or invalid
+        <a href="#message">message</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="movementsPost"></a>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /movements</code></pre></div>
+    <div class="method-summary">Create a new movement (<span class="nickname">movementsPost</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body <a href="#movement-with-subscribed">movement-with-subscribed</a> (required)</div>
+      
+            <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#movement-with-subscribed">movement-with-subscribed</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">201</h4>
+    Sucessfully created the new movement.
+        <a href="#movement-with-subscribed">movement-with-subscribed</a>
+    <h4 class="field-label">400</h4>
+    Could not create movement, because it already exists.
+        <a href="#message">message</a>
+    <h4 class="field-label">401</h4>
+    Access token is missing or invalid
+        <a href="#message">message</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="movementsSubscriptionsGet"></a>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /movements/subscriptions</code></pre></div>
+    <div class="method-summary">Movements the user is subscribed to. (<span class="nickname">movementsSubscriptionsGet</span>)</div>
+    <div class="method-notes">This will return a list of all the movements this user is subscribed to and all his leaders in this movements. This is the &lt;strong&gt;only&lt;/strong&gt; place where  the information of his leader can be obtained.</div>
+
+
+
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      array[<a href="#movement-with-leaders">movement-with-leaders</a>]
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Succesfully found the leaders of this user
+        
+    <h4 class="field-label">401</h4>
+    Access token is missing or invalid
+        <a href="#message">message</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="registerPost"></a>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /register</code></pre></div>
+    <div class="method-summary">Register an account (<span class="nickname">registerPost</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">body <a href="#body_1">body_1</a> (required)</div>
+      
+            <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#message">message</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">201</h4>
+    Sucessfully created an account
+        <a href="#message">message</a>
+    <h4 class="field-label">400</h4>
+    Invalid request, either not all required fields are available, or the username is already in use. Check the message to find out.
+        <a href="#message">message</a>
+  </div> <!-- method -->
+  <hr/>
+
+  <h2><a name="__Models">Models</a></h2>
+  [ Jump to <a href="#__Methods">Methods</a> ]
+
+  <h3>Table of Contents</h3>
+  <ol>
+    <li><a href="#body"><code>body</code></a></li>
+    <li><a href="#body_1"><code>body_1</code></a></li>
+    <li><a href="#id"><code>id</code> - Identifier</a></li>
+    <li><a href="#inline_response_200"><code>inline_response_200</code></a></li>
+    <li><a href="#message"><code>message</code> - Message from the server</a></li>
+    <li><a href="#movement-with-leaders"><code>movement-with-leaders</code> - Movement with leader information</a></li>
+    <li><a href="#movement-with-subscribed"><code>movement-with-subscribed</code> - Movement with subscription information</a></li>
+    <li><a href="#movements"><code>movements</code> - List of movements</a></li>
+    <li><a href="#user"><code>user</code> - User</a></li>
+    <li><a href="#userId"><code>userId</code> - User id</a></li>
+    <li><a href="#user_lastupdate"><code>user_lastupdate</code></a></li>
+  </ol>
+
+  <div class="model">
+    <h3><a name="body"><code>body</code></a> <a class="up" href="#__Models">Up</a></h3>
+    
+    <div class="field-items">
+      <div class="param">username (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">password (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="body_1"><code>body_1</code></a> <a class="up" href="#__Models">Up</a></h3>
+    
+    <div class="field-items">
+      <div class="param">username (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">password (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">email (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="id"><code>id</code> - Identifier</a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'>identifier, can be it&#x27;s name or an id.</div>
+    <div class="field-items">
+          </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="inline_response_200"><code>inline_response_200</code></a> <a class="up" href="#__Models">Up</a></h3>
+    
+    <div class="field-items">
+      <div class="param">access-token (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="message"><code>message</code> - Message from the server</a> <a class="up" href="#__Models">Up</a></h3>
+    
+    <div class="field-items">
+      <div class="param">message (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="movement-with-leaders"><code>movement-with-leaders</code> - Movement with leader information</a> <a class="up" href="#__Models">Up</a></h3>
+    
+    <div class="field-items">
+      <div class="param">name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Name of the movement </div>
+<div class="param">leaders (optional)</div><div class="param-desc"><span class="param-type"><a href="#user">array[user]</a></span>  </div>
+<div class="param">short-description (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> A comprehensive description of the movement </div>
+<div class="param">long-description (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> A much longer description that is used to &#x27;sell&#x27; a movement to it&#x27;s users. </div>
+<div class="param">interval-days (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> Amount of days in between which a follower of this movement is expected to perform the action </div>
+<div class="param">interval-weeks (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> Amount of weeks in between which a follower of this movement is expected to perform the action. </div>
+<div class="param">interval-hours (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> Amount of hours in between which a follower of this movement is expected to perform the action. </div>
+<div class="param">interval-months (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> Amount of months in between which a follower of this movement is expected to perform the action. </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="movement-with-subscribed"><code>movement-with-subscribed</code> - Movement with subscription information</a> <a class="up" href="#__Models">Up</a></h3>
+    
+    <div class="field-items">
+      <div class="param">name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Name of the movement </div>
+<div class="param">subscribed (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> True if the user is subscribed to this movement. </div>
+<div class="param">short-description (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> A comprehensive description of the movement </div>
+<div class="param">long-description (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> A much longer description that is used to &#x27;sell&#x27; a movement to it&#x27;s users. </div>
+<div class="param">interval-days (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> Amount of days in between which a follower of this movement is expected to perform the action </div>
+<div class="param">interval-weeks (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> Amount of weeks in between which a follower of this movement is expected to perform the action. </div>
+<div class="param">interval-hours (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> Amount of hours in between which a follower of this movement is expected to perform the action. </div>
+<div class="param">interval-months (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> Amount of months in between which a follower of this movement is expected to perform the action. </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="movements"><code>movements</code> - List of movements</a> <a class="up" href="#__Models">Up</a></h3>
+    
+    <div class="field-items">
+          </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="user"><code>user</code> - User</a> <a class="up" href="#__Models">Up</a></h3>
+    
+    <div class="field-items">
+      <div class="param">id (optional)</div><div class="param-desc"><span class="param-type"><a href="#integer">Integer</a></span> The user&#x27;s id </div>
+<div class="param">username (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> The user&#x27;s username </div>
+<div class="param">last-update (optional)</div><div class="param-desc"><span class="param-type"><a href="#user_lastupdate">user_lastupdate</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="userId"><code>userId</code> - User id</a> <a class="up" href="#__Models">Up</a></h3>
+    
+    <div class="field-items">
+          </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="user_lastupdate"><code>user_lastupdate</code></a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'>This is the last update that the user has given in this movement.</div>
+    <div class="field-items">
+      <div class="param">time-stamp (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Date time of the last update of the user. </div>
+    </div>  <!-- field-items -->
+  </div>
+  </body>
+</html>
