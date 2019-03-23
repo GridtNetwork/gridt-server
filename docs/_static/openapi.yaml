@@ -31,7 +31,7 @@ paths:
               schema:
                 type: object
                 properties:
-                  access-token:
+                  access_token:
                     type: string
                     example: >-
                       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZGVudGl0eSI6MSwiaWF0IjoxNDQ0OTE3NjQwLCJuYmYiOjE0NDQ5MTc2NDAsImV4cCI6MTQ0NDkxNzk0MH0.KPmI6WSjRjlpzecPvs3q_T3cJQvAgJvaQAPtk1abC_E"
@@ -95,7 +95,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/movement-with-subscribed'
+                $ref: '#/components/schemas/message'
         400:
           description: Could not create movement, because it already exists.
           content:
@@ -110,7 +110,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/movement-with-subscribed'
+              $ref: '#/components/schemas/movement'
   /movements/subscriptions:
     get:
       summary: Movements the user is subscribed to.
@@ -126,7 +126,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/movement-with-leaders'
+                  $ref: '#/components/schemas/movement'
         401:
           $ref: '#/components/responses/UnauthorizedError'
   /movements/{movementId}:
@@ -140,7 +140,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/movement-with-subscribed'
+                $ref: '#/components/schemas/movement'
         400:
           description: Movement id does not exist.
           content:
@@ -271,7 +271,7 @@ components:
       title: Message from the server
     movements:
       items:
-        $ref: '#/components/schemas/movement-with-subscribed'
+        $ref: '#/components/schemas/movement'
       type: array
       title: List of movements
     id:
@@ -281,56 +281,10 @@ components:
         - type: string
       description: identifier, can be it's name or an id.
       example: 1
-    movement-with-leaders:
-      title: Movement with leader information
+    movement:
+      title: Basic movement
       type: object
-      properties:
-        name:
-          type: string
-          description: Name of the movement
-          example: flossing
-        leaders:
-          type: array
-          items:
-            $ref: '#/components/schemas/user'
-        short-description:
-          type: string
-          description: A comprehensive description of the movement
-          example: Flossing once a day keeps the dentist away.
-        long-description:
-          type: string
-          description: >-
-            A much longer description that is used to 'sell' a movement to it's
-            users.
-          example: >-
-            Flossing once a day has been shown to reduce almost any dental issue
-            and can greatly reduce risks for all kinds of diseases.
-        interval-days:
-          type: integer
-          description: >-
-            Amount of days in between which a follower of this movement is
-            expected to perform the action
-          example: 1
-        interval-weeks:
-          type: integer
-          description: >-
-            Amount of weeks in between which a follower of this movement is
-            expected to perform the action.
-          example: 0
-        interval-hours:
-          type: integer
-          description: >-
-            Amount of hours in between which a follower of this movement is
-            expected to perform the action.
-          example: 0
-        interval-months:
-          type: integer
-          description: >-
-            Amount of months in between which a follower of this movement is
-            expected to perform the action.
-    movement-with-subscribed:
-      title: Movement with subscription information
-      type: object
+      required: ["name", "short-description", "interval"]
       properties:
         name:
           type: string
@@ -340,11 +294,15 @@ components:
           type: boolean
           description: True if the user is subscribed to this movement.
           example: True
+        leaders:
+          type: array
+          items:
+            $ref: '#/components/schemas/user'
         short-description:
           type: string
           description: A comprehensive description of the movement
           example: Flossing once a day keeps the dentist away.
-        long-description:
+        description:
           type: string
           description: >-
             A much longer description that is used to 'sell' a movement to it's
@@ -352,29 +310,34 @@ components:
           example: >-
             Flossing once a day has been shown to reduce almost any dental issue
             and can greatly reduce risks for all kinds of diseases.
-        interval-days:
-          type: integer
-          description: >-
-            Amount of days in between which a follower of this movement is
-            expected to perform the action
-          example: 1
-        interval-weeks:
-          type: integer
-          description: >-
-            Amount of weeks in between which a follower of this movement is
-            expected to perform the action.
-          example: 0
-        interval-hours:
-          type: integer
-          description: >-
-            Amount of hours in between which a follower of this movement is
-            expected to perform the action.
-          example: 0
-        interval-months:
-          type: integer
-          description: >-
-            Amount of months in between which a follower of this movement is
-            expected to perform the action.
+        interval:
+          type: object
+          properties:
+            hours:
+              type: integer
+              description: >-
+                Amount of hours in between which a follower of this movement is
+                expected to perform the action.
+              example: 0
+            days:
+              type: integer
+              description: >-
+                Amount of days in between which a follower of this movement is
+                expected to perform the action
+              example: 1
+            weeks:
+              type: integer
+              description: >-
+                Amount of weeks in between which a follower of this movement is
+                expected to perform the action.
+                example: 0
+              example: 0
+            months:
+              type: integer
+              example: 0
+              description: >-
+                Amount of months in between which a follower of this movement is
+                expected to perform the action.
     user:
       title: User
       type: object
