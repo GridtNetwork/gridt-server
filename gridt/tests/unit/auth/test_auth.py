@@ -2,6 +2,7 @@ import sys
 import base64
 import logging
 import unittest
+import json
 
 from flask import current_app
 from flask_jwt import jwt_required
@@ -20,11 +21,19 @@ class AuthTest(BaseTest):
             @self.app.route("/test")
             @jwt_required()
             def test_route():
-                return ""
+                return "Hello World!"
 
             self.assertEqual(self.client.get("/test").status_code, 401)
+
             response = self.client.post(
                 "/auth",
                 headers={"Content-Type": "application/json"},
-                data={"username": "username", "password": "password"},
+                json={"username": "username", "password": "password"},
             )
+
+            data = json.loads(response.data)
+            token = data["access_token"]
+            resp = self.client.get("/test", headers={"Authorization": f"JWT {token}"})
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertEqual(resp.data, b"Hello World!")
