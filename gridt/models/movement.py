@@ -6,6 +6,7 @@ from sqlalchemy.ext.associationproxy import association_proxy
 from gridt.db import db
 
 from gridt.models.user import User
+from gridt.models.update import Update
 from gridt.models.movement_user_association import MovementUserAssociation
 
 
@@ -24,6 +25,7 @@ class Movement(db.Model):
     :Note: changes are only saved to the database when :func:`Movement.save_to_db` is called.
 
     :param str name: Name of the movement
+    :param datetime.timedelta interval: Interval in which the user is supposed to repeat the action.
     :param str short_description: Give a short description for your movement.
     :attribute str description: More elaborate description of your movement.
     :attribute users: All user that have been subscribed to this movement.
@@ -50,10 +52,11 @@ class Movement(db.Model):
         creator=lambda user: MovementUserAssociation(follower=user),
     )
 
-    def __init__(self, name, interval, short_description=None):
+    def __init__(self, name, interval, short_description=""):
         self.name = name
         self.interval = interval
         self.short_description = short_description
+        self.description = ""
 
     def save_to_db(self):
         """
@@ -175,3 +178,33 @@ class Movement(db.Model):
             if asso.follower == user:
                 asso.delete_from_db()
         self.users = list(filter(lambda u: u != user, self.users))
+
+    def dictify(self, user):
+        """
+        Return a dict version of this movement, ready for shipping to JSON.
+
+        :param user: The user that requests the information.
+        """
+        movement_dict = {
+            "name": self.name,
+            "short-description": self.short_description,
+            "description": self.description,
+            "interval": {
+                "days": self.interval.days,
+                "hours": self.interval.seconds // 3600,
+            },
+        }
+
+        movement_dict["subscribed"] = False
+        if user in self.users:
+            movement_dict["subscribed"] = True
+            movement_dict["leaders"] = [
+                {
+                    "username": user.username,
+                    "id": user.id,
+                    "last-update": str(Update.find_last(user, self).time_stamp) if Update.find_last(user, self) else None
+                }
+                for user in user.leaders(self)
+            ]
+
+        return movement_dict

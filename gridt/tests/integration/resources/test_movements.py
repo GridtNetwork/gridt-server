@@ -1,0 +1,112 @@
+import json
+from datetime import timedelta
+
+from gridt.tests.base_test import BaseTest
+from gridt.db import db
+from gridt.models.user import User
+from gridt.models.movement import Movement
+from gridt.models.movement import Update
+
+
+class MovementsTest(BaseTest):
+    def test_get(self):
+        with self.app_context():
+            # Create fake data
+            user = User("test1", "test@test.com", "pass")
+            user2 = User("test2", "test@test.com", "pass")
+            movement = Movement("test", timedelta(hours=2), "Hello")
+            movement2 = Movement("test", timedelta(days=2), "Hello")
+            db.session.add_all([user, user2, movement, movement2])
+            db.session.commit()
+
+            movement.add_user(user)
+            update = Update(user, movement)
+            update2 = Update(user, movement)
+            db.session.add_all([update, update2])
+            db.session.commit()
+
+            movement.add_user(user2)
+            movement2.add_user(user)
+
+            # To prevent sqlalchemy.orm.exc.DetachedInstanceError
+            stamp = str(update2.time_stamp)
+
+            token = self.obtain_token("test2", "pass")
+
+            # Check that the response matches expectation
+            resp = self.client.get(
+                "/movements", headers={"Authorization": f"JWT {token}"}
+            )
+
+            expected = [
+                {
+                    "description": "",
+                    "interval": {"days": 0, "hours": 2},
+                    "leaders": [{"id": 1, "last-update": stamp, "username": "test1"}],
+                    "name": "test",
+                    "short-description": "Hello",
+                    "subscribed": True,
+                },
+                {
+                    "description": "",
+                    "interval": {"days": 2, "hours": 0},
+                    "name": "test",
+                    "short-description": "Hello",
+                    "subscribed": False,
+                },
+            ]
+
+            self.assertEqual(json.loads(resp.data), expected)
+
+    def test_post_name_exists(self):
+        with self.app_context():
+            movement = Movement("mov", timedelta(days=1))
+            movement.save_to_db()
+            user = User("test1", "test@test.com", "pass")
+            user.save_to_db()
+
+            token = self.obtain_token("test1", "pass")
+
+            movement_dict = {
+                "name": "mov",
+                "short-description": "Hi",
+                "interval": {"days": 3, "hours": 0},
+            }
+            resp = self.client.post(
+                "/movements",
+                headers={"Authorization": f"JWT {token}"},
+                json=movement_dict,
+            )
+
+            self.assertEqual(resp.status_code, 400)
+            self.assertEqual(
+                json.loads(resp.data),
+                {"message": "Could not create movement, because it already exists."},
+            )
+
+    def test_post_sucessful(self):
+        with self.app_context():
+            user = User("test1", "test@test.com", "pass")
+            user.save_to_db()
+
+            token = self.obtain_token("test1", "pass")
+
+            movement_dict = {
+                "name": "mov",
+                "short-description": "Hi",
+                "interval": {"days": 3, "hours": 0},
+            }
+
+            resp = self.client.post(
+                "/movements",
+                headers={"Authorization": f"JWT {token}"},
+                json=movement_dict,
+            )
+
+            self.assertEqual(resp.status_code, 201)
+            self.assertEqual(json.loads(resp.data), {"message": "Sucessfully created the new movement."})
+
+            movement = Movement.find_by_name("mov")
+            self.assertIsNotNone(movement)
+            self.assertEqual(movement.interval, timedelta(days=3))
+            self.assertEqual(movement.short_description, "Hi")

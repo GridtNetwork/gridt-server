@@ -1,5 +1,6 @@
 import os
 import logging
+import json
 from unittest import TestCase
 
 from gridt.app import create_app
@@ -66,3 +67,14 @@ class BaseTest(LoggedTestCase):
         with self.app_context():
             db.session.remove()
             db.drop_all()
+
+    def obtain_token(self, username, password):
+        resp = self.client.post(
+            "/auth",
+            json={"username": username, "password": password},
+            headers={"Content-Type": "application/json"},
+        )
+        data = resp.data.decode("utf-8")
+        token = json.loads(data)["access_token"]
+
+        return token
