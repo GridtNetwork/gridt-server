@@ -25,7 +25,6 @@ class MovementsResource(Resource):
                 return {"message": res.errors["interval"]["_schema"][0]}, 400
             field = list(res.errors.keys())[0]
             return {"message": f"{field}: {res.errors[field][0]}"}, 400
-
         existing_movement = Movement.find_by_name(res.data["name"])
         if existing_movement:
             return (
@@ -40,3 +39,11 @@ class MovementsResource(Resource):
         )
         movement.save_to_db()
         return {"message": "Successfully created movement."}, 201
+
+
+class SubscriptionsResource(Resource):
+    @jwt_required()
+    def get(self):
+        movements = set(current_identity.movements)
+        movement_dicts = [movement.dictify(current_identity) for movement in movements]
+        return movement_dicts, 200

@@ -27,7 +27,7 @@ from gridt.models.movement import Movement
 
 from gridt.auth.security import authenticate, identify
 from gridt.resources.register import LoggedInResource, RegisterResource
-from gridt.resources.movements import MovementsResource
+from gridt.resources.movements import MovementsResource, SubscriptionsResource
 
 
 def create_app(overwrite_conf=None):
@@ -73,6 +73,7 @@ def create_app(overwrite_conf=None):
     api.add_resource(LoggedInResource, "/logged_in")
     api.add_resource(RegisterResource, "/register")
     api.add_resource(MovementsResource, "/movements")
+    api.add_resource(SubscriptionsResource, "/movements/subscriptions")
 
     JWT(app, authenticate, identify)
 
