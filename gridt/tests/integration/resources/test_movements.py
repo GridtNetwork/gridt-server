@@ -44,14 +44,14 @@ class MovementsTest(BaseTest):
                     "interval": {"days": 0, "hours": 2},
                     "leaders": [{"id": 1, "last-update": stamp, "username": "test1"}],
                     "name": "test",
-                    "short-description": "Hello",
+                    "short_description": "Hello",
                     "subscribed": True,
                 },
                 {
                     "description": "",
                     "interval": {"days": 2, "hours": 0},
                     "name": "test",
-                    "short-description": "Hello",
+                    "short_description": "Hello",
                     "subscribed": False,
                 },
             ]
@@ -60,7 +60,7 @@ class MovementsTest(BaseTest):
 
     def test_post_name_exists(self):
         with self.app_context():
-            movement = Movement("mov", timedelta(days=1))
+            movement = Movement("move", timedelta(days=1))
             movement.save_to_db()
             user = User("test1", "test@test.com", "pass")
             user.save_to_db()
@@ -68,8 +68,8 @@ class MovementsTest(BaseTest):
             token = self.obtain_token("test1", "pass")
 
             movement_dict = {
-                "name": "mov",
-                "short-description": "Hi",
+                "name": "move",
+                "short_description": "Hi, hello this is a test",
                 "interval": {"days": 3, "hours": 0},
             }
             resp = self.client.post(
@@ -78,11 +78,56 @@ class MovementsTest(BaseTest):
                 json=movement_dict,
             )
 
-            self.assertEqual(resp.status_code, 400)
             self.assertEqual(
                 json.loads(resp.data),
                 {"message": "Could not create movement, because it already exists."},
             )
+            self.assertEqual(resp.status_code, 400)
+
+    def test_interval_empty(self):
+        with self.app_context():
+            user = User("test1", "test@test.com", "pass")
+            user.save_to_db()
+
+            token = self.obtain_token("test1", "pass")
+
+            movement_dict = {
+                "name": "movement",
+                "short_description": "Hi, this is a test",
+                "interval": {"days": 0, "hours": 0},
+            }
+
+            resp = self.client.post(
+                "/movements",
+                headers={"Authorization": f"JWT {token}"},
+                json=movement_dict,
+            )
+
+            self.assertEqual(json.loads(resp.data), {"message": "Interval must be nonzero."})
+            self.assertEqual(resp.status_code, 400)
+
+    def test_name_empty(self):
+        with self.app_context():
+            user = User("test1", "test@test.com", "pass")
+            user.save_to_db()
+
+            token = self.obtain_token("test1", "pass")
+
+            movement_dict = {
+                "name": "",
+                "short_description": "Hi, hello this is a test",
+                "interval": {"days": 1, "hours": 0},
+            }
+
+            resp = self.client.post(
+                "/movements",
+                headers={"Authorization": f"JWT {token}"},
+                json=movement_dict,
+            )
+
+            self.assertEqual(json.loads(resp.data), {"message": "name: Length must be between 4 and 50."})
+            self.assertEqual(resp.status_code, 400)
+
 
     def test_post_sucessful(self):
         with self.app_context():
@@ -92,8 +137,8 @@ class MovementsTest(BaseTest):
             token = self.obtain_token("test1", "pass")
 
             movement_dict = {
-                "name": "mov",
-                "short-description": "Hi",
+                "name": "movement",
+                "short_description": "Hi, hello this is a test",
                 "interval": {"days": 3, "hours": 0},
             }
 
@@ -103,10 +148,10 @@ class MovementsTest(BaseTest):
                 json=movement_dict,
             )
 
+            self.assertEqual(json.loads(resp.data), {"message": "Successfully created movement."})
             self.assertEqual(resp.status_code, 201)
-            self.assertEqual(json.loads(resp.data), {"message": "Sucessfully created the new movement."})
 
-            movement = Movement.find_by_name("mov")
+            movement = Movement.find_by_name("movement")
             self.assertIsNotNone(movement)
             self.assertEqual(movement.interval, timedelta(days=3))
-            self.assertEqual(movement.short_description, "Hi")
+            self.assertEqual(movement.short_description, "Hi, hello this is a test")

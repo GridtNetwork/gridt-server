@@ -43,7 +43,7 @@ class MovementTest(BaseTest):
 
             expected = {
                 "name": "flossing",
-                "short-description": "Hi",
+                "short_description": "Hi",
                 "description": "A long description",
                 "subscribed": True,
                 "interval": {
@@ -76,7 +76,7 @@ class MovementTest(BaseTest):
 
             expected = {
                 "name": "flossing",
-                "short-description": "",
+                "short_description": "",
                 "description": "",
                 "subscribed": False,
                 "interval": {

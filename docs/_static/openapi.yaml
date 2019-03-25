@@ -85,8 +85,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/movements'
-        401:
-          $ref: '#/components/responses/UnauthorizedError'
     post:
       summary: Create a new movement
       responses:
@@ -97,11 +95,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/message'
         400:
-          description: Could not create movement, because it already exists.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/message'
+            description: Interval must be nonzero. Or: Could not create movement, because it already exists.
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/message'
         401:
           $ref: '#/components/responses/UnauthorizedError'
       requestBody:
@@ -284,21 +282,25 @@ components:
     movement:
       title: Basic movement
       type: object
-      required: ["name", "short-description", "interval"]
+      required: ["name", "short_description", "interval"]
       properties:
         name:
           type: string
           description: Name of the movement
+          minLength: 4
+          maxLength: 50
           example: flossing
         subscribed:
           type: boolean
           description: True if the user is subscribed to this movement.
+          minLength: 10
+          maxLength: 100
           example: True
         leaders:
           type: array
           items:
             $ref: '#/components/schemas/user'
-        short-description:
+        short_description:
           type: string
           description: A comprehensive description of the movement
           example: Flossing once a day keeps the dentist away.
@@ -312,6 +314,7 @@ components:
             and can greatly reduce risks for all kinds of diseases.
         interval:
           type: object
+          required: ["days", "hours"]
           properties:
             hours:
               type: integer
@@ -350,11 +353,11 @@ components:
           type: string
           description: The user's username
           example: robin
-        last-update:
+        last_update:
           type: object
           description: This is the last update that the user has given in this movement.
           properties:
-            time-stamp:
+            time_stamp:
               type: string
               description: Date time of the last update of the user.
     userId:
