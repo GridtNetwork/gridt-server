@@ -83,13 +83,13 @@ class Movement(db.Model):
         return cls.query.filter_by(name=name).one_or_none()
 
     @classmethod
-    def find_by_id(cls, id_):
+    def find_by_id(cls, identifier):
         """
         Find a movement by it's id.
-        :param id_: Id of movement that is being queried.
+        :param identifier: Id of movement that is being queried.
         :rtype: None or gridt.models.movement.Movement
         """
-        return cls.query.get(id_)
+        return cls.query.get(identifier)
 
     def _find_possible_leaders_ids(self, user, exclude=None):
         """

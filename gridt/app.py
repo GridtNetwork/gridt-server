@@ -31,6 +31,7 @@ from gridt.resources.movements import (
     MovementsResource,
     SubscriptionsResource,
     SingleMovementResource,
+    SubscribeResource,
 )
 
 
@@ -79,6 +80,7 @@ def create_app(overwrite_conf=None):
     api.add_resource(MovementsResource, "/movements")
     api.add_resource(SingleMovementResource, "/movements/<identifier>")
     api.add_resource(SubscriptionsResource, "/movements/subscriptions")
+    api.add_resource(SubscribeResource, "/movements/<identifier>/subscriber")
 
     JWT(app, authenticate, identify)
 

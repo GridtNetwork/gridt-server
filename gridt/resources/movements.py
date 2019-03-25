@@ -1,11 +1,25 @@
 from datetime import timedelta
 
 from flask import current_app, request
-from flask_restful import Resource
+from flask_restful import Resource, abort
 from flask_jwt import jwt_required, current_identity
 
 from gridt.schemas import MovementSchema
 from gridt.models.movement import Movement
+
+
+def get_movement(identifier):
+    movement = None
+    try:
+        identifier = int(identifier)
+        movement = Movement.find_by_id(identifier)
+    except ValueError:
+        movement = Movement.find_by_name(identifier)
+
+    if not movement:
+        # return {"message": "This movement does not exist."}, 404
+        abort(404, message="This movement does not exist.")
+    return movement
 
 
 class MovementsResource(Resource):
@@ -54,13 +68,22 @@ class SubscriptionsResource(Resource):
 class SingleMovementResource(Resource):
     @jwt_required()
     def get(self, identifier):
-        movement = None
-        try:
-            identifier = int(identifier)
-            movement = Movement.find_by_id(identifier)
-        except ValueError:
-            movement = Movement.find_by_name(identifier)
+        movement = get_movement(identifier)
 
-        if not movement:
-            return {"message": "This movement does not exist."}, 404
         return movement.dictify(current_identity), 200
+
+
+class SubscribeResource(Resource):
+    @jwt_required()
+    def put(self, identifier):
+        movement = get_movement(identifier)
+        if not current_identity in movement.users:
+            movement.add_user(current_identity)
+        return {"message": "Successfully subscribed to this movement."}, 200
+
+    @jwt_required()
+    def delete(self, identifier):
+        movement = get_movement(identifier)
+        if current_identity in movement.users:
+            movement.remove_user(current_identity)
+        return {"message": "Successfully unsubscribed from this movement."}, 200

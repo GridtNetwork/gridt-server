@@ -215,3 +215,132 @@ class MovementsTest(BaseTest):
             self.assertEqual(
                 json.loads(resp2.data), {"message": "This movement does not exist."}
             )
+
+    def test_subscribe(self):
+        with self.app_context():
+            user = User("test1", "test@test.com", "pass")
+            user.save_to_db()
+            movement = Movement("Flossing", timedelta(days=2), "Hello")
+            movement.save_to_db()
+
+            token = self.obtain_token("test1", "pass")
+
+            resp = self.client.put(
+                "/movements/Flossing/subscriber",
+                headers={"Authorization": f"JWT {token}"},
+            )
+
+        # Using self.client will call db.session.commit(), this will close the
+        # current session. We will have to create a new one and load the
+        # movement and the user again.
+        with self.app_context():
+            user = User.find_by_id(1)
+            movement = Movement.find_by_id(1)
+            self.assertEqual(resp.status_code, 200)
+            self.assertEqual(
+                json.loads(resp.data),
+                {"message": "Successfully subscribed to this movement."},
+            )
+
+            self.assertTrue(user in movement.users)
+            self.assertTrue(movement in user.movements)
+
+            # Do it twice, should not change anything.
+            resp = self.client.put(
+                "/movements/Flossing/subscriber",
+                headers={"Authorization": f"JWT {token}"},
+            )
+            self.assertEqual(resp.status_code, 200)
+            self.assertEqual(
+                json.loads(resp.data),
+                {"message": "Successfully subscribed to this movement."},
+            )
+
+            self.assertTrue(user in movement.users)
+            self.assertTrue(movement in user.movements)
+
+    def test_subscribe_non_existing(self):
+        with self.app_context():
+            user = User("test1", "test@test.com", "pass")
+            user.save_to_db()
+
+            token = self.obtain_token("test1", "pass")
+
+            resp = self.client.put(
+                "/movements/Flossing/subscriber",
+                headers={"Authorization": f"JWT {token}"},
+            )
+            self.assertEqual(resp.status_code, 404)
+            self.assertEqual(
+                json.loads(resp.data), {"message": "This movement does not exist."}
+            )
+
+    def test_unsubscribe(self):
+        with self.app_context():
+            user = User("test1", "test@test.com", "pass")
+            user.save_to_db()
+            movement = Movement("Flossing", timedelta(days=2), "Hello")
+            movement.save_to_db()
+            movement.add_user(user)
+
+            # To prevent sqlalchemy.orm.exc.DetachedInstanceError
+            users = movement.users
+            movements = user.movements
+
+            token = self.obtain_token("test1", "pass")
+
+            resp = self.client.delete(
+                "/movements/Flossing/subscriber",
+                headers={"Authorization": f"JWT {token}"},
+            )
+
+        # Using self.client will call db.session.commit(), this will close the
+        # current session. We will have to create a new one and load the
+        # movement and the user again.
+        with self.app_context():
+            user = User.find_by_id(1)
+            movement = Movement.find_by_id(1)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertEqual(
+                json.loads(resp.data),
+                {"message": "Successfully unsubscribed from this movement."},
+            )
+
+            self.assertTrue(not user in movement.users)
+            self.assertTrue(not movement in user.movements)
+
+            # Do it twice, should not change anything.
+            resp = self.client.delete(
+                "/movements/Flossing/subscriber",
+                headers={"Authorization": f"JWT {token}"},
+            )
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertEqual(
+                json.loads(resp.data),
+                {"message": "Successfully unsubscribed from this movement."},
+            )
+
+        with self.app_context():
+            user = User.find_by_id(1)
+            movement = Movement.find_by_id(1)
+
+            self.assertTrue(not user in movement.users)
+            self.assertTrue(not movement in user.movements)
+
+    def test_unsubscribe_non_existing(self):
+        with self.app_context():
+            user = User("test1", "test@test.com", "pass")
+            user.save_to_db()
+
+            token = self.obtain_token("test1", "pass")
+
+            resp = self.client.delete(
+                "/movements/Flossing/subscriber",
+                headers={"Authorization": f"JWT {token}"},
+            )
+            self.assertEqual(resp.status_code, 404)
+            self.assertEqual(
+                json.loads(resp.data), {"message": "This movement does not exist."}
+            )
