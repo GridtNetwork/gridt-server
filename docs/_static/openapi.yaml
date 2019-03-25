@@ -140,12 +140,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/movement'
-        400:
-          description: Movement id does not exist.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/message'
+        404:
+            $ref: '#/components/responses/MovementNotFoundError'
         401:
           $ref: '#/components/responses/UnauthorizedError'
   /movements/{movementId}/subscriber:
@@ -161,12 +157,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/message'
-        400:
-          description: This movement does not exist.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/message'
+        404:
+            $ref: '#/components/responses/MovementNotFoundError'
         401:
           $ref: '#/components/responses/UnauthorizedError'
     delete:
@@ -181,12 +173,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/message'
-        400:
-          description: This movement does not exist.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/message'
+        404:
+          $ref: '#/components/responses/MovementNotFoundError'
         401:
           $ref: '#/components/responses/UnauthorizedError'
   /movements/{movementId}/leaders/{userId}/:
@@ -243,6 +231,12 @@ components:
   responses:
     UnauthorizedError:
       description: Access token is missing or invalid
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/message'
+    MovementNotFoundError:
+      description: This movement does not exist.
       content:
         application/json:
           schema:

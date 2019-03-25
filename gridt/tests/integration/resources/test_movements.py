@@ -173,18 +173,45 @@ class MovementsTest(BaseTest):
 
             token = self.obtain_token("test1", "pass")
 
-            resp1 = self.client.get('/movements/Flossing')
-            resp2 = self.client.get('/movements/1')
+            resp1 = self.client.get(
+                "/movements/Flossing", headers={"Authorization": f"JWT {token}"}
+            )
+            resp2 = self.client.get(
+                "/movements/1", headers={"Authorization": f"JWT {token}"}
+            )
             expected = {
                 "id": 1,
                 "name": "Flossing",
                 "short_description": "Hello",
                 "description": "",
                 "interval": {"days": 2, "hours": 0},
-                "subscribed": False
+                "subscribed": False,
             }
-            self.assertEqual(resp.data, expected)
+            self.assertEqual(json.loads(resp1.data), expected)
+            self.assertEqual(json.loads(resp2.data), expected)
+            self.assertEqual(resp1.status_code, 200)
+            self.assertEqual(resp2.status_code, 200)
 
-    def test_single_movement_by_id(self):
-        pass
+    def test_single_movement_non_existing(self):
+        with self.app_context():
+            user = User("test1", "test@test.com", "pass")
+            user.save_to_db()
 
+            token = self.obtain_token("test1", "pass")
+
+            resp1 = self.client.get(
+                "/movements/Flossing", headers={"Authorization": f"JWT {token}"}
+            )
+            resp2 = self.client.get(
+                "/movements/1", headers={"Authorization": f"JWT {token}"}
+            )
+
+            self.assertEqual(resp1.status_code, 404)
+            self.assertEqual(resp2.status_code, 404)
+
+            self.assertEqual(
+                json.loads(resp1.data), {"message": "This movement does not exist."}
+            )
+            self.assertEqual(
+                json.loads(resp2.data), {"message": "This movement does not exist."}
+            )

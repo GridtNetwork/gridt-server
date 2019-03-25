@@ -49,3 +49,18 @@ class SubscriptionsResource(Resource):
         movements = set(current_identity.movements)
         movement_dicts = [movement.dictify(current_identity) for movement in movements]
         return movement_dicts, 200
+
+
+class SingleMovementResource(Resource):
+    @jwt_required()
+    def get(self, identifier):
+        movement = None
+        try:
+            identifier = int(identifier)
+            movement = Movement.find_by_id(identifier)
+        except ValueError:
+            movement = Movement.find_by_name(identifier)
+
+        if not movement:
+            return {"message": "This movement does not exist."}, 404
+        return movement.dictify(current_identity), 200
