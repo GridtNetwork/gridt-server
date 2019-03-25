@@ -186,6 +186,7 @@ class Movement(db.Model):
         """
         movement_dict = {
             "name": self.name,
+            "id": self.id,
             "short_description": self.short_description,
             "description": self.description,
             "interval": {

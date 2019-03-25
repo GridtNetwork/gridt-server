@@ -40,6 +40,7 @@ class MovementsTest(BaseTest):
 
             expected = [
                 {
+                    "id": 1,
                     "description": "",
                     "interval": {"days": 0, "hours": 2},
                     "leaders": [{"id": 1, "last-update": stamp, "username": "test1"}],
@@ -48,6 +49,7 @@ class MovementsTest(BaseTest):
                     "subscribed": True,
                 },
                 {
+                    "id": 2,
                     "description": "",
                     "interval": {"days": 2, "hours": 0},
                     "name": "test",
@@ -161,3 +163,28 @@ class MovementsTest(BaseTest):
             self.assertIsNotNone(movement)
             self.assertEqual(movement.interval, timedelta(days=3))
             self.assertEqual(movement.short_description, "Hi, hello this is a test")
+
+    def test_single_movement_by_name(self):
+        with self.app_context():
+            user = User("test1", "test@test.com", "pass")
+            user.save_to_db()
+            movement = Movement("Flossing", timedelta(days=2), "Hello")
+            movement.save_to_db()
+
+            token = self.obtain_token("test1", "pass")
+
+            resp1 = self.client.get('/movements/Flossing')
+            resp2 = self.client.get('/movements/1')
+            expected = {
+                "id": 1,
+                "name": "Flossing",
+                "short_description": "Hello",
+                "description": "",
+                "interval": {"days": 2, "hours": 0},
+                "subscribed": False
+            }
+            self.assertEqual(resp.data, expected)
+
+    def test_single_movement_by_id(self):
+        pass
+

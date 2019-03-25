@@ -43,6 +43,7 @@ class SubscriptionsResourceTest(BaseTest):
 
             expected = [
                 {
+                    "id": 1,
                     "description": "",
                     "interval": {"days": 0, "hours": 2},
                     "leaders": [{"id": 1, "last-update": stamp, "username": "test1"}],

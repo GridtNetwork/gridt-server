@@ -42,6 +42,7 @@ class MovementTest(BaseTest):
             db.session.commit()
 
             expected = {
+                "id": 1,
                 "name": "flossing",
                 "short_description": "Hi",
                 "description": "A long description",
@@ -73,10 +74,10 @@ class MovementTest(BaseTest):
 
             expected = {
                 "name": "flossing",
+                "id": 1,
                 "short_description": "",
                 "description": "",
                 "subscribed": False,
                 "interval": {"days": 2, "hours": 0},
             }
-
             self.assertEqual(movement.dictify(user2), expected)
