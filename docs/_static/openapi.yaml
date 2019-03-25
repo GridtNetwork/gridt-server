@@ -95,7 +95,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/message'
         400:
-            description: Interval must be nonzero. Or: Could not create movement, because it already exists.
+            description: >-
+              Interval must be nonzero. Or: Could not create movement, because it already exists.
             content:
                 application/json:
                     schema:
