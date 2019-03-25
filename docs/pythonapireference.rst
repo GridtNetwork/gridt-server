@@ -12,6 +12,6 @@ Models
 .. automodule:: gridt.models.movement
    :members:
    :show-inheritance:
-.. automodule:: gridt.models.updates
+.. automodule:: gridt.models.update
    :members:
    :show-inheritance:
