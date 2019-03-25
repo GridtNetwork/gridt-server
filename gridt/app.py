@@ -65,7 +65,7 @@ def create_app(overwrite_conf=None):
     app.logger.info(f"Starting flask with {config_name} config.")
 
     db.init_app(app)
-    if app.config.get('FLASK_DEBUG', True):
+    if app.config.get("FLASK_DEBUG", True):
         with app.app_context():
             db.create_all()
 
@@ -77,7 +77,7 @@ def create_app(overwrite_conf=None):
 
     JWT(app, authenticate, identify)
 
-    @app.cli.command('initdb')
+    @app.cli.command("initdb")
     def initialize_database():
         """
         Initialize the database.
@@ -89,18 +89,18 @@ def create_app(overwrite_conf=None):
         )
         db.create_all()
 
-    @app.cli.command('insert-test-data')
+    @app.cli.command("insert-test-data")
     def insert_test_data():
         """
         Insert test data into the database.
 
         Current dataset is very limited.
         """
-        movement = Movement('test', timedelta(days=2))
+        movement = Movement("test", timedelta(days=2))
         movement.save_to_db()
 
-    @app.cli.command('delete-movement')
-    @click.argument('movement_name')
+    @app.cli.command("delete-movement")
+    @click.argument("movement_name")
     def delete_movement(movement_name):
         """ Delete a movement from the database. """
         movement = Movement.find_by_name(movement_name)
@@ -108,10 +108,12 @@ def create_app(overwrite_conf=None):
             app.logger.error(f"Could not find movement with name '{movement_name}.'")
             return 1
 
-        q = 'neither'
-        while not q in ['', 'y', 'n', 'Y', 'N', 'yes', 'no']:
-            q = input(f"Do you really want to delete the movement with name '{movement_name}'? [y/N]")
-        if q in ['', 'n', 'N', 'no']:
+        q = "neither"
+        while not q in ["", "y", "n", "Y", "N", "yes", "no"]:
+            q = input(
+                f"Do you really want to delete the movement with name '{movement_name}'? [y/N]"
+            )
+        if q in ["", "n", "N", "no"]:
             return
 
         movement.delete_from_db()

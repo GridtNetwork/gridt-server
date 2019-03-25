@@ -201,7 +201,9 @@ class Movement(db.Model):
                 {
                     "username": user.username,
                     "id": user.id,
-                    "last-update": str(Update.find_last(user, self).time_stamp) if Update.find_last(user, self) else None
+                    "last-update": str(Update.find_last(user, self).time_stamp)
+                    if Update.find_last(user, self)
+                    else None,
                 }
                 for user in user.leaders(self)
             ]

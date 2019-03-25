@@ -103,7 +103,9 @@ class MovementsTest(BaseTest):
                 json=movement_dict,
             )
 
-            self.assertEqual(json.loads(resp.data), {"message": "Interval must be nonzero."})
+            self.assertEqual(
+                json.loads(resp.data), {"message": "Interval must be nonzero."}
+            )
             self.assertEqual(resp.status_code, 400)
 
     def test_name_empty(self):
@@ -125,9 +127,11 @@ class MovementsTest(BaseTest):
                 json=movement_dict,
             )
 
-            self.assertEqual(json.loads(resp.data), {"message": "name: Length must be between 4 and 50."})
+            self.assertEqual(
+                json.loads(resp.data),
+                {"message": "name: Length must be between 4 and 50."},
+            )
             self.assertEqual(resp.status_code, 400)
-
 
     def test_post_sucessful(self):
         with self.app_context():
@@ -148,7 +152,9 @@ class MovementsTest(BaseTest):
                 json=movement_dict,
             )
 
-            self.assertEqual(json.loads(resp.data), {"message": "Successfully created movement."})
+            self.assertEqual(
+                json.loads(resp.data), {"message": "Successfully created movement."}
+            )
             self.assertEqual(resp.status_code, 201)
 
             movement = Movement.find_by_name("movement")

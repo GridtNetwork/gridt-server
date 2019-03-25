@@ -27,10 +27,11 @@ class Update(db.Model):
 
     @classmethod
     def find_last(cls, user, movement):
-       return cls.query \
-               .filter_by(leader=user, movement=movement) \
-               .order_by(desc('time_stamp')) \
-               .first()
+        return (
+            cls.query.filter_by(leader=user, movement=movement)
+            .order_by(desc("time_stamp"))
+            .first()
+        )
 
     def _get_now(self):
         return datetime.now()

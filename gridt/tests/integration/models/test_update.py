@@ -9,7 +9,7 @@ from gridt.models.movement import Movement
 
 
 class UpdateTest(BaseTest):
-    @patch('gridt.models.update.Update._get_now', return_value=datetime.now())
+    @patch("gridt.models.update.Update._get_now", return_value=datetime.now())
     def test_crud(self, now):
         with self.app_context():
             user = User("username", "test@test.com", "password")

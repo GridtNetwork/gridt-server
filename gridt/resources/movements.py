@@ -34,7 +34,9 @@ class MovementsResource(Resource):
 
         movement = Movement(
             res.data["name"],
-            timedelta(days=res.data["interval"]["days"], hours=res.data["interval"]["hours"]),
+            timedelta(
+                days=res.data["interval"]["days"], hours=res.data["interval"]["hours"]
+            ),
             short_description=res.data["short_description"],
         )
         movement.save_to_db()

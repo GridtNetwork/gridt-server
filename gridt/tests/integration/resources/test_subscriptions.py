@@ -7,6 +7,7 @@ from gridt.models.user import User
 from gridt.models.movement import Movement
 from gridt.models.movement import Update
 
+
 class SubscriptionsResourceTest(BaseTest):
     def test_get(self):
         with self.app_context():
@@ -17,7 +18,6 @@ class SubscriptionsResourceTest(BaseTest):
             movement2 = Movement("movement2", timedelta(days=2), "Hello")
             db.session.add_all([user, user2, movement, movement2])
             db.session.commit()
-
 
             # User test1 subscribes to movement1 and does an update
             movement.add_user(user)
@@ -49,7 +49,7 @@ class SubscriptionsResourceTest(BaseTest):
                     "name": "movement1",
                     "short_description": "Hello",
                     "subscribed": True,
-                },
+                }
             ]
             data = json.loads(resp.data)
             self.assertEqual(data, expected)

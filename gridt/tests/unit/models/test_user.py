@@ -44,6 +44,4 @@ class UserTest(BaseTest):
             movement.add_user(user3)
             movement.add_user(user4)
 
-            self.assertEqual(
-                set(user4.leaders(movement)), set([user1, user2, user3])
-            )
+            self.assertEqual(set(user4.leaders(movement)), set([user1, user2, user3]))
