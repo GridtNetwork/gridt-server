@@ -32,6 +32,9 @@ from gridt.resources.movements import (
     SubscriptionsResource,
     SingleMovementResource,
     SubscribeResource,
+    SwapLeaderResource,
+    FindLeaderResource,
+    NewUpdateResource,
 )
 
 
@@ -80,7 +83,10 @@ def create_app(overwrite_conf=None):
     api.add_resource(MovementsResource, "/movements")
     api.add_resource(SingleMovementResource, "/movements/<identifier>")
     api.add_resource(SubscriptionsResource, "/movements/subscriptions")
-    api.add_resource(SubscribeResource, "/movements/<identifier>/subscriber")
+    api.add_resource(SubscribeResource, "/movements/<movement_id>/subscriber")
+    api.add_resource(FindLeaderResource, "/movements/<movement_id>/leader")
+    api.add_resource(SwapLeaderResource, "/movements/<movement_id>/leader/<leader_id>")
+    api.add_resource(NewUpdateResource, "/movements/<movement_id>/update")
 
     JWT(app, authenticate, identify)
 

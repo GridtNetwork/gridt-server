@@ -1,5 +1,6 @@
 import json
-from datetime import timedelta
+from unittest.mock import patch
+from datetime import timedelta, datetime
 
 from gridt.tests.base_test import BaseTest
 from gridt.db import db
@@ -43,7 +44,7 @@ class MovementsTest(BaseTest):
                     "id": 1,
                     "description": "",
                     "interval": {"days": 0, "hours": 2},
-                    "leaders": [{"id": 1, "last-update": stamp, "username": "test1"}],
+                    "leaders": [{"id": 1, "last_update": stamp, "username": "test1"}],
                     "name": "test",
                     "short_description": "Hello",
                     "subscribed": True,
@@ -216,6 +217,8 @@ class MovementsTest(BaseTest):
                 json.loads(resp2.data), {"message": "This movement does not exist."}
             )
 
+
+class SubscribeTest(BaseTest):
     def test_subscribe(self):
         with self.app_context():
             user = User("test1", "test@test.com", "pass")
@@ -343,4 +346,239 @@ class MovementsTest(BaseTest):
             self.assertEqual(resp.status_code, 404)
             self.assertEqual(
                 json.loads(resp.data), {"message": "This movement does not exist."}
+            )
+
+
+class SwapTest(BaseTest):
+    def test_swap_leader(self):
+        with self.app_context():
+            movement = Movement("Flossing", timedelta(days=1), "Hi")
+            movement.save_to_db()
+
+            user1 = User("test1", "test@test.com", "pass")
+            user1.save_to_db()
+            user2 = User("test2", "test@test.com", "pass")
+            user2.save_to_db()
+            user3 = User("test3", "test@test.com", "pass")
+            user3.save_to_db()
+
+            update = Update(user3, movement)
+            time_stamp = update.time_stamp
+            update.save_to_db()
+
+            movement.add_user(user1)
+            movement.add_user(user2)
+            movement.add_user(user3)
+
+            token = self.obtain_token("test2", "pass")
+
+            resp = self.client.post(
+                "/movements/Flossing/leader/1",
+                headers={"Authorization": f"JWT {token}"},
+            )
+
+            expected = {"id": 3, "username": "test3", "last_update": str(time_stamp)}
+            self.assertEqual(json.loads(resp.data), expected)
+
+            token = self.obtain_token("test1", "pass")
+
+            resp = self.client.post(
+                "/movements/Flossing/leader", headers={"Authorization": f"JWT {token}"}
+            )
+
+    def test_swap_leader_movement_nonexistant(self):
+        with self.app_context():
+            user1 = User("test1", "test@test.com", "pass")
+            user1.save_to_db()
+
+            token = self.obtain_token("test1", "pass")
+
+            resp = self.client.post(
+                "/movements/Flossing/leader/2",
+                headers={"Authorization": f"JWT {token}"},
+            )
+
+            self.assertEqual(resp.status_code, 404)
+            self.assertEqual(
+                json.loads(resp.data), {"message": "This movement does not exist."}
+            )
+
+    def test_swap_leader_movement_not_subscribed(self):
+        with self.app_context():
+            movement = Movement("Flossing", timedelta(days=2), "Hi")
+            movement.save_to_db()
+            user1 = User("test1", "test@test.com", "pass")
+            user1.save_to_db()
+
+            token = self.obtain_token("test1", "pass")
+
+            resp = self.client.post(
+                "/movements/Flossing/leader/1",
+                headers={"Authorization": f"JWT {token}"},
+            )
+
+            self.assertEqual(resp.status_code, 400)
+            self.assertEqual(
+                json.loads(resp.data),
+                {"message": "User is not subscribed to this movement."},
+            )
+
+    def test_swap_leader_not_leader(self):
+        with self.app_context():
+            movement = Movement("Flossing", timedelta(days=2), "Hi")
+            movement.save_to_db()
+            user1 = User("test1", "test@test.com", "pass")
+            user1.save_to_db()
+            user2 = User("test2", "test@test.com", "pass")
+            user2.save_to_db()
+            movement.add_user(user1)
+
+            token = self.obtain_token("test1", "pass")
+
+            resp = self.client.post(
+                "/movements/Flossing/leader/2",
+                headers={"Authorization": f"JWT {token}"},
+            )
+
+            self.assertEqual(resp.status_code, 400)
+            self.assertEqual(
+                json.loads(resp.data), {"message": "User is not following this leader."}
+            )
+
+
+class NewLeaderTest(BaseTest):
+    def test_find_leader(self):
+        with self.app_context():
+            movement = Movement("Flossing", timedelta(days=2), "Hi")
+            movement.save_to_db()
+            user1 = User("test1", "test@test.com", "pass")
+            user1.save_to_db()
+            user2 = User("test2", "test@test.com", "pass")
+            user2.save_to_db()
+
+            movement.add_user(user1)
+            movement.add_user(user2)
+
+            token = self.obtain_token("test1", "pass")
+
+            resp = self.client.post(
+                "/movements/Flossing/leader", headers={"Authorization": f"JWT {token}"}
+            )
+
+            expected = {"id": 1, "username": "test1", "last_update": None}
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertEqual(json.loads(resp.data), expected)
+
+    def test_find_leader_no_empty(self):
+        with self.app_context():
+            movement = Movement("Flossing", timedelta(days=2), "Hi")
+            movement.save_to_db()
+            user1 = User("test1", "test@test.com", "pass")
+            user1.save_to_db()
+            user2 = User("test2", "test@test.com", "pass")
+            user3 = User("test3", "test@test.com", "pass")
+            user4 = User("test4", "test@test.com", "pass")
+            user5 = User("test5", "test@test.com", "pass")
+            db.session.add_all([user2, user3, user4, user5])
+
+            movement.add_user(user1)
+            movement.add_user(user2)
+            movement.add_user(user3)
+            movement.add_user(user4)
+            movement.add_user(user5)
+
+            token = self.obtain_token("test1", "pass")
+
+            resp = self.client.post(
+                "/movements/Flossing/leader", headers={"Authorization": f"JWT {token}"}
+            )
+
+            expected = {"message": "This user has no more space for more leaders."}
+
+            self.assertEqual(resp.status_code, 400)
+            self.assertEqual(json.loads(resp.data), expected)
+
+    def test_find_leader_no_leader(self):
+        with self.app_context():
+            movement = Movement("Flossing", timedelta(days=2), "Hi")
+            movement.save_to_db()
+            user1 = User("test1", "test@test.com", "pass")
+            user1.save_to_db()
+            movement.add_user(user1)
+
+            token = self.obtain_token("test1", "pass")
+
+            resp = self.client.post(
+                "/movements/Flossing/leader", headers={"Authorization": f"JWT {token}"}
+            )
+
+            expected = {"message": "No leader found."}
+
+            self.assertEqual(resp.status_code, 500)
+            self.assertEqual(json.loads(resp.data), expected)
+
+
+class NewUpdateTest(BaseTest):
+    @patch("gridt.models.update.Update._get_now", return_value=datetime(1996, 3, 15))
+    def test_create_new_update(self, func):
+        with self.app_context():
+            movement = Movement("Flossing", timedelta(days=2), "Hi")
+            movement.save_to_db()
+            user = User("test1", "test@test.com", "pass")
+            user.save_to_db()
+
+            movement.add_user(user)
+
+            token = self.obtain_token("test1", "pass")
+
+            resp = self.client.post(
+                "/movements/Flossing/update", headers={"Authorization": f"JWT {token}"}
+            )
+
+            self.assertEqual(
+                json.loads(resp.data), {"message": "Successfully created update."}
+            )
+            self.assertEqual(resp.status_code, 200)
+
+        with self.app_context():
+            user = User.find_by_id(1)
+            movement = Movement.find_by_id(1)
+            self.assertEqual(
+                Update.find_last(user, movement).time_stamp, datetime(1996, 3, 15)
+            )
+
+    def test_movement_nonexistant(self):
+        with self.app_context():
+            user = User("test1", "test@test.com", "pass")
+            user.save_to_db()
+
+            token = self.obtain_token("test1", "pass")
+
+            resp = self.client.post(
+                "/movements/Flossing/update", headers={"Authorization": f"JWT {token}"}
+            )
+
+            self.assertEqual(resp.status_code, 404)
+            self.assertEqual(
+                json.loads(resp.data), {"message": "This movement does not exist."}
+            )
+
+    def test_movement_not_subscribed(self):
+        with self.app_context():
+            movement = Movement("Flossing", timedelta(days=2))
+            movement.save_to_db()
+            user = User("test1", "test@test.com", "pass")
+            user.save_to_db()
+
+            token = self.obtain_token("test1", "pass")
+
+            resp = self.client.post(
+                "/movements/Flossing/update", headers={"Authorization": f"JWT {token}"}
+            )
+
+            self.assertEqual(resp.status_code, 400)
+            self.assertEqual(
+                json.loads(resp.data),
+                {"message": "User is not subscribed to this movement."},
             )

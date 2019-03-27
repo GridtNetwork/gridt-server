@@ -119,7 +119,7 @@ class Movement(db.Model):
         ]
 
         if exclude:
-
+            exclude_ids = []
             if type(exclude[0]) == int:
                 exclude_ids = exclude
             if type(exclude[0]) == type(user):
@@ -137,24 +137,23 @@ class Movement(db.Model):
 
         :param user: User who's leader will be swapped.
         :param leader: The leader that will be swapped.
-        :return: True if successful, False if unsuccesful.
-        :rtype bool:
+        :return: New leader or None
         """
         # We can not change someone's leader if they are not already following that leader.
         if leader and leader not in user.leaders(self):
-            return False
+            return None
 
         # If there is no other possible leaders than we can't perform the swap.
         possible_leaders = self._find_possible_leaders_ids(user, user.leaders(self))
         if not possible_leaders:
-            return False
+            return None
 
         new_leader = User.find_by_id(random.choice(possible_leaders))
         for association in user.follower_associations:
             if association.leader == leader:
                 association.leader = new_leader
 
-        return True
+        return new_leader
 
     def add_user(self, user):
         """
@@ -187,6 +186,28 @@ class Movement(db.Model):
                 asso.delete_from_db()
         self.users = list(filter(lambda u: u != user, self.users))
 
+    def add_leader(self, user, leader):
+        """
+        Give this user a new leader.
+        :param user: User to be given a new leader.
+        :param leader: Leader that is to be given to the user.
+        """
+        if len(user.leaders(self)) == 4:
+            raise ValueError(
+                "User can not have more than four leaders."
+            )  # TODO: find a better error for this.
+
+        def empty_leader_in_movement(association):
+            if not association.leader and association.movement is self:
+                return association
+
+        empty_associations = list(
+            filter(empty_leader_in_movement, user.follower_associations)
+        )
+        empty_associations[0].leader = leader
+        db.session.add(empty_associations[0])
+        db.session.commit()
+
     def dictify(self, user):
         """
         Return a dict version of this movement, ready for shipping to JSON.
@@ -211,7 +232,7 @@ class Movement(db.Model):
                 {
                     "username": user.username,
                     "id": user.id,
-                    "last-update": str(Update.find_last(user, self).time_stamp)
+                    "last_update": str(Update.find_last(user, self).time_stamp)
                     if Update.find_last(user, self)
                     else None,
                 }

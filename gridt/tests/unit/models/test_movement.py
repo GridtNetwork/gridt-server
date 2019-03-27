@@ -52,7 +52,7 @@ class MovementTest(BaseTest):
                     {
                         "id": 1,
                         "username": "test1",
-                        "last-update": str(datetime(1996, 3, 15)),
+                        "last_update": str(datetime(1996, 3, 15)),
                     }
                 ],
             }
@@ -81,3 +81,14 @@ class MovementTest(BaseTest):
                 "interval": {"days": 2, "hours": 0},
             }
             self.assertEqual(movement.dictify(user2), expected)
+
+    def test_add_leader(self):
+        with self.app_context():
+            movement = Movement("flossing", timedelta(days=2))
+            user1 = User("test1", "test@gmail", "test")
+            user2 = User("test2", "test@gmail", "test")
+            movement.add_user(user1)
+            movement.add_user(user2)
+
+            movement.add_leader(user1, user2)
+            self.assertEqual(user1.leaders(movement), [user2])
