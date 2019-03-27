@@ -2,11 +2,6 @@ from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from flask import current_app
 
-from itsdangerous import (
-    TimedJSONWebSignatureSerializer as Serializer,
-    BadSignature,
-    SignatureExpired,
-)
 from passlib.apps import custom_app_context as pwd_context
 
 from gridt.db import db
@@ -27,7 +22,7 @@ class User(db.Model):
     :attribute follower_associations: All associations to movements where the follower is this user. Useful for determining the leaders of a user.
     :attribute movements: List of all movements that the user is subscribed to.
 
-    :todo: Make a user.leaders dictionary attribute that has movements as the keys and lists of leaders as the values.
+    :todo: Make a user.leaders dictionary attribute that has movements as the keys and lists of leaders as the values. Right now this is solved with the leaders method.
     """
 
     __tablename__ = "users"
@@ -77,37 +72,6 @@ class User(db.Model):
         :rtype bool:
         """
         return pwd_context.verify(password, self.password_hash)
-
-    def generate_auth_token(self):
-        """
-        Create an auth token that will be used to authenticate using the JWT scheme.
-        :returns: serialized dictionary that contains the user id.
-        :rtype str:
-        """
-        s = Serializer(current_app.config["SECRET_KEY"])
-        return s.dumps({"id": self.id})
-
-    @classmethod
-    def verify_auth_token(cls, token):
-        """
-        Verify that the auth token is valid and not expired.
-
-        :param str token: Token that is to be verified
-        :rtype bool:
-        """
-        s = Serializer(current_app.config["SECRET_KEY"])
-        try:
-            data = s.loads(token)
-        except SignatureExpired:
-            return None
-        except BadSignature:
-            return None
-
-        user = cls.query.get(data["id"])
-
-        if data["id"] == None:
-            return None
-        return user
 
     def leaders(self, movement):
         """

@@ -10,10 +10,9 @@ from gridt.models.movement_user_association import MovementUserAssociation
 class MovementTest(BaseTest):
     def test_crud(self):
         with self.app_context():
+            self.assertIsNone(Movement.query.filter_by(name="flossing").first())
+
             movement = Movement("flossing", timedelta(days=2))
-
-            self.assertIsNone(User.query.filter_by(username="username").first())
-
             movement.save_to_db()
 
             self.assertIsNotNone(Movement.query.filter_by(name="flossing").first())
@@ -50,8 +49,7 @@ class MovementTest(BaseTest):
             user3.save_to_db()
             movement.add_user(user3)
 
-            movement._find_possible_leaders_ids(user2)
-
+            self.assertEqual(set(movement._find_possible_leaders_ids(user2)), set(1,3))
             self.assertTrue(user2.id in movement._find_possible_leaders_ids(user1))
 
     def test_swap_leader(self):

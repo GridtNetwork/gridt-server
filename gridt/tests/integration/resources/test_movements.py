@@ -465,7 +465,7 @@ class NewLeaderTest(BaseTest):
                 "/movements/Flossing/leader", headers={"Authorization": f"JWT {token}"}
             )
 
-            expected = {"id": 1, "username": "test1", "last_update": None}
+            expected = {"id": 2, "username": "test2", "last_update": None}
 
             self.assertEqual(resp.status_code, 200)
             self.assertEqual(json.loads(resp.data), expected)
@@ -496,8 +496,8 @@ class NewLeaderTest(BaseTest):
 
             expected = {"message": "This user has no more space for more leaders."}
 
-            self.assertEqual(resp.status_code, 400)
             self.assertEqual(json.loads(resp.data), expected)
+            self.assertEqual(resp.status_code, 400)
 
     def test_find_leader_no_leader(self):
         with self.app_context():
@@ -582,3 +582,51 @@ class NewUpdateTest(BaseTest):
                 json.loads(resp.data),
                 {"message": "User is not subscribed to this movement."},
             )
+
+
+class SubscriptionsResourceTest(BaseTest):
+    def test_get(self):
+        with self.app_context():
+            # Create fake data
+            user = User("test1", "test@test.com", "pass")
+            user2 = User("test2", "test@test.com", "pass")
+            movement = Movement("movement1", timedelta(hours=2), "Hello")
+            movement2 = Movement("movement2", timedelta(days=2), "Hello")
+            db.session.add_all([user, user2, movement, movement2])
+            db.session.commit()
+
+            # User test1 subscribes to movement1 and does an update
+            movement.add_user(user)
+            update = Update(user, movement)
+            update2 = Update(user, movement)
+            db.session.add_all([update, update2])
+            db.session.commit()
+
+            # User test2 subscribes to movement1 and test1 to movement2
+            movement.add_user(user2)
+            movement2.add_user(user)
+
+            self.assertTrue(movement2 not in user2.movements)
+            # To prevent sqlalchemy.orm.exc.DetachedInstanceError
+            stamp = str(update2.time_stamp)
+
+            token = self.obtain_token("test2", "pass")
+
+            # Check that the response matches expectation
+            resp = self.client.get(
+                "/movements/subscriptions", headers={"Authorization": f"JWT {token}"}
+            )
+
+            expected = [
+                {
+                    "id": 1,
+                    "description": "",
+                    "interval": {"days": 0, "hours": 2},
+                    "leaders": [{"id": 1, "last_update": stamp, "username": "test1"}],
+                    "name": "movement1",
+                    "short_description": "Hello",
+                    "subscribed": True,
+                }
+            ]
+            data = json.loads(resp.data)
+            self.assertEqual(data, expected)

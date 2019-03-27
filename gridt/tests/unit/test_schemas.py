@@ -16,6 +16,7 @@ class SchemasTest(BaseTest):
         # Make sure no error is thrown with this info
         schema = MovementSchema()
         res = schema.load(proper_movement)
+        self.assertFalse(res.errors)
 
     def test_movement_schema_short(self):
         proper_movement = {
@@ -52,7 +53,7 @@ class SchemasTest(BaseTest):
 
         schema = MovementSchema()
         res = schema.load(bad_movement)
-        print(res.errors)
+        self.assertEqual(res.errors, {'short_description': ['Length must be between 10 and 100.'], 'name': ['Length must be between 4 and 50.']})
 
     def test_interval_schema(self):
         good_interval = {"days": 0, "hours": 1}

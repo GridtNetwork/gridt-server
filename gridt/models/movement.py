@@ -51,11 +51,11 @@ class Movement(db.Model):
         creator=lambda user: MovementUserAssociation(follower=user),
     )
 
-    def __init__(self, name, interval, short_description=""):
+    def __init__(self, name, interval, short_description="", description=""):
         self.name = name
         self.interval = interval
         self.short_description = short_description
-        self.description = ""
+        self.description = description
 
     def save_to_db(self):
         """
@@ -100,6 +100,7 @@ class Movement(db.Model):
         :returns: A list of ids of users, or None if the user is not in this movement.
         """
 
+        # TODO: Causes #21
         if user.leaders(self) is None:
             return None
 
@@ -172,6 +173,34 @@ class Movement(db.Model):
 
             assoc.save_to_db()
 
+    # TODO: Remove by implementing #22.
+    def add_leader(self, user, leader):
+        """
+        Give this user a new leader.
+        :param user: User to be given a new leader.
+        :param leader: Leader that is to be given to the user.
+        """
+        if len(user.leaders(self)) == 4:
+            # TODO: find a better error for this.
+            raise ValueError("User can not have more than four leaders.")
+
+        def empty_leader_in_movement(association):
+            if not association.leader and association.movement is self:
+                return association
+
+        empty_associations = list(
+            filter(empty_leader_in_movement, user.follower_associations)
+        )
+        empty_associations[0].leader = leader
+        db.session.add(empty_associations[0])
+        db.session.commit()
+
+    def new_leader(self, user, leader=None):
+        assoc = MovementUserAssociation(self, user)
+        if possible_leaders:
+            assoc.leader = User.find_by_id(random.choice(possible_leaders))
+        assoc.save_to_db()
+
     def remove_user(self, user):
         """
         Remove any relationship this user previously had with this movement.
@@ -185,28 +214,6 @@ class Movement(db.Model):
             if asso.follower == user:
                 asso.delete_from_db()
         self.users = list(filter(lambda u: u != user, self.users))
-
-    def add_leader(self, user, leader):
-        """
-        Give this user a new leader.
-        :param user: User to be given a new leader.
-        :param leader: Leader that is to be given to the user.
-        """
-        if len(user.leaders(self)) == 4:
-            raise ValueError(
-                "User can not have more than four leaders."
-            )  # TODO: find a better error for this.
-
-        def empty_leader_in_movement(association):
-            if not association.leader and association.movement is self:
-                return association
-
-        empty_associations = list(
-            filter(empty_leader_in_movement, user.follower_associations)
-        )
-        empty_associations[0].leader = leader
-        db.session.add(empty_associations[0])
-        db.session.commit()
 
     def dictify(self, user):
         """

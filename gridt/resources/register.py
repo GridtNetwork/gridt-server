@@ -21,9 +21,9 @@ class RegisterResource(Resource):
         data = result.data
 
         if User.find_by_name(data["username"]):
-            return {"message": "Username already in use"}, 400
+            return {"message": "Username already in use."}, 400
 
-        user = User(data["username"], data["password"], data["password"])
+        user = User(data["username"], data["email"], data["password"])
         user.save_to_db()
 
-        return {"message": "Succesfully created user"}, 201
+        return {"message": "Succesfully created user."}, 201

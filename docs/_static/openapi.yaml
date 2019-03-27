@@ -96,11 +96,11 @@ paths:
                 $ref: '#/components/schemas/message'
         400:
             description: >-
-              Interval must be nonzero. Or: Could not create movement, because it already exists.
-            content:
-                application/json:
-                    schema:
-                        $ref: '#/components/schemas/message'
+              Interval must be nonzero. Or: Could not create movement, because movement name is already in use.
+          content:
+              application/json:
+                 schema:
+                    $ref: '#/components/schemas/message'
         401:
           $ref: '#/components/responses/UnauthorizedError'
       requestBody:

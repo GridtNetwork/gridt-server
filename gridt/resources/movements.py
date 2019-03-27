@@ -1,4 +1,5 @@
 from datetime import timedelta
+import random
 from random import choice
 
 from flask import current_app, request
@@ -20,8 +21,8 @@ def get_movement(identifier):
         movement = Movement.find_by_name(identifier)
 
     if not movement:
-        # return {"message": "This movement does not exist."}, 404
         abort(404, message="This movement does not exist.")
+
     return movement
 
 
@@ -53,10 +54,11 @@ class MovementsResource(Resource):
                 return {"message": res.errors["interval"]["_schema"][0]}, 400
             field = list(res.errors.keys())[0]
             return {"message": f"{field}: {res.errors[field][0]}"}, 400
+
         existing_movement = Movement.find_by_name(res.data["name"])
         if existing_movement:
             return (
-                {"message": "Could not create movement, because it already exists."},
+                {"message": "Could not create movement, because movement name is already in use."},
                 400,
             )
 
@@ -68,6 +70,7 @@ class MovementsResource(Resource):
             short_description=res.data["short_description"],
         )
         movement.save_to_db()
+
         return {"message": "Successfully created movement."}, 201
 
 
@@ -83,7 +86,6 @@ class SingleMovementResource(Resource):
     @jwt_required()
     def get(self, identifier):
         movement = get_movement(identifier)
-
         return movement.dictify(current_identity), 200
 
 
@@ -96,13 +98,14 @@ class SubscribeResource(Resource):
         return {"message": "Successfully subscribed to this movement."}, 200
 
     @jwt_required()
-    def delete(self, identifier):
-        movement = get_movement(identifier)
+    def delete(self, movement_id):
+        movement = get_movement(movement_id)
         if current_identity in movement.users:
             movement.remove_user(current_identity)
         return {"message": "Successfully unsubscribed from this movement."}, 200
 
 
+# TODO: remove when implementing #22
 class FindLeaderResource(Resource):
     @jwt_required()
     def post(self, movement_id):
@@ -120,7 +123,8 @@ class FindLeaderResource(Resource):
         leader = User.find_by_id(random.choice(possible_leaders_ids))
         movement.add_leader(current_identity, leader)
 
-        last_update = str(Update.find_last(leader, movement).time_stamp)
+        last_update = Update.find_last(leader, movement)
+        time_stamp = str(last_update.time_stamp) if last_update else None
 
         return {
             "id": leader.id,
@@ -133,14 +137,16 @@ class SwapLeaderResource(Resource):
     @jwt_required()
     def post(self, movement_id, leader_id):
         movement = get_movement(movement_id)
+
         if not current_identity in movement.users:
             return {"message": "User is not subscribed to this movement."}, 400
+
         leader = get_user(leader_id)
 
         # This prevents a malicious user from finding user ids.
         # Returning a 404 for a nonexistant user would give them more
         # infromation than we want to share.
-        if not leader or not leader in movement.users:
+        if not leader or leader not in current_identity.leaders(movement):
             return {"message": "User is not following this leader."}, 400
 
         new_leader = movement.swap_leader(current_identity, leader)
@@ -169,4 +175,4 @@ class NewUpdateResource(Resource):
         update = Update(current_identity, movement)
         update.save_to_db()
 
-        return {"message": "Successfully created update."}, 200
+        return {"message": "Successfully created update."}, 201
