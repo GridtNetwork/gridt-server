@@ -1,6 +1,6 @@
 info:
   title: The Gridt Network API
-  version: 0.0.1
+  version: "0.0.1"
   description: Interact with the gridt network via this API. It provides several endpoints for creating and subscribing (to) movements and switching leaders.
   contact:
     url: gridt.org
@@ -97,7 +97,7 @@ paths:
         400:
             description: >-
               Interval must be nonzero. Or: Could not create movement, because movement name is already in use.
-          content:
+            content:
               application/json:
                  schema:
                     $ref: '#/components/schemas/message'
@@ -405,7 +405,7 @@ components:
       oneOf:
         - type: integer
         - type: string
-openapi: 3.0.2
+openapi: '3.0.1'
 externalDocs:
   url: 'http://gridt-server.readthedocs.io'
   description: Complete documentation of models and resources.
