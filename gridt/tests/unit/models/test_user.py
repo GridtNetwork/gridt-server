@@ -31,17 +31,39 @@ class UserTest(BaseTest):
 
         self.assertEqual(user.verify_password("test"), True)
 
-    def test_find_leaders(self):
+    def test_leaders(self):
         with self.app_context():
             user1 = User("user1", "test@test.com", "test")
             user2 = User("user2", "test@test.com", "test")
             user3 = User("user3", "test@test.com", "test")
             user4 = User("user4", "test@test.com", "test")
 
-            movement = Movement("movement", timedelta(days=2))
-            movement.add_user(user1)
-            movement.add_user(user2)
-            movement.add_user(user3)
-            movement.add_user(user4)
+            movement1 = Movement("movement1", timedelta(days=2))
+            movement2 = Movement("movement2", timedelta(days=2))
 
-            self.assertEqual(set(user4.leaders(movement)), set([user1, user2, user3]))
+            assoc1 = MovementUserAssociation(movement1, user1, user2)
+            assoc2 = MovementUserAssociation(movement1, user1, user3)
+            assoc3 = MovementUserAssociation(movement1, user2, user1)
+            assoc4 = MovementUserAssociation(movement2, user1, user2)
+            assoc5 = MovementUserAssociation(movement2, user2, user1)
+            assoc6 = MovementUserAssociation(movement1, user1, None)
+
+            db.session.add_all(
+                [
+                    user1,
+                    user2,
+                    user3,
+                    user4,
+                    movement1,
+                    movement2,
+                    assoc1,
+                    assoc2,
+                    assoc3,
+                    assoc4,
+                    assoc5,
+                    assoc6,
+                ]
+            )
+            db.session.commit()
+
+            self.assertEqual(user1.leaders(movement1), [user2, user3])

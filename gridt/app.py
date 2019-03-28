@@ -33,7 +33,6 @@ from gridt.resources.movements import (
     SingleMovementResource,
     SubscribeResource,
     SwapLeaderResource,
-    FindLeaderResource,
     NewUpdateResource,
 )
 
@@ -84,8 +83,6 @@ def create_app(overwrite_conf=None):
     api.add_resource(SingleMovementResource, "/movements/<identifier>")
     api.add_resource(SubscriptionsResource, "/movements/subscriptions")
     api.add_resource(SubscribeResource, "/movements/<movement_id>/subscriber")
-    # TODO: Remove when implementing #22
-    api.add_resource(FindLeaderResource, "/movements/<movement_id>/leader")
     api.add_resource(SwapLeaderResource, "/movements/<movement_id>/leader/<leader_id>")
     api.add_resource(NewUpdateResource, "/movements/<movement_id>/update")
 

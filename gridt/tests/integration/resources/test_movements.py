@@ -83,7 +83,9 @@ class MovementsTest(BaseTest):
 
             self.assertEqual(
                 json.loads(resp.data),
-                {"message": "Could not create movement, because it already exists."},
+                {
+                    "message": "Could not create movement, because movement name is already in use."
+                },
             )
             self.assertEqual(resp.status_code, 400)
 
@@ -353,37 +355,29 @@ class SwapTest(BaseTest):
     def test_swap_leader(self):
         with self.app_context():
             movement = Movement("Flossing", timedelta(days=1), "Hi")
-            movement.save_to_db()
 
             user1 = User("test1", "test@test.com", "pass")
-            user1.save_to_db()
             user2 = User("test2", "test@test.com", "pass")
-            user2.save_to_db()
             user3 = User("test3", "test@test.com", "pass")
-            user3.save_to_db()
+            user4 = User("test4", "test@test.com", "pass")
+            user5 = User("test5", "test@test.com", "pass")
 
             update = Update(user3, movement)
             time_stamp = update.time_stamp
-            update.save_to_db()
+
+            db.session.add_all([user1, user2, user2, user2, user2, update, movement])
 
             movement.add_user(user1)
             movement.add_user(user2)
             movement.add_user(user3)
-
-            token = self.obtain_token("test2", "pass")
-
-            resp = self.client.post(
-                "/movements/Flossing/leader/1",
-                headers={"Authorization": f"JWT {token}"},
-            )
-
-            expected = {"id": 3, "username": "test3", "last_update": str(time_stamp)}
-            self.assertEqual(json.loads(resp.data), expected)
+            movement.add_user(user4)
+            movement.add_user(user5)
 
             token = self.obtain_token("test1", "pass")
 
             resp = self.client.post(
-                "/movements/Flossing/leader", headers={"Authorization": f"JWT {token}"}
+                "/movements/Flossing/leader/5",
+                headers={"Authorization": f"JWT {token}"},
             )
 
     def test_swap_leader_movement_nonexistant(self):
@@ -446,79 +440,6 @@ class SwapTest(BaseTest):
             )
 
 
-class NewLeaderTest(BaseTest):
-    def test_find_leader(self):
-        with self.app_context():
-            movement = Movement("Flossing", timedelta(days=2), "Hi")
-            movement.save_to_db()
-            user1 = User("test1", "test@test.com", "pass")
-            user1.save_to_db()
-            user2 = User("test2", "test@test.com", "pass")
-            user2.save_to_db()
-
-            movement.add_user(user1)
-            movement.add_user(user2)
-
-            token = self.obtain_token("test1", "pass")
-
-            resp = self.client.post(
-                "/movements/Flossing/leader", headers={"Authorization": f"JWT {token}"}
-            )
-
-            expected = {"id": 2, "username": "test2", "last_update": None}
-
-            self.assertEqual(resp.status_code, 200)
-            self.assertEqual(json.loads(resp.data), expected)
-
-    def test_find_leader_no_empty(self):
-        with self.app_context():
-            movement = Movement("Flossing", timedelta(days=2), "Hi")
-            movement.save_to_db()
-            user1 = User("test1", "test@test.com", "pass")
-            user1.save_to_db()
-            user2 = User("test2", "test@test.com", "pass")
-            user3 = User("test3", "test@test.com", "pass")
-            user4 = User("test4", "test@test.com", "pass")
-            user5 = User("test5", "test@test.com", "pass")
-            db.session.add_all([user2, user3, user4, user5])
-
-            movement.add_user(user1)
-            movement.add_user(user2)
-            movement.add_user(user3)
-            movement.add_user(user4)
-            movement.add_user(user5)
-
-            token = self.obtain_token("test1", "pass")
-
-            resp = self.client.post(
-                "/movements/Flossing/leader", headers={"Authorization": f"JWT {token}"}
-            )
-
-            expected = {"message": "This user has no more space for more leaders."}
-
-            self.assertEqual(json.loads(resp.data), expected)
-            self.assertEqual(resp.status_code, 400)
-
-    def test_find_leader_no_leader(self):
-        with self.app_context():
-            movement = Movement("Flossing", timedelta(days=2), "Hi")
-            movement.save_to_db()
-            user1 = User("test1", "test@test.com", "pass")
-            user1.save_to_db()
-            movement.add_user(user1)
-
-            token = self.obtain_token("test1", "pass")
-
-            resp = self.client.post(
-                "/movements/Flossing/leader", headers={"Authorization": f"JWT {token}"}
-            )
-
-            expected = {"message": "No leader found."}
-
-            self.assertEqual(resp.status_code, 500)
-            self.assertEqual(json.loads(resp.data), expected)
-
-
 class NewUpdateTest(BaseTest):
     @patch("gridt.models.update.Update._get_now", return_value=datetime(1996, 3, 15))
     def test_create_new_update(self, func):
@@ -539,7 +460,7 @@ class NewUpdateTest(BaseTest):
             self.assertEqual(
                 json.loads(resp.data), {"message": "Successfully created update."}
             )
-            self.assertEqual(resp.status_code, 200)
+            self.assertEqual(resp.status_code, 201)
 
         with self.app_context():
             user = User.find_by_id(1)

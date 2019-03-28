@@ -91,7 +91,7 @@ class Movement(db.Model):
         """
         return cls.query.get(identifier)
 
-    def _find_possible_leaders_ids(self, user, exclude=None):
+    def find_leaders(self, user, exclude=[]):
         """
         Private function to look for ids of leaders that this user could use.
 
@@ -99,38 +99,22 @@ class Movement(db.Model):
         :param list exclude: List of users (can be a user model or an id) to exclude from search.
         :returns: A list of ids of users, or None if the user is not in this movement.
         """
-
-        # TODO: Causes #21
-        if user.leaders(self) is None:
-            return None
-
         current_leader_ids = [leader.id for leader in user.leaders(self)]
-
-        possible_leaders = [
-            tup[0]
-            for tup in db.session.query(User.id)
-            .filter(
-                and_(
-                    not_(User.id == user.id),
-                    not_(User.id.in_(current_leader_ids)),
-                    User.movements.any(id=self.id),
-                )
-            )
-            .all()
-        ]
-
         if exclude:
-            exclude_ids = []
-            if type(exclude[0]) == int:
-                exclude_ids = exclude
             if type(exclude[0]) == type(user):
-                exclude_ids = [user.id for user in exclude]
+                exclude = [u.id for u in exclude]
 
-            possible_leaders = list(
-                filter(lambda l: l not in exclude_ids, possible_leaders)
+        return (
+            User.query.join(User.follower_associations)
+            .filter(
+                not_(User.id == user.id),
+                not_(User.id.in_(current_leader_ids)),
+                not_(User.id.in_(exclude)),
+                MovementUserAssociation.movement_id == self.id,
             )
-
-        return possible_leaders
+            .group_by(User.id)
+            .all()
+        )
 
     def swap_leader(self, user, leader):
         """
@@ -142,64 +126,51 @@ class Movement(db.Model):
         """
         # We can not change someone's leader if they are not already following that leader.
         if leader and leader not in user.leaders(self):
-            return None
+            raise ValueError("User is not following that leader.")
 
         # If there is no other possible leaders than we can't perform the swap.
-        possible_leaders = self._find_possible_leaders_ids(user, user.leaders(self))
+        possible_leaders = self.find_leaders(user)
         if not possible_leaders:
             return None
 
-        new_leader = User.find_by_id(random.choice(possible_leaders))
+        new_leader = random.choice(possible_leaders)
         for association in user.follower_associations:
-            if association.leader == leader:
+            if association.leader == leader and association.movement == self:
                 association.leader = new_leader
 
         return new_leader
 
     def add_user(self, user):
         """
-        Add a new user to self.users and give it appropriate leaders.
+        Add a new user to self.users and give it appropriate leaders. Find followers without leaders and the user as a leader.
 
         :param gridt.models.user.User user: the user that is to be subscribed to this movement
 
         :todo: Move find leader logic into private function.
         """
         for i in range(4):
-            possible_leaders = self._find_possible_leaders_ids(user)
+            possible_leaders = self.find_leaders(user)
 
             assoc = MovementUserAssociation(self, user)
             if possible_leaders:
-                assoc.leader = User.find_by_id(random.choice(possible_leaders))
+                assoc.leader = random.choice(possible_leaders)
 
             assoc.save_to_db()
 
-    # TODO: Remove by implementing #22.
-    def add_leader(self, user, leader):
-        """
-        Give this user a new leader.
-        :param user: User to be given a new leader.
-        :param leader: Leader that is to be given to the user.
-        """
-        if len(user.leaders(self)) == 4:
-            # TODO: find a better error for this.
-            raise ValueError("User can not have more than four leaders.")
-
-        def empty_leader_in_movement(association):
-            if not association.leader and association.movement is self:
-                return association
-
-        empty_associations = list(
-            filter(empty_leader_in_movement, user.follower_associations)
+        leaderless = (
+            db.session.query(MovementUserAssociation)
+            .filter(
+                not_(MovementUserAssociation.follower_id == user.id),
+                MovementUserAssociation.leader_id == None,
+                MovementUserAssociation.movement_id == self.id,
+            )
+            .group_by(MovementUserAssociation.follower_id)
+            .all()
         )
-        empty_associations[0].leader = leader
-        db.session.add(empty_associations[0])
-        db.session.commit()
 
-    def new_leader(self, user, leader=None):
-        assoc = MovementUserAssociation(self, user)
-        if possible_leaders:
-            assoc.leader = User.find_by_id(random.choice(possible_leaders))
-        assoc.save_to_db()
+        for association in leaderless:
+            association.leader = user
+            association.save_to_db()
 
     def remove_user(self, user):
         """

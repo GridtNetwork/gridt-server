@@ -16,7 +16,7 @@ class RegistrationResourceTest(BaseTest):
 
             self.assertEqual(resp.status_code, 201)
             self.assertEqual(
-                json.loads(resp.data), {"message": "Succesfully created user"}
+                json.loads(resp.data), {"message": "Succesfully created user."}
             )
 
     def test_logged_in(self):

@@ -239,6 +239,14 @@ paths:
                 $ref: '#/components/schemas/message'
         401:
           $ref: '#/components/responses/UnauthorizedError'
+        500:
+          description: >-
+            Could not find leader to replace the current one.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/message'
+
   /movements/{movementId}/update:
     post:
       summary: Post a new update in movement

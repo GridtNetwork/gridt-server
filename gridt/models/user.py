@@ -1,3 +1,4 @@
+from sqlalchemy import not_
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from flask import current_app
@@ -5,9 +6,7 @@ from flask import current_app
 from passlib.apps import custom_app_context as pwd_context
 
 from gridt.db import db
-from gridt.models.movement_user_association import (
-    MovementUserAssociation,
-)  # Needed for association creator
+from gridt.models.movement_user_association import MovementUserAssociation
 
 
 class User(db.Model):
@@ -36,6 +35,7 @@ class User(db.Model):
     follower_associations = db.relationship(
         "MovementUserAssociation", foreign_keys="MovementUserAssociation.follower_id"
     )
+
     movements = association_proxy(
         "follower_associations",
         "movement",
@@ -78,20 +78,13 @@ class User(db.Model):
         Find all the leaders of this user in the provided movement.
 
         :param gridt.models.movement.Movement movement: The movement that the user is to retrieve the leaders from.
-        :returns: List of users or None if this user is not in the movement.
         """
-        if movement not in self.movements:
-            return None
-
-        relevant_associations = list(
-            filter(
-                lambda a: a.movement == movement and a.leader is not None,
-                self.follower_associations,
-            )
-        )
-        leaders = list(map(lambda a: a.leader, relevant_associations))
-
-        return leaders
+        associations = MovementUserAssociation.query.filter(
+            MovementUserAssociation.follower_id == self.id,
+            MovementUserAssociation.movement_id == movement.id,
+            not_(MovementUserAssociation.leader_id == None),
+        ).all()
+        return [a.leader for a in associations]
 
     def save_to_db(self):
         """

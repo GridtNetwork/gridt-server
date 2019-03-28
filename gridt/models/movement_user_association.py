@@ -35,18 +35,6 @@ class MovementUserAssociation(db.Model):
     def __repr__(self):
         return f"<Association id={self.id} {self.follower}->{self.leader} in {self.movement}>"
 
-    @classmethod
-    def find_by_id(cls, id):
-        return cls.query.get(id)
-
-    @classmethod
-    def find_by_follower(cls, follower):
-        return cls.query.filter_by(follower=follower).one_or_none()
-
-    @classmethod
-    def find_by_movement(cls, movement):
-        return cls.query.filter_by(movement=movement).one_or_none()
-
     def save_to_db(self):
         """
         Save this association to the database.

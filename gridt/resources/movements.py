@@ -58,7 +58,9 @@ class MovementsResource(Resource):
         existing_movement = Movement.find_by_name(res.data["name"])
         if existing_movement:
             return (
-                {"message": "Could not create movement, because movement name is already in use."},
+                {
+                    "message": "Could not create movement, because movement name is already in use."
+                },
                 400,
             )
 
@@ -68,6 +70,7 @@ class MovementsResource(Resource):
                 days=res.data["interval"]["days"], hours=res.data["interval"]["hours"]
             ),
             short_description=res.data["short_description"],
+            description=res.data.get("description"),
         )
         movement.save_to_db()
 
@@ -105,34 +108,6 @@ class SubscribeResource(Resource):
         return {"message": "Successfully unsubscribed from this movement."}, 200
 
 
-# TODO: remove when implementing #22
-class FindLeaderResource(Resource):
-    @jwt_required()
-    def post(self, movement_id):
-        movement = get_movement(movement_id)
-        if not current_identity in movement.users:
-            return {"message": "User is not subscribed to this movement."}, 400
-
-        if len(current_identity.leaders(movement)) == 4:
-            return {"message": "This user has no more space for more leaders."}, 400
-
-        if not movement._find_possible_leaders_ids(current_identity):
-            return {"message": "No leader found."}, 500
-
-        possible_leaders_ids = movement._find_possible_leaders_ids(current_identity)
-        leader = User.find_by_id(random.choice(possible_leaders_ids))
-        movement.add_leader(current_identity, leader)
-
-        last_update = Update.find_last(leader, movement)
-        time_stamp = str(last_update.time_stamp) if last_update else None
-
-        return {
-            "id": leader.id,
-            "username": leader.username,
-            "last_update": last_update,
-        }
-
-
 class SwapLeaderResource(Resource):
     @jwt_required()
     def post(self, movement_id, leader_id):
@@ -150,6 +125,9 @@ class SwapLeaderResource(Resource):
             return {"message": "User is not following this leader."}, 400
 
         new_leader = movement.swap_leader(current_identity, leader)
+
+        if not new_leader:
+            return {"message": "Could not find leader to replace the current one."}
 
         time_stamp = None
         if Update.find_last(new_leader, movement):

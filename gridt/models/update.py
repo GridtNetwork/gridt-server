@@ -34,9 +34,9 @@ class Update(db.Model):
         )
 
     def _get_now(self):
-        '''
+        """
         Useful for patching in tests.
-        '''
+        """
         return datetime.now()
 
     def save_to_db(self):

@@ -53,7 +53,13 @@ class SchemasTest(BaseTest):
 
         schema = MovementSchema()
         res = schema.load(bad_movement)
-        self.assertEqual(res.errors, {'short_description': ['Length must be between 10 and 100.'], 'name': ['Length must be between 4 and 50.']})
+        self.assertEqual(
+            res.errors,
+            {
+                "short_description": ["Length must be between 10 and 100."],
+                "name": ["Length must be between 4 and 50."],
+            },
+        )
 
     def test_interval_schema(self):
         good_interval = {"days": 0, "hours": 1}
