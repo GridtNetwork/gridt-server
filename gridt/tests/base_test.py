@@ -1,9 +1,10 @@
 import os
 import logging
+import json
 from unittest import TestCase
 
-from app import create_app
-from db import db
+from gridt.app import create_app
+from gridt.db import db
 
 # LoggedTestCase and LogThisTestCase accredited to:
 # https://stackoverflow.com/a/15969985/1051438
@@ -50,9 +51,7 @@ class LoggedTestCase(TestCase):
 
 class BaseTest(LoggedTestCase):
     def setUp(self):
-        app = create_app(overwrite_conf="testing")
-
-        self.assertEqual(app.config["SQLALCHEMY_DATABASE_URI"], "sqlite://")
+        app = create_app(overwrite_conf="test")
 
         # Make sure db exists
         with app.app_context():
@@ -68,3 +67,14 @@ class BaseTest(LoggedTestCase):
         with self.app_context():
             db.session.remove()
             db.drop_all()
+
+    def obtain_token(self, username, password):
+        resp = self.client.post(
+            "/auth",
+            json={"username": username, "password": password},
+            headers={"Content-Type": "application/json"},
+        )
+        data = resp.data.decode("utf-8")
+        token = json.loads(data)["access_token"]
+
+        return token

@@ -1,5 +1,5 @@
-from tests.base_test import BaseTest
-from models.user import User
+from gridt.tests.base_test import BaseTest
+from gridt.models.user import User
 
 
 class UserTest(BaseTest):
@@ -7,7 +7,7 @@ class UserTest(BaseTest):
         with self.app_context():
             self.assertIsNone(User.find_by_name("username"))
 
-            user = User("username", "password")
+            user = User("username", "test@test.com", "password")
 
             user.save_to_db()
 
@@ -15,7 +15,7 @@ class UserTest(BaseTest):
 
     def test_save(self):
         with self.app_context():
-            user = User("username", "password")
+            user = User("username", "test@test.com", "password")
             user.save_to_db()
 
             self.assertIsNotNone(User.query.filter_by(username="username").first())

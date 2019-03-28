@@ -1,0 +1,412 @@
+info:
+  title: The Gridt Network API
+  version: "0.0.1"
+  description: Interact with the gridt network via this API. It provides several endpoints for creating and subscribing (to) movements and switching leaders.
+  contact:
+    url: gridt.org
+    name: Robin A. Dorstijn
+    email: robin@gridt.org
+paths:
+  /auth:
+    post:
+      summary: Login to the gridt network
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: Robin
+                password:
+                  type: string
+                  example: SuperSecretPassword
+      responses:
+        200:
+          description: Successfully logged in.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                    example: >-
+                      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZGVudGl0eSI6MSwiaWF0IjoxNDQ0OTE3NjQwLCJuYmYiOjE0NDQ5MTc2NDAsImV4cCI6MTQ0NDkxNzk0MH0.KPmI6WSjRjlpzecPvs3q_T3cJQvAgJvaQAPtk1abC_E"
+        401:
+          description: Failed to login, incorrect credentials.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/message'
+  /register:
+    post:
+      summary: Register an account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: Robin
+                password:
+                  type: string
+                  example: SuperSecretPassword
+                email:
+                  type: string
+                  example: robin@gridt.org
+      responses:
+        201:
+          description: Sucessfully created an account
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/message'
+        400:
+          description: >-
+            Invalid request, either not all required fields are available, or the username is already in use. Check the message to find out.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/message'
+  /movements:
+    get:
+      summary: List of all movements
+      description: Lists all movements on the server.
+      responses:
+        200:
+          description: Succesful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/movements'
+    post:
+      summary: Create a new movement
+      responses:
+        201:
+          description: Sucessfully created the new movement.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/message'
+        400:
+            description: >-
+              Interval must be nonzero. Or: Could not create movement, because movement name is already in use.
+            content:
+              application/json:
+                 schema:
+                    $ref: '#/components/schemas/message'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+      requestBody:
+        description: Description of the movement that is to be created.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/movement'
+  /movements/subscriptions:
+    get:
+      summary: Movements the user is subscribed to.
+      description: >
+        This will return a list of all the movements this user is subscribed to
+        and all his leaders in this movements. This is the **only** place where
+        the information of his leader can be obtained.
+      responses:
+        200:
+          description: Succesfully found the leaders of this user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/movement'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+  /movements/{movementId}:
+    get:
+      summary: Get a movement
+      parameters:
+        - $ref: '#/components/parameters/movementId'
+      responses:
+        200:
+          description: Succesful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/movement'
+        404:
+            $ref: '#/components/responses/MovementNotFoundError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+  /movements/{movementId}/subscriber:
+    put:
+      summary: Subscribe user to movement
+      description: The user that is currently logged in will be added to the subscribers of this movement.
+      parameters:
+      - $ref: '#/components/parameters/movementId'
+      responses:
+        200:
+          description: Sucessfully subscribed to this movement.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/message'
+        404:
+            $ref: '#/components/responses/MovementNotFoundError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+    delete:
+      summary: Unsubscribe user from movement
+      description: The user that is currently logged in will be removed from the movement subscribers
+      parameters:
+      - $ref: '#/components/parameters/movementId'
+      responses:
+        200:
+          description: Sucessfully unsubscribed from this movement.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/message'
+        404:
+          $ref: '#/components/responses/MovementNotFoundError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+  /movements/{movementId}/leader:
+    post:
+      summary: Find a leader
+      description: If the user has any empty leader, find one for him.
+      parameters:
+      - $ref: '#/components/parameters/movementId'
+      - name: userId
+        in: path
+        required: true
+        description: Identifier (name or id) of the leader that is to be replaced.
+        schema:
+          $ref: '#/components/schemas/userId'
+      responses:
+        201:
+          description: Succesfully found leaders, returns the new leader
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/user'
+        400:
+          description: >-
+            User is not subscribed to this movement. Or: This user has no more space for more leaders.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/message'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        500:
+          description: No leader found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/message'
+  /movements/{movementId}/leader/{userId}/:
+    post:
+      summary: Swap leader in movement
+      description: Swap a leader in a movement with a different one.
+      parameters:
+      - $ref: '#/components/parameters/movementId'
+      - name: userId
+        in: path
+        required: true
+        description: Identifier (name or id) of the leader that is to be replaced.
+        schema:
+          $ref: '#/components/schemas/userId'
+      responses:
+        201:
+          description: Succesfully swapped leaders, returns the new leader
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/user'
+        400:
+          description: >-
+            User is not subscribed to this movement. Or: User is not following this leader.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/message'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        500:
+          description: >-
+            Could not find leader to replace the current one.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/message'
+
+  /movements/{movementId}/update:
+    post:
+      summary: Post a new update in movement
+      description: >
+        Tell the server that the user has performed the action related to this
+        movement.
+      parameters:
+      - $ref: '#/components/parameters/movementId'
+      responses:
+        201:
+          description: Successfully created update
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/message'
+        400:
+          description: User is not subscribed to this movement.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/message'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        404:
+          $ref: '#/components/responses/MovementNotFoundError'
+components:
+  responses:
+    UnauthorizedError:
+      description: Access token is missing or invalid
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/message'
+    MovementNotFoundError:
+      description: This movement does not exist.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/message'
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    movementId:
+      required: true
+      in: path
+      name: movementId
+      description: Name or id of a movement.
+      schema:
+        $ref: '#/components/schemas/id'
+  schemas:
+    message:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Not found
+      title: Message from the server
+    movements:
+      items:
+        $ref: '#/components/schemas/movement'
+      type: array
+      title: List of movements
+    id:
+      title: Identifier
+      oneOf:
+        - type: integer
+        - type: string
+      description: identifier, can be it's name or an id.
+      example: 1
+    movement:
+      title: Basic movement
+      type: object
+      required: ["name", "short_description", "interval"]
+      properties:
+        name:
+          type: string
+          description: Name of the movement
+          minLength: 4
+          maxLength: 50
+          example: flossing
+        subscribed:
+          type: boolean
+          description: True if the user is subscribed to this movement.
+          minLength: 10
+          maxLength: 100
+          example: True
+        leaders:
+          type: array
+          items:
+            $ref: '#/components/schemas/user'
+        short_description:
+          type: string
+          description: A comprehensive description of the movement
+          example: Flossing once a day keeps the dentist away.
+        description:
+          type: string
+          description: >-
+            A much longer description that is used to 'sell' a movement to it's
+            users.
+          example: >-
+            Flossing once a day has been shown to reduce almost any dental issue
+            and can greatly reduce risks for all kinds of diseases.
+        interval:
+          type: object
+          required: ["days", "hours"]
+          properties:
+            hours:
+              type: integer
+              description: >-
+                Amount of hours in between which a follower of this movement is
+                expected to perform the action.
+              example: 0
+            days:
+              type: integer
+              description: >-
+                Amount of days in between which a follower of this movement is
+                expected to perform the action
+              example: 1
+            weeks:
+              type: integer
+              description: >-
+                Amount of weeks in between which a follower of this movement is
+                expected to perform the action.
+                example: 0
+              example: 0
+            months:
+              type: integer
+              example: 0
+              description: >-
+                Amount of months in between which a follower of this movement is
+                expected to perform the action.
+    user:
+      title: User
+      type: object
+      properties:
+        id:
+          type: integer
+          description: The user's id
+          example: 1021031
+        username:
+          type: string
+          description: The user's username
+          example: robin
+        last_update:
+          type: object
+          description: This is the last update that the user has given in this movement.
+          properties:
+            time_stamp:
+              type: string
+              description: Date time of the last update of the user.
+    userId:
+      title: User id
+      oneOf:
+        - type: integer
+        - type: string
+openapi: '3.0.1'
+externalDocs:
+  url: 'http://gridt-server.readthedocs.io'
+  description: Complete documentation of models and resources.
+servers: []

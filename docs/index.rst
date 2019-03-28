@@ -15,7 +15,9 @@ This is the documentation for the server that runs the Gridt Network. It is stil
 
    gettingstarted
    code
-   apireference
+   pythonapireference
+   httpapireference
+   tips
 
 
 

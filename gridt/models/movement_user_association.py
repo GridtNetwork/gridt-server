@@ -1,4 +1,4 @@
-from db import db
+from gridt.db import db
 
 
 class MovementUserAssociation(db.Model):
@@ -13,6 +13,7 @@ class MovementUserAssociation(db.Model):
     :attribute follower: The following user.
     :attribute movement: The movement in which this connection happens.
     """
+
     __tablename__ = "assoc"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -27,10 +28,6 @@ class MovementUserAssociation(db.Model):
     leader = db.relationship("User", foreign_keys=[leader_id])
 
     def __init__(self, movement=None, follower=None, leader=None):
-        if follower:
-            follower.follower_associations
-        if movement:
-            movement.user_associations
         self.follower = follower
         self.movement = movement
         self.leader = leader
@@ -38,30 +35,18 @@ class MovementUserAssociation(db.Model):
     def __repr__(self):
         return f"<Association id={self.id} {self.follower}->{self.leader} in {self.movement}>"
 
-    @classmethod
-    def find_by_id(cls, id):
-        return cls.query.get(id)
-
-    @classmethod
-    def find_by_follower(cls, follower):
-        return cls.query.filter_by(follower=follower).one_or_none()
-
-    @classmethod
-    def find_by_movement(cls, movement):
-        return cls.query.filter_by(movement=movement).one_or_none()
-
     def save_to_db(self):
-        '''
+        """
         Save this association to the database.
-        '''
+        """
         db.session.add(self)
         db.session.commit()
 
     def delete_from_db(self):
-        '''
+        """
         Delete this association from the database.
 
         :warning: This action is permanent and can not be undone.
-        '''
+        """
         db.session.delete(self)
         db.session.commit()

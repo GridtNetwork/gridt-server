@@ -1,45 +1,39 @@
 import sys
 import base64
 import logging
-from tests.base_test import BaseTest
-from models.user import User
-from auth.auth import auth
-from flask import current_app
+import unittest
+import json
 
-from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+from flask import current_app
+from flask_jwt import jwt_required
+
+from gridt.tests.base_test import BaseTest
+from gridt.models.user import User
+from gridt.auth import security
 
 
 class AuthTest(BaseTest):
     def test_verify(self):
         with self.app_context():
-            stream_handler = logging.StreamHandler(sys.stdout)
-            self.logger.addHandler(stream_handler)
-            user = User("username", "password")
+            user = User("username", "test@test.com", "password")
             user.save_to_db()
 
             @self.app.route("/test")
-            @auth.login_required
+            @jwt_required()
             def test_route():
-                return ""
+                return "Hello World!"
 
             self.assertEqual(self.client.get("/test").status_code, 401)
-            creds = base64.b64encode(b"username:password").decode("utf-8")
-            self.assertEqual(
-                self.client.get(
-                    "/test", headers={"Authorization": "Basic " + creds}
-                ).status_code,
-                200,
+
+            response = self.client.post(
+                "/auth",
+                headers={"Content-Type": "application/json"},
+                json={"username": "username", "password": "password"},
             )
 
-    def test_auth_token(self):
-        with self.app_context():
-            user = User("username", "password")
-            user.save_to_db()
+            data = json.loads(response.data)
+            token = data["access_token"]
+            resp = self.client.get("/test", headers={"Authorization": f"JWT {token}"})
 
-            token = user.generate_auth_token()
-
-            self.assertIsNotNone(token)
-            s = Serializer(current_app.config["SECRET_KEY"])
-            self.assertEqual(s.loads(token), {"id": user.id})
-
-            self.assertTrue(user.verify_auth_token(token))
+            self.assertEqual(resp.status_code, 200)
+            self.assertEqual(resp.data, b"Hello World!")
