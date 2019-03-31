@@ -1,0 +1,35 @@
+version: '3'
+services:
+    db:
+        restart: always
+        image: mysql:latest
+        environment:
+            MYSQL_ROOT_PASSWORD: root
+        volumes:
+            - ./db:/docker-entrypoint-initdb.d/:ro
+        networks:
+            - db_network
+    web:
+        restart: always
+        build: ./web
+        environment:
+            FLASK_CONFIGURATION: deployment
+        networks:
+            - nginx_network
+            - db_network
+        depends_on:
+            - db
+    nginx:
+        restart: always
+        build: ./nginx
+        networks:
+            - nginx_network
+        ports:
+            - "80:80"
+        depends_on:
+            - web
+networks:
+    nginx_network:
+        driver: bridge
+    db_network:
+        driver: bridge
