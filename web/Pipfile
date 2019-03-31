@@ -13,6 +13,7 @@ sphinx = "*"
 flask-jwt = "*"
 click = "*"
 marshmallow = "*"
+gunicorn = "*"
 
 [requires]
 python_version = "3.7"

@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+    web:
+        restart: always
+        build: ./web
+        networks:
+            - nginx_network
+            - db_network
+    nginx:
+        restart: always
+        build: ./nginx
+        networks:
+            - nginx_network
+        ports:
+            - "80:80"
+        depends_on:
+            - web
+
+    db:
+        restart: always
+        build: ./db
+        networks:
+            - db_network
+networks:
+    nginx_network:
+        driver: bridge
+    db_network:
+        driver: bridge

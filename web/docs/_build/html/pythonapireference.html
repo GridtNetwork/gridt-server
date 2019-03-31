@@ -1,0 +1,426 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Python API Reference &#8212; Gridt Server  documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="HTTP API Reference" href="httpapireference.html" />
+    <link rel="prev" title="Documentation" href="code.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="python-api-reference">
+<h1>Python API Reference<a class="headerlink" href="#python-api-reference" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-gridt.models.user">
+<span id="models"></span><h2>Models<a class="headerlink" href="#module-gridt.models.user" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="gridt.models.user.User">
+<em class="property">class </em><code class="descclassname">gridt.models.user.</code><code class="descname">User</code><span class="sig-paren">(</span><em>username</em>, <em>email</em>, <em>password</em>, <em>role='user'</em><span class="sig-paren">)</span><a class="headerlink" href="#gridt.models.user.User" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Model</span></code></p>
+<p>Intuitive representation of users in the database.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>username</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – Username that the user has chosen.</li>
+<li><strong>email</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – Email that the user has chosen.</li>
+<li><strong>password</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – Password that the user has chosen.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Attribute password_hash:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body"><p class="first">Hashed version of the users’s password.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Attribute follower_associations:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body"><p class="first">All associations to movements where the follower is this user. Useful for determining the leaders of a user.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Attribute movements:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body"><p class="first">List of all movements that the user is subscribed to.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Todo:</th><td class="field-body"><p class="first last">Make a user.leaders dictionary attribute that has movements as the keys and lists of leaders as the values.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="gridt.models.user.User.delete_from_db">
+<code class="descname">delete_from_db</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#gridt.models.user.User.delete_from_db" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete this user from the database.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Warning:</th><td class="field-body">This is a permanent action and cannot be undone.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="gridt.models.user.User.generate_auth_token">
+<code class="descname">generate_auth_token</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#gridt.models.user.User.generate_auth_token" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create an auth token that will be used to authenticate using the JWT scheme.
+:returns: serialized dictionary that contains the user id.
+:rtype str:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gridt.models.user.User.hash_password">
+<code class="descname">hash_password</code><span class="sig-paren">(</span><em>password</em><span class="sig-paren">)</span><a class="headerlink" href="#gridt.models.user.User.hash_password" title="Permalink to this definition">¶</a></dt>
+<dd><p>Hash password and set it as the password_hash.
+:param str password: Password that is to be hashed.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gridt.models.user.User.leaders">
+<code class="descname">leaders</code><span class="sig-paren">(</span><em>movement</em><span class="sig-paren">)</span><a class="headerlink" href="#gridt.models.user.User.leaders" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find all the leaders of this user in the provided movement.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>movement</strong> (<a class="reference internal" href="#gridt.models.movement.Movement" title="gridt.models.movement.Movement"><em>gridt.models.movement.Movement</em></a>) – The movement that the user is to retrieve the leaders from.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">List of users or None if this user is not in the movement.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="gridt.models.user.User.save_to_db">
+<code class="descname">save_to_db</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#gridt.models.user.User.save_to_db" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save this user and all of the changes made to it to the database.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="gridt.models.user.User.verify_auth_token">
+<em class="property">classmethod </em><code class="descname">verify_auth_token</code><span class="sig-paren">(</span><em>token</em><span class="sig-paren">)</span><a class="headerlink" href="#gridt.models.user.User.verify_auth_token" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify that the auth token is valid and not expired.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>token</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – Token that is to be verified</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Rtype bool:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="gridt.models.user.User.verify_password">
+<code class="descname">verify_password</code><span class="sig-paren">(</span><em>password</em><span class="sig-paren">)</span><a class="headerlink" href="#gridt.models.user.User.verify_password" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify that this password matches with the hashed version in the database.
+:rtype bool:</p>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-gridt.models.movement_user_association"></span><dl class="class">
+<dt id="gridt.models.movement_user_association.MovementUserAssociation">
+<em class="property">class </em><code class="descclassname">gridt.models.movement_user_association.</code><code class="descname">MovementUserAssociation</code><span class="sig-paren">(</span><em>movement=None</em>, <em>follower=None</em>, <em>leader=None</em><span class="sig-paren">)</span><a class="headerlink" href="#gridt.models.movement_user_association.MovementUserAssociation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Model</span></code></p>
+<p>Association class that lies at the foundation of the network. Think of this class as the arrows that connect followers with leaders within their respective circle of the movement.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>follower</strong> (<em>model.user.User</em>) – User that will be following.</li>
+<li><strong>leader</strong> (<em>model.user.User</em>) – User that will lead.</li>
+<li><strong>movement</strong> (<em>model.movement.Movement</em>) – Movement in which this relationship is happening.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Attribute leader:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body"><p class="first">The leading user.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Attribute follower:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body"><p class="first">The following user.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Attribute movement:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body"><p class="first last">The movement in which this connection happens.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="gridt.models.movement_user_association.MovementUserAssociation.delete_from_db">
+<code class="descname">delete_from_db</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#gridt.models.movement_user_association.MovementUserAssociation.delete_from_db" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete this association from the database.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Warning:</th><td class="field-body">This action is permanent and can not be undone.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="gridt.models.movement_user_association.MovementUserAssociation.save_to_db">
+<code class="descname">save_to_db</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#gridt.models.movement_user_association.MovementUserAssociation.save_to_db" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save this association to the database.</p>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-gridt.models.movement"></span><dl class="class">
+<dt id="gridt.models.movement.Movement">
+<em class="property">class </em><code class="descclassname">gridt.models.movement.</code><code class="descname">Movement</code><span class="sig-paren">(</span><em>name</em>, <em>interval</em>, <em>short_description=None</em><span class="sig-paren">)</span><a class="headerlink" href="#gridt.models.movement.Movement" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Model</span></code></p>
+<p>Intuitive representation of movements in the database.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">timedelta</span>
+<span class="n">flossing</span> <span class="o">=</span> <span class="n">Movement</span><span class="p">(</span><span class="s1">&#39;flossing&#39;</span><span class="p">,</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+<span class="n">robin</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">find_by_id</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">pieter</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">find_by_id</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">jorn</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">find_by_id</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">flossing</span><span class="o">.</span><span class="n">users</span> <span class="o">=</span> <span class="p">[</span><span class="n">robin</span><span class="p">,</span> <span class="n">pieter</span><span class="p">,</span> <span class="n">jorn</span><span class="p">]</span>
+<span class="n">flossing</span><span class="o">.</span><span class="n">save_to_db</span><span class="p">()</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Note:</th><td class="field-body"><p class="first">changes are only saved to the database when <a class="reference internal" href="#gridt.models.movement.Movement.save_to_db" title="gridt.models.movement.Movement.save_to_db"><code class="xref py py-func docutils literal notranslate"><span class="pre">Movement.save_to_db()</span></code></a> is called.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – Name of the movement</li>
+<li><strong>short_description</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – Give a short description for your movement.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Attribute str description:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body"><p class="first">More elaborate description of your movement.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Attribute users:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body"><p class="first">All user that have been subscribed to this movement.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Attribute user_associations:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body"><p class="first last">All instances of <code class="xref py py-class docutils literal notranslate"><span class="pre">models.movement_user_association.MovementUserAssociation</span></code> with that link to this movement.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="gridt.models.movement.Movement.add_user">
+<code class="descname">add_user</code><span class="sig-paren">(</span><em>user</em><span class="sig-paren">)</span><a class="headerlink" href="#gridt.models.movement.Movement.add_user" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a new user to self.users and give it appropriate leaders.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>user</strong> (<a class="reference internal" href="#gridt.models.user.User" title="gridt.models.user.User"><em>gridt.models.user.User</em></a>) – the user that is to be subscribed to this movement</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Todo:</th><td class="field-body">Move find leader logic into private function.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="gridt.models.movement.Movement.delete_from_db">
+<code class="descname">delete_from_db</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#gridt.models.movement.Movement.delete_from_db" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete this movement from the database.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Warning:</th><td class="field-body">This is permanent and irrevocable.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="gridt.models.movement.Movement.find_by_name">
+<em class="property">classmethod </em><code class="descname">find_by_name</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#gridt.models.movement.Movement.find_by_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find a movement by it’s name.
+:param name: Name of movement that is being queried.
+:rtype: None or gridt.models.movement.Movement</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gridt.models.movement.Movement.remove_user">
+<code class="descname">remove_user</code><span class="sig-paren">(</span><em>user</em><span class="sig-paren">)</span><a class="headerlink" href="#gridt.models.movement.Movement.remove_user" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove any relationship this user previously had with this movement.
+Deleting any leader as well as follower relationship.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>user</strong> – user to be deleted.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="gridt.models.movement.Movement.save_to_db">
+<code class="descname">save_to_db</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#gridt.models.movement.Movement.save_to_db" title="Permalink to this definition">¶</a></dt>
+<dd><p>Store this movement in the database, making changes to the movement permanent.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="gridt.models.movement.Movement.swap_leader">
+<code class="descname">swap_leader</code><span class="sig-paren">(</span><em>user</em>, <em>leader</em><span class="sig-paren">)</span><a class="headerlink" href="#gridt.models.movement.Movement.swap_leader" title="Permalink to this definition">¶</a></dt>
+<dd><p>Swap out the presented leader in the users leaders.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>user</strong> – User who’s leader will be swapped.</li>
+<li><strong>leader</strong> – The leader that will be swapped.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">True if successful, False if unsuccesful.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Rtype bool:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-gridt.models.updates"></span><dl class="class">
+<dt id="gridt.models.updates.Update">
+<em class="property">class </em><code class="descclassname">gridt.models.updates.</code><code class="descname">Update</code><span class="sig-paren">(</span><em>leader</em>, <em>movement</em><span class="sig-paren">)</span><a class="headerlink" href="#gridt.models.updates.Update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Model</span></code></p>
+<p>Representation of updates in the database.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Attribute leader:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">The leader that created this update.</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Attribute movement:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">The movement that this update was created in.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Gridt Server</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="gettingstarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code.html">Documentation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Python API Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-gridt.models.user">Models</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="httpapireference.html">HTTP API Reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="code.html" title="previous chapter">Documentation</a></li>
+      <li>Next: <a href="httpapireference.html" title="next chapter">HTTP API Reference</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Robin A. Dorstijn.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/pythonapireference.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
