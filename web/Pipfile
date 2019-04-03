@@ -14,6 +14,7 @@ flask-jwt = "*"
 click = "*"
 marshmallow = "*"
 gunicorn = "*"
+pymysql = "*"
 
 [requires]
 python_version = "3.7"
