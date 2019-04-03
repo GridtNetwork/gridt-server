@@ -2,9 +2,7 @@
 App module
 **********
 
-This module provides ``create_app()``, it is the main entry point for the
-application. When executing the commmand `flask run` it will find this module
-and search for create_app and run it. BaseTest also uses this file to provide a
+This module provides ``create_app()``, it is the main entry point for the application. When executing the commmand `flask run` it will find this module and search for create_app and run it. BaseTest also uses this file to provide a
 test environment.
 """
 
@@ -13,7 +11,10 @@ import sys
 import logging
 import pathlib
 import click
+from functools import reduce
 from datetime import timedelta
+
+from sqlalchemy_utils import database_exists, create_database
 
 from flask import Flask, jsonify
 from flask.cli import FlaskGroup
@@ -37,46 +38,20 @@ from gridt.resources.movements import (
 )
 
 
-def create_app(overwrite_conf=None):
+def construct_database_url(app):
+    if not app.config.get("SQLALCHEMY_DATABASE_URI"):
+        protocol = app.config["DB_DIALECT"]
+        protocol += "+" + app.config["DB_DRIVER"] if app.config.get("DB_DRIVER") else ""
+        identification = app.config["DB_USER"] + ":" + app.config["DB_PASSWORD"]
+        uri = app.config["DB_HOST"] + "/" + app.config["DB_DATABASE"]
+        url = protocol + "://" + identification + "@" + uri
+        app.config["SQLALCHEMY_DATABASE_URI"] = url
+
+
+def register_api_endpoints(api):
     """
-    :param overwrite_conf: default None, argument should be the name (excluding the .conf suffix) of the conf file in conf/ that you want to use.
-
-    Example: ::
-
-        gridt/
-            app.py
-            conf/
-                default.conf
-                your_file.conf
-
-    Then you can run ``create_app('your_file')`` to overwrite whatever is in the ``FLASK_CONFIGURATION`` bash variable in that moment.
-
+    Connect all resources with an appropriate url.
     """
-    app = Flask(__name__)
-    config_name = os.getenv("FLASK_CONFIGURATION", "default")
-
-    if overwrite_conf:
-        config_name = overwrite_conf
-
-    try:
-        path = (
-            os.path.dirname(os.path.realpath(__file__))
-            / pathlib.Path("conf/")
-            / (config_name + ".conf")
-        )
-        app.config.from_pyfile(str(path))
-    except FileNotFoundError:
-        app.logger.error(f"Could not find file conf/{config_name}.conf, exiting.")
-        sys.exit(1)
-
-    app.logger.info(f"Starting flask with {config_name} config.")
-
-    db.init_app(app)
-    if app.config.get("FLASK_DEBUG", True):
-        with app.app_context():
-            db.create_all()
-
-    api = Api(app)
     api.add_resource(LoggedInResource, "/logged_in")
     api.add_resource(RegisterResource, "/register")
     api.add_resource(MovementsResource, "/movements")
@@ -86,8 +61,8 @@ def create_app(overwrite_conf=None):
     api.add_resource(SwapLeaderResource, "/movements/<movement_id>/leader/<leader_id>")
     api.add_resource(NewUpdateResource, "/movements/<movement_id>/update")
 
-    JWT(app, authenticate, identify)
 
+def add_cli_commands(app, db):
     @app.cli.command("initdb")
     def initialize_database():
         """
@@ -98,6 +73,8 @@ def create_app(overwrite_conf=None):
         app.logger.info(
             f"Writing to database '{app.config['SQLALCHEMY_DATABASE_URI']}'."
         )
+        if not database_exists(app.config["SQLALCHEMY_DATABASE_URI"]):
+            create_database(app.config["SQLALCHEMY_DATABASE_URI"])
         db.create_all()
 
     @app.cli.command("insert-test-data")
@@ -128,6 +105,59 @@ def create_app(overwrite_conf=None):
             return
 
         movement.delete_from_db()
+
+
+def load_config(app, overwrite_conf):
+    config_name = os.getenv("FLASK_CONFIGURATION", "default")
+
+    if overwrite_conf:
+        config_name = overwrite_conf
+
+    try:
+        path = (
+            os.path.dirname(os.path.realpath(__file__))
+            / pathlib.Path("conf/")
+            / (config_name + ".conf")
+        )
+        app.config.from_pyfile(str(path))
+    except FileNotFoundError:
+        app.logger.error(f"Could not find file conf/{config_name}.conf, exiting.")
+        sys.exit(1)
+
+    app.logger.info(f"Starting flask with {config_name} config.")
+
+
+def create_app(overwrite_conf=None):
+    """
+    :param overwrite_conf: default None, argument should be the name (excluding the .conf suffix) of the conf file in conf/ that you want to use.
+
+    Example: ::
+
+        gridt/
+            app.py
+            conf/
+                default.conf
+                your_file.conf
+
+    Then you can run ``create_app('your_file')`` to overwrite whatever is in the ``FLASK_CONFIGURATION`` bash variable in that moment.
+
+    """
+    app = Flask(__name__)
+
+    load_config(app, overwrite_conf)
+    construct_database_url(app)
+    db.init_app(app)
+
+    if app.config.get("FLASK_DEBUG", True):
+        with app.app_context():
+            db.create_all()
+
+    api = Api(app)
+    register_api_endpoints(api)
+
+    JWT(app, authenticate, identify)
+
+    add_cli_commands(app, db)
 
     return app
 
