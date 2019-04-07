@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 version: '3.1'
+=======
+version: '3'
+>>>>>>> a3eafda79eb526eb93a80498d7a6738c2a58fd4b
 services:
     db:
         restart: always
