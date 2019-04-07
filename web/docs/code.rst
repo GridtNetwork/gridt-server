@@ -51,13 +51,35 @@ This is the output of ``$ flask --help``: ::
 
 Conf files
 ==========
-In the conf directory you will be able to edit the configuration files. Select
-the configuration file by choosing one of three: default, development or
-testing. To make the app read your configuration set it trough:
+Configuration files for the gridt network can be set using the
+``FLASK_CONFIGURATION`` environment variable. Using this variable the default
+settings can be changed.
 
 .. code-block:: bash
 
-   $ export FLASK_CONFIGURATION=<default|development|testing>
+   $ export FLASK_CONFIGURATION=/path/to/your/configuration/file.conf
 
-Here is where you can set the SECRET_KEY, or any other configuration setting
+Here is where you can set the SECRET_KEY and any other configuration setting
 you would like to use.
+
+Secret keys
+-----------
+There is two possible ways to set the secret key of your project: trough the
+normal setting of ``SECRET_KEY`` in the conf file, or by setting the
+``SECRET_KEY_FILE``. This string should be a path to a file containing only one
+line. If a secret key is specified the secret key file will be ignoren. Note
+that if neither are present, or if the file is empty or if it has more than one
+line, the application will not start.
+
+Database URI
+------------
+In a similar vein, ``SQLALCHEMY_DATABASE_URI`` (for more details on this visit the
+`sql alchemy documentation <https://docs.sqlalchemy.org/en/latest/core/engines.html#sqlalchemy.create_engine>`_
+can be set in two ways, either simply by setting it in the conf file or by
+constructing it with:
+
+   - DB_DIALECT (required)
+   - DB_DRIVER
+   - DB_USER (required)
+   - DB_PASSWORD (required)
+   - DB_HOST (required)

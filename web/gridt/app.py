@@ -40,6 +40,11 @@ from gridt.resources.movements import (
 
 def construct_database_url(app):
     if not app.config.get("SQLALCHEMY_DATABASE_URI"):
+        if not app.config.get("DB_DIALECT"):
+            app.logger.critical(
+                "Neither SQLALCHEMY_DATABASE_URI or DB_DIALECT has been specified in the configuration file, exiting."
+            )
+            sys.exit()
         protocol = app.config["DB_DIALECT"]
         protocol += "+" + app.config["DB_DRIVER"] if app.config.get("DB_DRIVER") else ""
         identification = app.config["DB_USER"] + ":" + app.config["DB_PASSWORD"]
@@ -108,23 +113,39 @@ def add_cli_commands(app, db):
 
 
 def load_config(app, overwrite_conf):
-    config_name = os.getenv("FLASK_CONFIGURATION", "default")
+    config_file = os.getenv("FLASK_CONFIGURATION", "conf/default.conf")
 
     if overwrite_conf:
-        config_name = overwrite_conf
+        config_file = overwrite_conf
 
     try:
-        path = (
-            os.path.dirname(os.path.realpath(__file__))
-            / pathlib.Path("conf/")
-            / (config_name + ".conf")
-        )
-        app.config.from_pyfile(str(path))
+        app.config.from_pyfile(config_file)
     except FileNotFoundError:
-        app.logger.error(f"Could not find file conf/{config_name}.conf, exiting.")
+        app.logger.error(f"Could not find file {config_file}, exiting.")
         sys.exit(1)
 
-    app.logger.info(f"Starting flask with {config_name} config.")
+    if not app.config.get("SECRET_KEY"):
+        try:
+            path = app.config.get("SECRET_KEY_FILE")
+            if not path:
+                app.logger.critical("No secret key or secret key file specified.")
+                sys.exit(1)
+
+            with open(path, "r") as secret_file:
+                secret = [
+                    l.rstrip("\n") for l in secret_file
+                ]  # Remove '\n' from the end of the line.
+                if not secret:
+                    app.logger.critical("No secret provided in secrets file.")
+                    sys.exit(1)
+                if len(secret) > 1:
+                    app.logger.critical("Secret file has more than 1 line.")
+                    sys.exit(1)
+                app.config["SECRET_KEY"] = secret[0]
+        except FileNotFoundError:
+            app.logger.critical("Could not load secret key file.")
+            sys.exit(1)
+    app.logger.info(f"Starting flask with {config_file} config.")
 
 
 def create_app(overwrite_conf=None):

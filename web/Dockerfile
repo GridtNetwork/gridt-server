@@ -1,5 +1,6 @@
 FROM python:3.7 AS builder
 ENV PYTHONUNBUFFERED 1
+RUN echo $FLASK_CONFIGURATION
 
 WORKDIR /packages/
 RUN pip install -U pip && pip install pipenv
