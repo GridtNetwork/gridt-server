@@ -38,80 +38,6 @@ from gridt.resources.movements import (
 )
 
 
-def construct_database_url(app):
-    if not app.config.get("SQLALCHEMY_DATABASE_URI"):
-        if not app.config.get("DB_DIALECT"):
-            app.logger.critical(
-                "Neither SQLALCHEMY_DATABASE_URI or DB_DIALECT has been specified in the configuration file, exiting."
-            )
-            sys.exit()
-        protocol = app.config["DB_DIALECT"]
-        protocol += "+" + app.config["DB_DRIVER"] if app.config.get("DB_DRIVER") else ""
-        identification = app.config["DB_USER"] + ":" + app.config["DB_PASSWORD"]
-        uri = app.config["DB_HOST"] + "/" + app.config["DB_DATABASE"]
-        url = protocol + "://" + identification + "@" + uri
-        app.config["SQLALCHEMY_DATABASE_URI"] = url
-
-
-def register_api_endpoints(api):
-    """
-    Connect all resources with an appropriate url.
-    """
-    api.add_resource(LoggedInResource, "/logged_in")
-    api.add_resource(RegisterResource, "/register")
-    api.add_resource(MovementsResource, "/movements")
-    api.add_resource(SingleMovementResource, "/movements/<identifier>")
-    api.add_resource(SubscriptionsResource, "/movements/subscriptions")
-    api.add_resource(SubscribeResource, "/movements/<movement_id>/subscriber")
-    api.add_resource(SwapLeaderResource, "/movements/<movement_id>/leader/<leader_id>")
-    api.add_resource(NewUpdateResource, "/movements/<movement_id>/update")
-
-
-def add_cli_commands(app, db):
-    @app.cli.command("initdb")
-    def initialize_database():
-        """
-        Initialize the database.
-
-        Mainly consists of creating the tables.
-        """
-        app.logger.info(
-            f"Writing to database '{app.config['SQLALCHEMY_DATABASE_URI']}'."
-        )
-        if not database_exists(app.config["SQLALCHEMY_DATABASE_URI"]):
-            create_database(app.config["SQLALCHEMY_DATABASE_URI"])
-        db.create_all()
-
-    @app.cli.command("insert-test-data")
-    def insert_test_data():
-        """
-        Insert test data into the database.
-
-        Current dataset is very limited.
-        """
-        movement = Movement("test", timedelta(days=2))
-        movement.save_to_db()
-
-    @app.cli.command("delete-movement")
-    @click.argument("movement_name")
-    def delete_movement(movement_name):
-        """ Delete a movement from the database. """
-        movement = Movement.find_by_name(movement_name)
-        if not movement:
-            app.logger.error(f"Could not find movement with name '{movement_name}.'")
-            return 1
-
-        q = "neither"
-        while not q in ["", "y", "n", "Y", "N", "yes", "no"]:
-            q = input(
-                f"Do you really want to delete the movement with name '{movement_name}'? [y/N]"
-            )
-        if q in ["", "n", "N", "no"]:
-            return
-
-        movement.delete_from_db()
-
-
 def load_config(app, overwrite_conf):
     config_file = os.getenv("FLASK_CONFIGURATION", "conf/default.conf")
 
@@ -148,6 +74,79 @@ def load_config(app, overwrite_conf):
     app.logger.info(f"Starting flask with {config_file} config.")
 
 
+def construct_database_url(app):
+    if not app.config.get("SQLALCHEMY_DATABASE_URI"):
+        if not app.config.get("DB_DIALECT"):
+            app.logger.critical(
+                "Neither SQLALCHEMY_DATABASE_URI or DB_DIALECT has been specified in the configuration file, exiting."
+            )
+            sys.exit()
+        protocol = app.config["DB_DIALECT"]
+        protocol += "+" + app.config["DB_DRIVER"] if app.config.get("DB_DRIVER") else ""
+        identification = app.config["DB_USER"] + ":" + app.config["DB_PASSWORD"]
+        uri = app.config["DB_HOST"] + "/" + app.config["DB_DATABASE"]
+        url = protocol + "://" + identification + "@" + uri
+        app.config["SQLALCHEMY_DATABASE_URI"] = url
+        app.logger.info(f"Connecting to db at {app.config['SQLALCHEMY_DATABASE_URI']}")
+
+
+def register_api_endpoints(api):
+    """
+    Connect all resources with an appropriate url.
+    """
+    api.add_resource(LoggedInResource, "/logged_in")
+    api.add_resource(RegisterResource, "/register")
+    api.add_resource(MovementsResource, "/movements")
+    api.add_resource(SingleMovementResource, "/movements/<identifier>")
+    api.add_resource(SubscriptionsResource, "/movements/subscriptions")
+    api.add_resource(SubscribeResource, "/movements/<movement_id>/subscriber")
+    api.add_resource(SwapLeaderResource, "/movements/<movement_id>/leader/<leader_id>")
+    api.add_resource(NewUpdateResource, "/movements/<movement_id>/update")
+
+
+def add_cli_commands(app, db):
+    @app.cli.command("initdb")
+    def initialize_database():
+        """
+        Initialize the database.
+
+        Mainly consists of creating the tables.
+        """
+        app.logger.info(
+            f"Writing to database '{app.config['SQLALCHEMY_DATABASE_URI']}'."
+        )
+        db.create_all()
+
+    @app.cli.command("insert-test-data")
+    def insert_test_data():
+        """
+        Insert test data into the database.
+
+        Current dataset is very limited.
+        """
+        movement = Movement("test", timedelta(days=2))
+        movement.save_to_db()
+
+    @app.cli.command("delete-movement")
+    @click.argument("movement_name")
+    def delete_movement(movement_name):
+        """ Delete a movement from the database. """
+        movement = Movement.find_by_name(movement_name)
+        if not movement:
+            app.logger.error(f"Could not find movement with name '{movement_name}.'")
+            return 1
+
+        q = "neither"
+        while not q in ["", "y", "n", "Y", "N", "yes", "no"]:
+            q = input(
+                f"Do you really want to delete the movement with name '{movement_name}'? [y/N]"
+            )
+        if q in ["", "n", "N", "no"]:
+            return
+
+        movement.delete_from_db()
+
+
 def create_app(overwrite_conf=None):
     """
     :param overwrite_conf: default None, argument should be the name (excluding the .conf suffix) of the conf file in conf/ that you want to use.
@@ -168,6 +167,9 @@ def create_app(overwrite_conf=None):
     load_config(app, overwrite_conf)
     construct_database_url(app)
     db.init_app(app)
+
+    if not database_exists(app.config["SQLALCHEMY_DATABASE_URI"]):
+        create_database(app.config["SQLALCHEMY_DATABASE_URI"])
 
     if app.config.get("FLASK_DEBUG", True):
         with app.app_context():
