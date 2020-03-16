@@ -1,4 +1,4 @@
-FROM python:3.7 AS builder
+FROM python:3.8 AS builder
 ENV PYTHONUNBUFFERED 1
 
 WORKDIR /packages/
