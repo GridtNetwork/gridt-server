@@ -6,9 +6,10 @@ RUN pip install -U pip && pip install pipenv
 COPY Pipfile.lock Pipfile /packages/
 RUN bash -c 'PIPENV_VENV_IN_PROJECT=1 pipenv install'
 
-FROM python:3.7
+FROM python:3.8
 ARG FLASK_CONFIGURATION
 ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH=/packages/
 
 RUN mkdir -p /usr/src/gridt-server
 COPY --from=builder /packages/ /packages
