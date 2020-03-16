@@ -16,7 +16,7 @@ class RegisterResource(Resource):
     def post(self):
         schema = NewUserSchema()
         result = schema.load(request.get_json())
-        if result.errors:
+        if "errors" in result:
             return {"message": "Bad request"}, 400
         data = result.data
 
