@@ -13,7 +13,7 @@ class IntervalSchema(Schema):
     hours = fields.Int(required=True)
 
     @validates_schema
-    def check_nonzero(self, in_data):
+    def check_nonzero(self, in_data, **kwargs):
         if in_data["days"] <= 0 and in_data["hours"] <= 0:
             raise ValidationError("Interval must be nonzero.")
 
@@ -21,5 +21,5 @@ class IntervalSchema(Schema):
 class MovementSchema(Schema):
     name = fields.Str(required=True, validate=Length(min=4, max=50))
     short_description = fields.Str(required=True, validate=Length(min=10, max=100))
-    description = fields.Str(validate=Length(max=1000))
+    description = fields.Str(data_key="long-description", validate=Length(max=1000))
     interval = fields.Nested(IntervalSchema(), required=True)
