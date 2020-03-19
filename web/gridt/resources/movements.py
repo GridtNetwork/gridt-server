@@ -53,7 +53,8 @@ class MovementsResource(Resource):
         except ValidationError as error:
             if "interval" in error.messages:
                 if type(error.messages["interval"]) == type({}):
-                    return {"message": error.messages["interval"]["_schema"][0]}, 400
+                    keys = error.messages["interval"].keys()
+                    return {"message": error.messages["interval"][keys()[0]][0]}, 400
                 else:
                     return {"message": error.messages["interval"][0]}, 400
 
