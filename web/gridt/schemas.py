@@ -9,8 +9,8 @@ class NewUserSchema(Schema):
 
 
 class IntervalSchema(Schema):
-    days = fields.Int(required=True)
-    hours = fields.Int(required=True)
+    days = fields.Int()
+    hours = fields.Int()
 
     @validates_schema
     def check_nonzero(self, in_data, **kwargs):

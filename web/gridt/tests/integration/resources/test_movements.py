@@ -113,6 +113,29 @@ class MovementsTest(BaseTest):
             )
             self.assertEqual(resp.status_code, 400)
 
+    def test_invalid_movement(self):
+        with self.app_context():
+            user = User("test1", "test@test.com", "pass")
+            user.save_to_db()
+
+            token = self.obtain_token("test1", "pass")
+
+            movement_dict = {
+                "name": "movement",
+                "short_description": "Hi, this is a test",
+            }
+
+            resp = self.client.post(
+                "/movements",
+                headers={"Authorization": f"JWT {token}"},
+                json=movement_dict,
+            )
+
+            self.assertEqual(
+                json.loads(resp.data), {"message": "Missing data for required field."}
+            )
+            self.assertEqual(resp.status_code, 400)
+
     def test_name_empty(self):
         with self.app_context():
             user = User("test1", "test@test.com", "pass")
