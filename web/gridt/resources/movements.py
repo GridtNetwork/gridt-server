@@ -52,7 +52,10 @@ class MovementsResource(Resource):
             res = self.schema.load(request.get_json())
         except ValidationError as error:
             if "interval" in error.messages:
-                return {"message": error.messages["interval"]["_schema"][0]}, 400
+                if type(error.messages["interval"]) == type({}):
+                    return {"message": error.messages["interval"]["_schema"][0]}, 400
+                else:
+                    return {"message": error.messages["interval"][0]}, 400
 
             field = list(error.messages.keys())[0]
             return {"message": f"{field}: {error.messages[field][0]}"}, 400
