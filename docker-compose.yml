@@ -12,6 +12,7 @@ services:
             - ./db:/docker-entrypoint-initdb.d/:ro
         networks:
             - db_network
+        command: --sql_mode=""
     web:
         restart: always
         build:
