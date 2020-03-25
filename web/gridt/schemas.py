@@ -21,5 +21,5 @@ class IntervalSchema(Schema):
 class MovementSchema(Schema):
     name = fields.Str(required=True, validate=Length(min=4, max=50))
     short_description = fields.Str(required=True, validate=Length(min=10, max=100))
-    description = fields.Str(data_key="long-description", validate=Length(max=1000))
+    description = fields.Str(validate=Length(max=1000))
     interval = fields.Nested(IntervalSchema(), required=True)
