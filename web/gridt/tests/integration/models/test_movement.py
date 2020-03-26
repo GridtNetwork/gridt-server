@@ -26,24 +26,30 @@ class MovementTest(BaseTest):
             user1 = User("user1", "test@test.com", "password")
             user2 = User("user2", "test@test.com", "password")
             user3 = User("user3", "test@test.com", "password")
-            movement1 = Movement("movement1", timedelta(days=2))
+            movement = Movement("movement1", timedelta(days=2))
 
-            db.session.add_all([user1, user2, user3, movement1])
+            db.session.add_all([user1, user2, user3, movement])
             db.session.commit()
 
-            assoc1 = MovementUserAssociation(movement1, user1, user2)
-            assoc2 = MovementUserAssociation(movement1, user2, user1)
-            assoc3 = MovementUserAssociation(movement1, user1, None)
+            #
+            # 1 <-> 2  4 5
+            #
+            assoc1 = MovementUserAssociation(movement, user1, user2)
+            assoc2 = MovementUserAssociation(movement, user2, user1)
+            assoc3 = MovementUserAssociation(movement, user1, None)
 
             self.assertFalse(movement.swap_leader(user1, user2))
 
             user4 = User("user4", "test@test.com", "password")
             user5 = User("user5", "test@test.com", "password")
-            db.session.add_all([user4, user5])
+            db.session.add_all([user4, user5, assoc1, assoc2, assoc3])
             db.session.commit()
 
             movement.add_user(user4)
             movement.add_user(user5)
+
+            # Make sure that the changes are permanent.
+            db.session.rollback()
 
             self.assertTrue(movement.swap_leader(user2, user1))
             self.assertEqual(len(user2.leaders(movement)), 1)
@@ -51,7 +57,7 @@ class MovementTest(BaseTest):
             self.assertTrue(movement.swap_leader(user1, None))
             self.assertIn(user1.leaders(movement)[0], [user2, user3, user4, user5])
 
-    def test_swap_leader(self):
+    def test_swap_leader_complicated(self):
         with self.app_context():
             user1 = User("user1", "test@test.com", "password")
             user2 = User("user2", "test@test.com", "password")
@@ -96,7 +102,10 @@ class MovementTest(BaseTest):
             )
             db.session.commit()
 
-            self.assertEqual(movement1.swap_leader(user1, user2), user3)
+            new_leader = movement1.swap_leader(user1, user2)
+            # Make sure that it is actually saved in the database!
+            db.session.rollback()
+            self.assertEqual(new_leader, user3)
 
             with self.assertRaises(ValueError):
                 movement1.swap_leader(user1, user2)

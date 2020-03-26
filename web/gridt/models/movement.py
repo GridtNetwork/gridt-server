@@ -137,6 +137,7 @@ class Movement(db.Model):
         for association in user.follower_associations:
             if association.leader == leader and association.movement == self:
                 association.leader = new_leader
+                association.save_to_db()
 
         return new_leader
 
