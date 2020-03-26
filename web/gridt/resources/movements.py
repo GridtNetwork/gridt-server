@@ -6,6 +6,8 @@ from flask import current_app, request
 from flask_restful import Resource, abort
 from flask_jwt import jwt_required, current_identity
 
+from marshmallow import ValidationError
+
 from gridt.schemas import MovementSchema
 from gridt.models.movement import Movement
 from gridt.models.user import User
@@ -13,7 +15,6 @@ from gridt.models.update import Update
 
 
 def get_movement(identifier):
-    movement = None
     try:
         identifier = int(identifier)
         movement = Movement.find_by_id(identifier)
@@ -27,7 +28,6 @@ def get_movement(identifier):
 
 
 def get_user(identifier):
-    user = None
     try:
         identifier = int(identifier)
         user = User.find_by_id(identifier)
@@ -48,14 +48,17 @@ class MovementsResource(Resource):
 
     @jwt_required()
     def post(self):
-        res = self.schema.load(request.get_json())
-        if res.errors:
-            if res.errors.get("interval"):
-                return {"message": res.errors["interval"]["_schema"][0]}, 400
-            field = list(res.errors.keys())[0]
-            return {"message": f"{field}: {res.errors[field][0]}"}, 400
+        try:
+            res = self.schema.load(request.get_json())
+        except ValidationError as error:
+            if "interval" in error.messages:
+                keys = error.messages["interval"].keys()
+                return {"message": error.messages["interval"][keys()[0]][0]}, 400
 
-        existing_movement = Movement.find_by_name(res.data["name"])
+            field = list(error.messages.keys())[0]
+            return {"message": f"{field}: {error.messages[field][0]}"}, 400
+
+        existing_movement = Movement.find_by_name(res["name"])
         if existing_movement:
             return (
                 {
@@ -65,12 +68,10 @@ class MovementsResource(Resource):
             )
 
         movement = Movement(
-            res.data["name"],
-            timedelta(
-                days=res.data["interval"]["days"], hours=res.data["interval"]["hours"]
-            ),
-            short_description=res.data["short_description"],
-            description=res.data.get("description"),
+            res["name"],
+            timedelta(days=res["interval"]["days"], hours=res["interval"]["hours"]),
+            short_description=res["short_description"],
+            description=res.get("description"),
         )
         movement.save_to_db()
 

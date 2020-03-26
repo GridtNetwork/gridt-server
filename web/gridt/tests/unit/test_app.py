@@ -11,5 +11,8 @@ class AppTest(TestCase):
     @patch.object(Config, "from_pyfile")
     def test_overwrite_conf(self, mocked_fun):
         with nostderr():
-            app = create_app("test_conf")
-            mocked_fun.assert_called_with(os.getcwd() + "/gridt/conf/test_conf.conf")
+            with self.assertRaises(SystemExit):
+                app = create_app("test_conf")
+                mocked_fun.assert_called_with(
+                    os.getcwd() + "/gridt/conf/test_conf.conf"
+                )

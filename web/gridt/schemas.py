@@ -13,7 +13,7 @@ class IntervalSchema(Schema):
     hours = fields.Int(required=True)
 
     @validates_schema
-    def check_nonzero(self, in_data):
+    def check_nonzero(self, in_data, **kwargs):
         if in_data["days"] <= 0 and in_data["hours"] <= 0:
             raise ValidationError("Interval must be nonzero.")
 

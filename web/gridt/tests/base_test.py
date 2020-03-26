@@ -51,7 +51,7 @@ class LoggedTestCase(TestCase):
 
 class BaseTest(LoggedTestCase):
     def setUp(self):
-        app = create_app(overwrite_conf="test")
+        app = create_app(overwrite_conf="conf/test.conf")
 
         # Make sure db exists
         with app.app_context():

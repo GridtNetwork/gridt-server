@@ -5,6 +5,8 @@ from flask_jwt import jwt_required, current_identity
 from gridt.models.user import User
 from gridt.schemas import NewUserSchema
 
+from marshmallow import ValidationError
+
 
 class LoggedInResource(Resource):
     @jwt_required()
@@ -15,10 +17,12 @@ class LoggedInResource(Resource):
 class RegisterResource(Resource):
     def post(self):
         schema = NewUserSchema()
-        result = schema.load(request.get_json())
-        if result.errors:
+
+        data = None
+        try:
+            data = schema.load(request.get_json())
+        except ValidationError:
             return {"message": "Bad request"}, 400
-        data = result.data
 
         if User.find_by_name(data["username"]):
             return {"message": "Username already in use."}, 400

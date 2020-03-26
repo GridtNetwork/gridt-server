@@ -1,0 +1,45 @@
+version: '3.4'
+services:
+    db:
+        restart: always
+        image: mysql:latest
+        command: --default-authentication-plugin=mysql_native_password
+        ports:
+            - '3306:3306'
+        environment:
+            MYSQL_ROOT_PASSWORD: root # TODO: Change this to something more secure on actual server!
+        volumes:
+            - ./db:/docker-entrypoint-initdb.d/:ro
+        networks:
+            - db_network
+        command: --sql_mode=""
+    web:
+        restart: always
+        build:
+            context: ./web
+            args:
+                FLASK_CONFIGURATION: conf/deployment.conf
+        secrets:
+            - flask
+        networks:
+            - nginx_network
+            - db_network
+        depends_on:
+            - db
+    nginx:
+        restart: always
+        build: ./nginx
+        networks:
+            - nginx_network
+        ports:
+            - "80:80"
+        depends_on:
+            - web
+networks:
+    nginx_network:
+        driver: bridge
+    db_network:
+        driver: bridge
+secrets:
+    flask:
+        file: flask_secret_key.txt
