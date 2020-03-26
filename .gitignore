@@ -128,3 +128,4 @@ dmypy.json
 
 gridt.db
 
+.vscode/*
