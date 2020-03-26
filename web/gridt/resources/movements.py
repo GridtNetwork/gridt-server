@@ -1,8 +1,6 @@
 from datetime import timedelta
-import random
-from random import choice
 
-from flask import current_app, request
+from flask import request
 from flask_restful import Resource, abort
 from flask_jwt import jwt_required, current_identity
 
@@ -52,8 +50,7 @@ class MovementsResource(Resource):
             res = self.schema.load(request.get_json())
         except ValidationError as error:
             if "interval" in error.messages:
-                keys = error.messages["interval"].keys()
-                return {"message": error.messages["interval"][keys()[0]][0]}, 400
+                return {"message": error.messages["interval"][0]}, 400
 
             field = list(error.messages.keys())[0]
             return {"message": f"{field}: {error.messages[field][0]}"}, 400

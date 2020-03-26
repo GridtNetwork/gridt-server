@@ -9,18 +9,13 @@ class SchemasTest(BaseTest):
         proper_movement = {
             "name": "flossing",
             "short_description": "Flossing everyday keeps the dentist away.",
-            "long-description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus eget sapien ipsum. Nulla eget felis id mi maximus vestibulum a ac lorem. Ut eget arcu sed urna pellentesque hendrerit eu eget ipsum. Sed congue scelerisque dapibus. Suspendisse neque mi, vehicula vel malesuada at, pretium non sapien. Phasellus mi ex, congue.",
+            "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus eget sapien ipsum. Nulla eget felis id mi maximus vestibulum a ac lorem. Ut eget arcu sed urna pellentesque hendrerit eu eget ipsum. Sed congue scelerisque dapibus. Suspendisse neque mi, vehicula vel malesuada at, pretium non sapien. Phasellus mi ex, congue.",
             "interval": {"hours": 1, "days": 10},
         }
 
         # Make sure no error is thrown with this info
         schema = MovementSchema()
         res = schema.load(proper_movement)
-
-        # Doing a small transformation on the result as to make sure to account
-        # for the change in name.
-        proper_movement["description"] = proper_movement["long-description"]
-        del proper_movement["long-description"]
         self.assertEqual(res, proper_movement)
 
     def test_movement_schema_short(self):
@@ -40,7 +35,7 @@ class SchemasTest(BaseTest):
 
         schema = MovementSchema()
         with self.assertRaises(ValidationError) as error:
-            res = schema.load(bad_movement)
+            schema.load(bad_movement)
         self.assertEqual(
             error.exception.messages,
             {
@@ -58,7 +53,7 @@ class SchemasTest(BaseTest):
 
         schema = MovementSchema()
         with self.assertRaises(ValidationError) as error:
-            res = schema.load(bad_movement)
+            schema.load(bad_movement)
 
         self.assertEqual(
             error.exception.messages,
@@ -76,7 +71,7 @@ class SchemasTest(BaseTest):
         schema.load(good_interval)
 
         with self.assertRaises(ValidationError) as error:
-            res = schema.load(bad_interval)
+            schema.load(bad_interval)
 
         self.assertEqual(
             error.exception.messages, {"_schema": ["Interval must be nonzero."]}
