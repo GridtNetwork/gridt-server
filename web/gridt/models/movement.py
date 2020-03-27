@@ -211,7 +211,9 @@ class Movement(db.Model):
                 {
                     "username": user.username,
                     "id": user.id,
-                    "last_update": str(Update.find_last(user, self).time_stamp)
+                    "last_update": str(
+                        Update.find_last(user, self).time_stamp.astimezone()
+                    )
                     if Update.find_last(user, self)
                     else None,
                 }

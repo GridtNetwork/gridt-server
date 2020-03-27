@@ -187,7 +187,7 @@ class MovementTest(BaseTest):
                     {
                         "id": 1,
                         "username": "test1",
-                        "last_update": str(datetime(1996, 3, 15)),
+                        "last_update": str(datetime(1996, 3, 15).astimezone()),
                     }
                 ],
             }

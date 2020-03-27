@@ -15,7 +15,7 @@ class Update(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     leader_id = db.Column(db.Integer, db.ForeignKey("users.id"))
     movement_id = db.Column(db.Integer, db.ForeignKey("movements.id"))
-    time_stamp = db.Column(db.DateTime, nullable=False)
+    time_stamp = db.Column(db.DateTime(timezone=True), nullable=False)
 
     leader = db.relationship("User")
     movement = db.relationship("Movement")

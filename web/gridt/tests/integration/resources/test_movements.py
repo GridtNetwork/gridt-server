@@ -30,7 +30,7 @@ class MovementsTest(BaseTest):
             movement2.add_user(user)
 
             # To prevent sqlalchemy.orm.exc.DetachedInstanceError
-            stamp = str(update2.time_stamp)
+            stamp = str(update2.time_stamp.astimezone())
 
             token = self.obtain_token("test2", "pass")
 
@@ -552,7 +552,7 @@ class SubscriptionsResourceTest(BaseTest):
 
             self.assertTrue(movement2 not in user2.movements)
             # To prevent sqlalchemy.orm.exc.DetachedInstanceError
-            stamp = str(update2.time_stamp)
+            stamp = str(update2.time_stamp.astimezone())
 
             token = self.obtain_token("test2", "pass")
 
