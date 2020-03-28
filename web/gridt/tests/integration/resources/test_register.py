@@ -27,7 +27,7 @@ class RegistrationResourceTest(BaseTest):
             token = json.loads(
                 self.client.post(
                     "/auth",
-                    json={"username": "robin", "password": "secret"},
+                    json={"username": "robin@gridt.org", "password": "secret"},
                     headers={"Content-Type": "application/json"},
                 ).data
             )["access_token"]

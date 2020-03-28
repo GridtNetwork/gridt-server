@@ -28,7 +28,7 @@ class AuthTest(BaseTest):
             response = self.client.post(
                 "/auth",
                 headers={"Content-Type": "application/json"},
-                json={"username": "username", "password": "password"},
+                json={"username": "test@test.com", "password": "password"},
             )
 
             data = json.loads(response.data)

@@ -27,8 +27,8 @@ class User(db.Model):
     __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(32), index=True)
-    email = db.Column(db.String(40), nullable=False)
+    username = db.Column(db.String(32))
+    email = db.Column(db.String(40), unique=True, nullable=False)
     password_hash = db.Column(db.String(128))
     role = db.Column(db.String(32))
 
@@ -54,6 +54,10 @@ class User(db.Model):
     @classmethod
     def find_by_name(cls, query_username):
         return cls.query.filter_by(username=query_username).one_or_none()
+
+    @classmethod
+    def find_by_email(cls, query_email):
+        return cls.query.filter_by(email=query_email).one_or_none()
 
     @classmethod
     def find_by_id(cls, id):

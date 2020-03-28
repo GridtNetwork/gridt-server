@@ -23,9 +23,9 @@ class MovementTest(BaseTest):
 
     def test_swap_leader(self):
         with self.app_context():
-            user1 = User("user1", "test@test.com", "password")
-            user2 = User("user2", "test@test.com", "password")
-            user3 = User("user3", "test@test.com", "password")
+            user1 = User("user1", "test1@test.com", "password")
+            user2 = User("user2", "test2@test.com", "password")
+            user3 = User("user3", "test3@test.com", "password")
             movement = Movement("movement1", timedelta(days=2))
 
             db.session.add_all([user1, user2, user3, movement])
@@ -40,8 +40,8 @@ class MovementTest(BaseTest):
 
             self.assertFalse(movement.swap_leader(user1, user2))
 
-            user4 = User("user4", "test@test.com", "password")
-            user5 = User("user5", "test@test.com", "password")
+            user4 = User("user4", "test4@test.com", "password")
+            user5 = User("user5", "test5@test.com", "password")
             db.session.add_all([user4, user5, assoc1, assoc2, assoc3])
             db.session.commit()
 
@@ -59,10 +59,10 @@ class MovementTest(BaseTest):
 
     def test_swap_leader_complicated(self):
         with self.app_context():
-            user1 = User("user1", "test@test.com", "password")
-            user2 = User("user2", "test@test.com", "password")
-            user3 = User("user3", "test@test.com", "password")
-            user4 = User("user4", "test@test.com", "password")
+            user1 = User("user1", "test1@test.com", "password")
+            user2 = User("user2", "test2@test.com", "password")
+            user3 = User("user3", "test3@test.com", "password")
+            user4 = User("user4", "test4@test.com", "password")
             movement1 = Movement("movement1", timedelta(days=2))
             movement2 = Movement("movement2", timedelta(days=2))
 

@@ -10,9 +10,9 @@ from gridt.models.movement import Movement
 class AssociationTest(BaseTest):
     def test_crud(self):
         with self.app_context():
-            robin = User("robin", "test@test.com", "password")
+            robin = User("robin", "robin@test.com", "password")
             robin.save_to_db()
-            jorn = User("jorn", "test@test.com", "password")
+            jorn = User("jorn", "jorn@test.com", "password")
             jorn.save_to_db()
             flossing = Movement("flossing", timedelta(days=1))
             flossing.save_to_db()

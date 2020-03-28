@@ -13,8 +13,8 @@ class MovementsTest(BaseTest):
     def test_get(self):
         with self.app_context():
             # Create fake data
-            user = User("test1", "test@test.com", "pass")
-            user2 = User("test2", "test@test.com", "pass")
+            user = User("test1", "test1@test.com", "pass")
+            user2 = User("test2", "test2@test.com", "pass")
             movement = Movement("test", timedelta(hours=2), "Hello")
             movement2 = Movement("test", timedelta(days=2), "Hello")
             db.session.add_all([user, user2, movement, movement2])
@@ -32,7 +32,7 @@ class MovementsTest(BaseTest):
             # To prevent sqlalchemy.orm.exc.DetachedInstanceError
             stamp = str(update2.time_stamp.astimezone())
 
-            token = self.obtain_token("test2", "pass")
+            token = self.obtain_token("test2@test.com", "pass")
 
             # Check that the response matches expectation
             resp = self.client.get(
@@ -68,7 +68,7 @@ class MovementsTest(BaseTest):
             user = User("test1", "test@test.com", "pass")
             user.save_to_db()
 
-            token = self.obtain_token("test1", "pass")
+            token = self.obtain_token("test@test.com", "pass")
 
             movement_dict = {
                 "name": "move",
@@ -91,10 +91,10 @@ class MovementsTest(BaseTest):
 
     def test_interval_empty(self):
         with self.app_context():
-            user = User("test1", "test@test.com", "pass")
+            user = User("test1", "test1@test.com", "pass")
             user.save_to_db()
 
-            token = self.obtain_token("test1", "pass")
+            token = self.obtain_token("test1@test.com", "pass")
 
             movement_dict = {
                 "name": "movement",
@@ -118,7 +118,7 @@ class MovementsTest(BaseTest):
             user = User("test1", "test@test.com", "pass")
             user.save_to_db()
 
-            token = self.obtain_token("test1", "pass")
+            token = self.obtain_token("test@test.com", "pass")
 
             movement_dict = {
                 "name": "movement",
@@ -141,7 +141,7 @@ class MovementsTest(BaseTest):
             user = User("test1", "test@test.com", "pass")
             user.save_to_db()
 
-            token = self.obtain_token("test1", "pass")
+            token = self.obtain_token("test@test.com", "pass")
 
             movement_dict = {
                 "name": "",
@@ -166,7 +166,7 @@ class MovementsTest(BaseTest):
             user = User("test1", "test@test.com", "pass")
             user.save_to_db()
 
-            token = self.obtain_token("test1", "pass")
+            token = self.obtain_token("test@test.com", "pass")
 
             movement_dict = {
                 "name": "movement",
@@ -197,7 +197,7 @@ class MovementsTest(BaseTest):
             movement = Movement("Flossing", timedelta(days=2), "Hello")
             movement.save_to_db()
 
-            token = self.obtain_token("test1", "pass")
+            token = self.obtain_token("test@test.com", "pass")
 
             resp1 = self.client.get(
                 "/movements/Flossing", headers={"Authorization": f"JWT {token}"}
@@ -223,7 +223,7 @@ class MovementsTest(BaseTest):
             user = User("test1", "test@test.com", "pass")
             user.save_to_db()
 
-            token = self.obtain_token("test1", "pass")
+            token = self.obtain_token("test@test.com", "pass")
 
             resp1 = self.client.get(
                 "/movements/Flossing", headers={"Authorization": f"JWT {token}"}
@@ -251,7 +251,7 @@ class SubscribeTest(BaseTest):
             movement = Movement("Flossing", timedelta(days=2), "Hello")
             movement.save_to_db()
 
-            token = self.obtain_token("test1", "pass")
+            token = self.obtain_token("test@test.com", "pass")
 
             resp = self.client.put(
                 "/movements/Flossing/subscriber",
@@ -292,7 +292,7 @@ class SubscribeTest(BaseTest):
             user = User("test1", "test@test.com", "pass")
             user.save_to_db()
 
-            token = self.obtain_token("test1", "pass")
+            token = self.obtain_token("test@test.com", "pass")
 
             resp = self.client.put(
                 "/movements/Flossing/subscriber",
@@ -315,7 +315,7 @@ class SubscribeTest(BaseTest):
             users = movement.users
             movements = user.movements
 
-            token = self.obtain_token("test1", "pass")
+            token = self.obtain_token("test@test.com", "pass")
 
             resp = self.client.delete(
                 "/movements/Flossing/subscriber",
@@ -362,7 +362,7 @@ class SubscribeTest(BaseTest):
             user = User("test1", "test@test.com", "pass")
             user.save_to_db()
 
-            token = self.obtain_token("test1", "pass")
+            token = self.obtain_token("test@test.com", "pass")
 
             resp = self.client.delete(
                 "/movements/Flossing/subscriber",
@@ -379,11 +379,11 @@ class SwapTest(BaseTest):
         with self.app_context():
             movement = Movement("Flossing", timedelta(days=1), "Hi")
 
-            user1 = User("test1", "test@test.com", "pass")
-            user2 = User("test2", "test@test.com", "pass")
-            user3 = User("test3", "test@test.com", "pass")
-            user4 = User("test4", "test@test.com", "pass")
-            user5 = User("test5", "test@test.com", "pass")
+            user1 = User("test1", "test1@test.com", "pass")
+            user2 = User("test2", "test2@test.com", "pass")
+            user3 = User("test3", "test3@test.com", "pass")
+            user4 = User("test4", "test4@test.com", "pass")
+            user5 = User("test5", "test5@test.com", "pass")
 
             update = Update(user3, movement)
             time_stamp = update.time_stamp
@@ -396,7 +396,7 @@ class SwapTest(BaseTest):
             movement.add_user(user4)
             movement.add_user(user5)
 
-            token = self.obtain_token("test1", "pass")
+            token = self.obtain_token("test1@test.com", "pass")
 
             resp = self.client.post(
                 "/movements/Flossing/leader/5",
@@ -405,10 +405,10 @@ class SwapTest(BaseTest):
 
     def test_swap_leader_movement_nonexistant(self):
         with self.app_context():
-            user1 = User("test1", "test@test.com", "pass")
+            user1 = User("test", "test1@test.com", "pass")
             user1.save_to_db()
 
-            token = self.obtain_token("test1", "pass")
+            token = self.obtain_token("test1@test.com", "pass")
 
             resp = self.client.post(
                 "/movements/Flossing/leader/2",
@@ -424,10 +424,10 @@ class SwapTest(BaseTest):
         with self.app_context():
             movement = Movement("Flossing", timedelta(days=2), "Hi")
             movement.save_to_db()
-            user1 = User("test1", "test@test.com", "pass")
+            user1 = User("test1", "test1@test.com", "pass")
             user1.save_to_db()
 
-            token = self.obtain_token("test1", "pass")
+            token = self.obtain_token("test1@test.com", "pass")
 
             resp = self.client.post(
                 "/movements/Flossing/leader/1",
@@ -444,13 +444,13 @@ class SwapTest(BaseTest):
         with self.app_context():
             movement = Movement("Flossing", timedelta(days=2), "Hi")
             movement.save_to_db()
-            user1 = User("test1", "test@test.com", "pass")
+            user1 = User("test1", "test1@test.com", "pass")
             user1.save_to_db()
-            user2 = User("test2", "test@test.com", "pass")
+            user2 = User("test2", "test2@test.com", "pass")
             user2.save_to_db()
             movement.add_user(user1)
 
-            token = self.obtain_token("test1", "pass")
+            token = self.obtain_token("test1@test.com", "pass")
 
             resp = self.client.post(
                 "/movements/Flossing/leader/2",
@@ -474,7 +474,7 @@ class NewUpdateTest(BaseTest):
 
             movement.add_user(user)
 
-            token = self.obtain_token("test1", "pass")
+            token = self.obtain_token("test@test.com", "pass")
 
             resp = self.client.post(
                 "/movements/Flossing/update", headers={"Authorization": f"JWT {token}"}
@@ -497,7 +497,7 @@ class NewUpdateTest(BaseTest):
             user = User("test1", "test@test.com", "pass")
             user.save_to_db()
 
-            token = self.obtain_token("test1", "pass")
+            token = self.obtain_token("test@test.com", "pass")
 
             resp = self.client.post(
                 "/movements/Flossing/update", headers={"Authorization": f"JWT {token}"}
@@ -515,7 +515,7 @@ class NewUpdateTest(BaseTest):
             user = User("test1", "test@test.com", "pass")
             user.save_to_db()
 
-            token = self.obtain_token("test1", "pass")
+            token = self.obtain_token("test@test.com", "pass")
 
             resp = self.client.post(
                 "/movements/Flossing/update", headers={"Authorization": f"JWT {token}"}
@@ -532,8 +532,8 @@ class SubscriptionsResourceTest(BaseTest):
     def test_get(self):
         with self.app_context():
             # Create fake data
-            user = User("test1", "test@test.com", "pass")
-            user2 = User("test2", "test@test.com", "pass")
+            user = User("test1", "test1@test.com", "pass")
+            user2 = User("test2", "test2@test.com", "pass")
             movement = Movement("movement1", timedelta(hours=2), "Hello")
             movement2 = Movement("movement2", timedelta(days=2), "Hello")
             db.session.add_all([user, user2, movement, movement2])
@@ -554,7 +554,7 @@ class SubscriptionsResourceTest(BaseTest):
             # To prevent sqlalchemy.orm.exc.DetachedInstanceError
             stamp = str(update2.time_stamp.astimezone())
 
-            token = self.obtain_token("test2", "pass")
+            token = self.obtain_token("test2@test.com", "pass")
 
             # Check that the response matches expectation
             resp = self.client.get(

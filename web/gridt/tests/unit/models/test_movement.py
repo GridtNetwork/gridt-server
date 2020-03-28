@@ -29,9 +29,9 @@ class MovementTest(BaseTest):
 
     def test_add_user(self):
         with self.app_context():
-            user1 = User("user1", "test@test.com", "pass")
-            user2 = User("user2", "test@test.com", "pass")
-            user3 = User("user3", "test@test.com", "pass")
+            user1 = User("user1", "test1@test.com", "pass")
+            user2 = User("user2", "test2@test.com", "pass")
+            user3 = User("user3", "test3@test.com", "pass")
             movement1 = Movement("movement1", timedelta(days=2))
             movement2 = Movement("movement2", timedelta(hours=2))
 
@@ -74,11 +74,11 @@ class MovementTest(BaseTest):
 
     def test_find_leaders(self):
         with self.app_context():
-            user1 = User("user1", "test@test", "pass")
-            user2 = User("user2", "test@test", "pass")
-            user3 = User("user3", "test@test", "pass")
-            user4 = User("user4", "test@test", "pass")
-            user5 = User("user5", "test@test", "pass")
+            user1 = User("user1", "test1@test", "pass")
+            user2 = User("user2", "test2@test", "pass")
+            user3 = User("user3", "test3@test", "pass")
+            user4 = User("user4", "test4@test", "pass")
+            user5 = User("user5", "test5@test", "pass")
 
             movement1 = Movement("movement1", timedelta(days=2))
             movement2 = Movement("movement2", timedelta(days=2))
@@ -126,8 +126,8 @@ class MovementTest(BaseTest):
 
     def test_remove_user_from_movement(self):
         with self.app_context():
-            user1 = User("user1", "test@test.com", "password")
-            user2 = User("user2", "test@test.com", "password")
+            user1 = User("user1", "test1@test.com", "password")
+            user2 = User("user2", "test2@test.com", "password")
 
             movement1 = Movement("movement1", timedelta(days=1))
 
@@ -145,8 +145,8 @@ class MovementTest(BaseTest):
 
     def test_remove_leader_from_movement(self):
         with self.app_context():
-            user1 = User("user1", "test@test.com", "password")
-            user2 = User("user2", "test@test.com", "password")
+            user1 = User("user1", "test1@test.com", "password")
+            user2 = User("user2", "test2@test.com", "password")
 
             movement1 = Movement("movement1", timedelta(days=1))
 
@@ -166,8 +166,8 @@ class MovementTest(BaseTest):
         with self.app_context():
             movement = Movement("movement1", timedelta(days=2), short_description="Hi")
             movement.description = "A long description"
-            user1 = User("test1", "test@gmail", "test")
-            user2 = User("test2", "test@gmail", "test")
+            user1 = User("test1", "test1@test.com", "test")
+            user2 = User("test2", "test2@test.com", "test")
             movement.add_user(user1)
             movement.add_user(user2)
             update = Update(user1, movement)
@@ -198,8 +198,8 @@ class MovementTest(BaseTest):
     def test_dictify_subscribed(self, func):
         with self.app_context():
             movement = Movement("movement1", timedelta(days=2))
-            user1 = User("test1", "test@gmail", "test")
-            user2 = User("test2", "test@gmail", "test")
+            user1 = User("test1", "test1@gmail", "test")
+            user2 = User("test2", "test2@gmail", "test")
             movement.add_user(user1)
             update = Update(user1, movement)
 

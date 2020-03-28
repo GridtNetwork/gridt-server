@@ -3,8 +3,8 @@ import logging
 from gridt.models import *
 
 
-def authenticate(username, password):
-    user = User.find_by_name(username)
+def authenticate(email, password):
+    user = User.find_by_email(email)
 
     if user and user.verify_password(password):
         return user

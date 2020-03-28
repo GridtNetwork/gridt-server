@@ -68,10 +68,10 @@ class BaseTest(LoggedTestCase):
             db.session.remove()
             db.drop_all()
 
-    def obtain_token(self, username, password):
+    def obtain_token(self, email, password):
         resp = self.client.post(
             "/auth",
-            json={"username": username, "password": password},
+            json={"username": email, "password": password},
             headers={"Content-Type": "application/json"},
         )
         data = resp.data.decode("utf-8")

@@ -33,10 +33,10 @@ class UserTest(BaseTest):
 
     def test_leaders(self):
         with self.app_context():
-            user1 = User("user1", "test@test.com", "test")
-            user2 = User("user2", "test@test.com", "test")
-            user3 = User("user3", "test@test.com", "test")
-            user4 = User("user4", "test@test.com", "test")
+            user1 = User("user1", "test1@test.com", "test")
+            user2 = User("user2", "test2@test.com", "test")
+            user3 = User("user3", "test3@test.com", "test")
+            user4 = User("user4", "test4@test.com", "test")
 
             movement1 = Movement("movement1", timedelta(days=2))
             movement2 = Movement("movement2", timedelta(days=2))
