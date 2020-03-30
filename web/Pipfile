@@ -5,6 +5,7 @@ verify_ssl = true
 
 [dev-packages]
 pyfakefs = "*"
+black = "*"
 
 [packages]
 flask-restful = "*"
@@ -21,3 +22,6 @@ sqlalchemy-utils = "*"
 
 [requires]
 python_version = "3.8"
+
+[pipenv]
+allow_prereleases = true

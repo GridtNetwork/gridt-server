@@ -1,5 +1,3 @@
-from datetime import timedelta
-
 from util.nostderr import nostderr
 
 from gridt.tests.base_test import BaseTest
@@ -38,8 +36,8 @@ class UserTest(BaseTest):
             user3 = User("user3", "test3@test.com", "test")
             user4 = User("user4", "test4@test.com", "test")
 
-            movement1 = Movement("movement1", timedelta(days=2))
-            movement2 = Movement("movement2", timedelta(days=2))
+            movement1 = Movement("movement1", "daily")
+            movement2 = Movement("movement2", "daily")
 
             assoc1 = MovementUserAssociation(movement1, user1, user2)
             assoc2 = MovementUserAssociation(movement1, user1, user3)

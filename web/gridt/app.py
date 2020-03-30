@@ -12,7 +12,6 @@ import logging
 import pathlib
 import click
 from functools import reduce
-from datetime import timedelta
 
 from sqlalchemy_utils import database_exists, create_database
 
@@ -124,7 +123,7 @@ def add_cli_commands(app, db):
 
         Current dataset is very limited.
         """
-        movement = Movement("test", timedelta(days=2))
+        movement = Movement("test", "daily")
         movement.save_to_db()
 
     @app.cli.command("delete-movement")

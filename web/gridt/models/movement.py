@@ -1,6 +1,5 @@
 import random
 from sqlalchemy import not_, and_
-from sqlalchemy.types import Interval
 from sqlalchemy.ext.associationproxy import association_proxy
 
 from gridt.db import db
@@ -14,8 +13,7 @@ class Movement(db.Model):
     """
     Intuitive representation of movements in the database. ::
 
-        from datetime import timedelta
-        flossing = Movement('flossing', timedelta(days=2))
+        flossing = Movement('flossing', 'daily')
         robin = User.find_by_id(1)
         pieter = User.find_by_id(2)
         jorn = User.find_by_id(3) flossing.users = [robin, pieter, jorn]
@@ -24,7 +22,7 @@ class Movement(db.Model):
     :Note: changes are only saved to the database when :func:`Movement.save_to_db` is called.
 
     :param str name: Name of the movement
-    :param datetime.timedelta interval: Interval in which the user is supposed to repeat the action.
+    :param str interval: Interval in which the user is supposed to repeat the action.
     :param str short_description: Give a short description for your movement.
     :attribute str description: More elaborate description of your movement.
     :attribute users: All user that have been subscribed to this movement.
@@ -35,7 +33,7 @@ class Movement(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
-    interval = db.Column(db.Interval, nullable=False)
+    interval = db.Column(db.String(20), nullable=False)
     short_description = db.Column(db.String(100))
     description = db.Column(db.String(1000))
 
@@ -198,10 +196,7 @@ class Movement(db.Model):
             "id": self.id,
             "short_description": self.short_description,
             "description": self.description,
-            "interval": {
-                "days": self.interval.days,
-                "hours": self.interval.seconds // 3600,
-            },
+            "interval": self.interval,
         }
 
         movement_dict["subscribed"] = False

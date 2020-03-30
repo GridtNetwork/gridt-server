@@ -1,6 +1,6 @@
 import json
 from unittest.mock import patch
-from datetime import timedelta, datetime
+from datetime import datetime
 
 from gridt.tests.base_test import BaseTest
 from gridt.db import db
@@ -15,8 +15,8 @@ class MovementsTest(BaseTest):
             # Create fake data
             user = User("test1", "test1@test.com", "pass")
             user2 = User("test2", "test2@test.com", "pass")
-            movement = Movement("test", timedelta(hours=2), "Hello")
-            movement2 = Movement("test", timedelta(days=2), "Hello")
+            movement = Movement("test", "twice daily", "Hello")
+            movement2 = Movement("test", "daily", "Hello")
             db.session.add_all([user, user2, movement, movement2])
             db.session.commit()
 
@@ -43,7 +43,7 @@ class MovementsTest(BaseTest):
                 {
                     "id": 1,
                     "description": "",
-                    "interval": {"days": 0, "hours": 2},
+                    "interval": "twice daily",
                     "leaders": [{"id": 1, "last_update": stamp, "username": "test1"}],
                     "name": "test",
                     "short_description": "Hello",
@@ -52,7 +52,7 @@ class MovementsTest(BaseTest):
                 {
                     "id": 2,
                     "description": "",
-                    "interval": {"days": 2, "hours": 0},
+                    "interval": "daily",
                     "name": "test",
                     "short_description": "Hello",
                     "subscribed": False,
@@ -63,7 +63,7 @@ class MovementsTest(BaseTest):
 
     def test_post_name_exists(self):
         with self.app_context():
-            movement = Movement("move", timedelta(days=1))
+            movement = Movement("move", "daily")
             movement.save_to_db()
             user = User("test1", "test@test.com", "pass")
             user.save_to_db()
@@ -73,7 +73,7 @@ class MovementsTest(BaseTest):
             movement_dict = {
                 "name": "move",
                 "short_description": "Hi, hello this is a test",
-                "interval": {"days": 3, "hours": 0},
+                "interval": "weekly",
             }
             resp = self.client.post(
                 "/movements",
@@ -99,7 +99,7 @@ class MovementsTest(BaseTest):
             movement_dict = {
                 "name": "movement",
                 "short_description": "Hi, this is a test",
-                "interval": {"days": 0, "hours": 0},
+                "interval": "",
             }
 
             resp = self.client.post(
@@ -109,7 +109,8 @@ class MovementsTest(BaseTest):
             )
 
             self.assertEqual(
-                json.loads(resp.data), {"message": "Interval must be nonzero."}
+                json.loads(resp.data),
+                {"message": "interval: Must be one of: daily, twice daily, weekly."},
             )
             self.assertEqual(resp.status_code, 400)
 
@@ -132,7 +133,8 @@ class MovementsTest(BaseTest):
             )
 
             self.assertEqual(
-                json.loads(resp.data), {"message": "Missing data for required field."}
+                json.loads(resp.data),
+                {"message": "interval: Missing data for required field."},
             )
             self.assertEqual(resp.status_code, 400)
 
@@ -146,7 +148,7 @@ class MovementsTest(BaseTest):
             movement_dict = {
                 "name": "",
                 "short_description": "Hi, hello this is a test",
-                "interval": {"days": 1, "hours": 0},
+                "interval": "daily",
             }
 
             resp = self.client.post(
@@ -171,7 +173,7 @@ class MovementsTest(BaseTest):
             movement_dict = {
                 "name": "movement",
                 "short_description": "Hi, hello this is a test",
-                "interval": {"days": 3, "hours": 0},
+                "interval": "daily",
             }
 
             resp = self.client.post(
@@ -187,14 +189,14 @@ class MovementsTest(BaseTest):
 
             movement = Movement.find_by_name("movement")
             self.assertIsNotNone(movement)
-            self.assertEqual(movement.interval, timedelta(days=3))
+            self.assertEqual(movement.interval, "daily")
             self.assertEqual(movement.short_description, "Hi, hello this is a test")
 
     def test_single_movement_by_name(self):
         with self.app_context():
             user = User("test1", "test@test.com", "pass")
             user.save_to_db()
-            movement = Movement("Flossing", timedelta(days=2), "Hello")
+            movement = Movement("Flossing", "daily", "Hello")
             movement.save_to_db()
 
             token = self.obtain_token("test@test.com", "pass")
@@ -210,7 +212,7 @@ class MovementsTest(BaseTest):
                 "name": "Flossing",
                 "short_description": "Hello",
                 "description": "",
-                "interval": {"days": 2, "hours": 0},
+                "interval": "daily",
                 "subscribed": False,
             }
             self.assertEqual(json.loads(resp1.data), expected)
@@ -248,7 +250,7 @@ class SubscribeTest(BaseTest):
         with self.app_context():
             user = User("test1", "test@test.com", "pass")
             user.save_to_db()
-            movement = Movement("Flossing", timedelta(days=2), "Hello")
+            movement = Movement("Flossing", "daily", "Hello")
             movement.save_to_db()
 
             token = self.obtain_token("test@test.com", "pass")
@@ -307,7 +309,7 @@ class SubscribeTest(BaseTest):
         with self.app_context():
             user = User("test1", "test@test.com", "pass")
             user.save_to_db()
-            movement = Movement("Flossing", timedelta(days=2), "Hello")
+            movement = Movement("Flossing", "daily", "Hello")
             movement.save_to_db()
             movement.add_user(user)
 
@@ -377,7 +379,7 @@ class SubscribeTest(BaseTest):
 class SwapTest(BaseTest):
     def test_swap_leader(self):
         with self.app_context():
-            movement = Movement("Flossing", timedelta(days=1), "Hi")
+            movement = Movement("Flossing", "daily", "Hi")
 
             user1 = User("test1", "test1@test.com", "pass")
             user2 = User("test2", "test2@test.com", "pass")
@@ -422,7 +424,7 @@ class SwapTest(BaseTest):
 
     def test_swap_leader_movement_not_subscribed(self):
         with self.app_context():
-            movement = Movement("Flossing", timedelta(days=2), "Hi")
+            movement = Movement("Flossing", "daily", "Hi")
             movement.save_to_db()
             user1 = User("test1", "test1@test.com", "pass")
             user1.save_to_db()
@@ -442,7 +444,7 @@ class SwapTest(BaseTest):
 
     def test_swap_leader_not_leader(self):
         with self.app_context():
-            movement = Movement("Flossing", timedelta(days=2), "Hi")
+            movement = Movement("Flossing", "daily", "Hi")
             movement.save_to_db()
             user1 = User("test1", "test1@test.com", "pass")
             user1.save_to_db()
@@ -467,7 +469,7 @@ class NewUpdateTest(BaseTest):
     @patch("gridt.models.update.Update._get_now", return_value=datetime(1996, 3, 15))
     def test_create_new_update(self, func):
         with self.app_context():
-            movement = Movement("Flossing", timedelta(days=2), "Hi")
+            movement = Movement("Flossing", "daily", "Hi")
             movement.save_to_db()
             user = User("test1", "test@test.com", "pass")
             user.save_to_db()
@@ -510,7 +512,7 @@ class NewUpdateTest(BaseTest):
 
     def test_movement_not_subscribed(self):
         with self.app_context():
-            movement = Movement("Flossing", timedelta(days=2))
+            movement = Movement("Flossing", "daily")
             movement.save_to_db()
             user = User("test1", "test@test.com", "pass")
             user.save_to_db()
@@ -534,8 +536,8 @@ class SubscriptionsResourceTest(BaseTest):
             # Create fake data
             user = User("test1", "test1@test.com", "pass")
             user2 = User("test2", "test2@test.com", "pass")
-            movement = Movement("movement1", timedelta(hours=2), "Hello")
-            movement2 = Movement("movement2", timedelta(days=2), "Hello")
+            movement = Movement("movement1", "twice daily", "Hello")
+            movement2 = Movement("movement2", "daily", "Hello")
             db.session.add_all([user, user2, movement, movement2])
             db.session.commit()
 
@@ -565,7 +567,7 @@ class SubscriptionsResourceTest(BaseTest):
                 {
                     "id": 1,
                     "description": "",
-                    "interval": {"days": 0, "hours": 2},
+                    "interval": "twice daily",
                     "leaders": [{"id": 1, "last_update": stamp, "username": "test1"}],
                     "name": "movement1",
                     "short_description": "Hello",

@@ -1,4 +1,4 @@
-from datetime import timedelta, datetime
+from datetime import datetime
 from unittest.mock import patch
 
 from gridt.tests.base_test import BaseTest
@@ -11,19 +11,19 @@ from gridt.models.movement_user_association import MovementUserAssociation
 
 class MovementTest(BaseTest):
     def test_create(self):
-        movement = Movement("movement1", timedelta(days=2))
+        movement = Movement("movement1", "daily")
 
         self.assertEqual(movement.name, "movement1")
-        self.assertEqual(movement.interval.days, 2)
+        self.assertEqual(movement.interval, "daily")
         self.assertEqual(movement.short_description, "")
         self.assertEqual(movement.description, "")
 
         movement2 = Movement(
-            "toothpicking", timedelta(days=1), "pick your teeth every day!"
+            "toothpicking", "twice daily", "pick your teeth every day!"
         )
 
         self.assertEqual(movement2.name, "toothpicking")
-        self.assertEqual(movement2.interval.days, 1)
+        self.assertEqual(movement2.interval, "twice daily")
         self.assertEqual(movement2.short_description, "pick your teeth every day!")
         self.assertEqual(movement.description, "")
 
@@ -32,8 +32,8 @@ class MovementTest(BaseTest):
             user1 = User("user1", "test1@test.com", "pass")
             user2 = User("user2", "test2@test.com", "pass")
             user3 = User("user3", "test3@test.com", "pass")
-            movement1 = Movement("movement1", timedelta(days=2))
-            movement2 = Movement("movement2", timedelta(hours=2))
+            movement1 = Movement("movement1", "daily")
+            movement2 = Movement("movement2", "twice daily")
 
             db.session.add_all([user1, user2, user3, movement1, movement2])
             db.session.commit()
@@ -80,8 +80,8 @@ class MovementTest(BaseTest):
             user4 = User("user4", "test4@test", "pass")
             user5 = User("user5", "test5@test", "pass")
 
-            movement1 = Movement("movement1", timedelta(days=2))
-            movement2 = Movement("movement2", timedelta(days=2))
+            movement1 = Movement("movement1", "twice daily")
+            movement2 = Movement("movement2", "daily")
 
             # Movement 1
             #
@@ -129,7 +129,7 @@ class MovementTest(BaseTest):
             user1 = User("user1", "test1@test.com", "password")
             user2 = User("user2", "test2@test.com", "password")
 
-            movement1 = Movement("movement1", timedelta(days=1))
+            movement1 = Movement("movement1", "daily")
 
             movement1.add_user(user1)
             movement1.add_user(user2)
@@ -148,7 +148,7 @@ class MovementTest(BaseTest):
             user1 = User("user1", "test1@test.com", "password")
             user2 = User("user2", "test2@test.com", "password")
 
-            movement1 = Movement("movement1", timedelta(days=1))
+            movement1 = Movement("movement1", "daily")
 
             movement1.add_user(user1)
             movement1.add_user(user2)
@@ -164,7 +164,7 @@ class MovementTest(BaseTest):
     @patch("gridt.models.update.Update._get_now", return_value=datetime(1996, 3, 15))
     def test_dictify(self, func):
         with self.app_context():
-            movement = Movement("movement1", timedelta(days=2), short_description="Hi")
+            movement = Movement("movement1", "daily", short_description="Hi")
             movement.description = "A long description"
             user1 = User("test1", "test1@test.com", "test")
             user2 = User("test2", "test2@test.com", "test")
@@ -182,7 +182,7 @@ class MovementTest(BaseTest):
                 "short_description": "Hi",
                 "description": "A long description",
                 "subscribed": True,
-                "interval": {"days": 2, "hours": 0},
+                "interval": "daily",
                 "leaders": [
                     {
                         "id": 1,
@@ -197,7 +197,7 @@ class MovementTest(BaseTest):
     @patch("gridt.models.update.Update._get_now", return_value=datetime(1996, 3, 15))
     def test_dictify_subscribed(self, func):
         with self.app_context():
-            movement = Movement("movement1", timedelta(days=2))
+            movement = Movement("movement1", "twice daily")
             user1 = User("test1", "test1@gmail", "test")
             user2 = User("test2", "test2@gmail", "test")
             movement.add_user(user1)
@@ -213,6 +213,6 @@ class MovementTest(BaseTest):
                 "short_description": "",
                 "description": "",
                 "subscribed": False,
-                "interval": {"days": 2, "hours": 0},
+                "interval": "twice daily",
             }
             self.assertEqual(movement.dictify(user2), expected)

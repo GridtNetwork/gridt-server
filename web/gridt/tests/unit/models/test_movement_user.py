@@ -1,5 +1,3 @@
-from datetime import timedelta
-
 from gridt.tests.base_test import BaseTest
 
 from gridt.models.movement_user_association import MovementUserAssociation
@@ -14,7 +12,7 @@ class AssociationTest(BaseTest):
             robin.save_to_db()
             jorn = User("jorn", "jorn@test.com", "password")
             jorn.save_to_db()
-            flossing = Movement("flossing", timedelta(days=1))
+            flossing = Movement("flossing", "daily")
             flossing.save_to_db()
 
             self.assertIsNone(MovementUserAssociation.query.get(1))

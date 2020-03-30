@@ -1,5 +1,4 @@
 import unittest
-from datetime import timedelta
 from gridt.db import db
 
 from gridt.tests.base_test import BaseTest

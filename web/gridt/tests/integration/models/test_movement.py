@@ -1,5 +1,3 @@
-from datetime import timedelta
-
 from gridt.db import db
 from gridt.tests.base_test import BaseTest
 from gridt.models.movement import Movement
@@ -12,7 +10,7 @@ class MovementTest(BaseTest):
         with self.app_context():
             self.assertIsNone(Movement.query.filter_by(name="flossing").first())
 
-            movement = Movement("flossing", timedelta(days=2))
+            movement = Movement("flossing", "daily")
             movement.save_to_db()
 
             self.assertIsNotNone(Movement.query.filter_by(name="flossing").first())
@@ -26,7 +24,7 @@ class MovementTest(BaseTest):
             user1 = User("user1", "test1@test.com", "password")
             user2 = User("user2", "test2@test.com", "password")
             user3 = User("user3", "test3@test.com", "password")
-            movement = Movement("movement1", timedelta(days=2))
+            movement = Movement("movement1", "daily")
 
             db.session.add_all([user1, user2, user3, movement])
             db.session.commit()
@@ -63,8 +61,8 @@ class MovementTest(BaseTest):
             user2 = User("user2", "test2@test.com", "password")
             user3 = User("user3", "test3@test.com", "password")
             user4 = User("user4", "test4@test.com", "password")
-            movement1 = Movement("movement1", timedelta(days=2))
-            movement2 = Movement("movement2", timedelta(days=2))
+            movement1 = Movement("movement1", "daily")
+            movement2 = Movement("movement2", "daily")
 
             # Movement 1
             #

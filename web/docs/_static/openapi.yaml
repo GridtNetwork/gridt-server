@@ -380,35 +380,13 @@ components:
             Flossing once a day has been shown to reduce almost any dental issue
             and can greatly reduce risks for all kinds of diseases.
         interval:
-          type: object
-          required:
-            - days
-            - hours
-          properties:
-            hours:
-              type: integer
-              description: >-
-                Amount of hours in between which a follower of this movement is
-                expected to perform the action.
-              example: 0
-            days:
-              type: integer
-              description: >-
-                Amount of days in between which a follower of this movement is
-                expected to perform the action
-              example: 1
-            weeks:
-              type: integer
-              description: >-
-                Amount of weeks in between which a follower of this movement is
-                expected to perform the action. example: 0
-              example: 0
-            months:
-              type: integer
-              example: 0
-              description: >-
-                Amount of months in between which a follower of this movement is
-                expected to perform the action.
+          type: string
+          decription: >-
+            Describes how often the movement timer gets reset.
+          oneOf:
+            - daily
+            - twice daily
+            - weekly  
     user:
       title: User
       type: object

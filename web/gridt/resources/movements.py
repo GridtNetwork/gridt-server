@@ -1,5 +1,3 @@
-from datetime import timedelta
-
 from flask import request
 from flask_restful import Resource, abort
 from flask_jwt import jwt_required, current_identity
@@ -49,12 +47,6 @@ class MovementsResource(Resource):
         try:
             res = self.schema.load(request.get_json())
         except ValidationError as error:
-            if "interval" in error.messages:
-                if isinstance(error.messages["interval"], dict):
-                    return {"message": error.messages["interval"]["_schema"][0]}, 400
-                else:
-                    return {"message": error.messages["interval"][0]}, 400
-
             field = list(error.messages.keys())[0]
             return {"message": f"{field}: {error.messages[field][0]}"}, 400
 
@@ -69,7 +61,7 @@ class MovementsResource(Resource):
 
         movement = Movement(
             res["name"],
-            timedelta(days=res["interval"]["days"], hours=res["interval"]["hours"]),
+            res["interval"],
             short_description=res["short_description"],
             description=res.get("description"),
         )

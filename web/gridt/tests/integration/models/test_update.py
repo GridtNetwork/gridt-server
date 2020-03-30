@@ -1,4 +1,4 @@
-from datetime import timedelta, datetime
+from datetime import datetime
 from unittest.mock import patch
 
 from gridt.db import db
@@ -14,7 +14,7 @@ class UpdateTest(BaseTest):
         with self.app_context():
             user = User("username", "test@test.com", "password")
             user.save_to_db()
-            movement = Movement("flossing", timedelta(days=2))
+            movement = Movement("flossing", "daily")
             movement.save_to_db()
 
             self.assertIsNone(Update.find_last(user, movement))
@@ -27,7 +27,7 @@ class UpdateTest(BaseTest):
         with self.app_context():
             user = User("username", "test@test.com", "password")
             user.save_to_db()
-            movement = Movement("flossing", timedelta(days=2))
+            movement = Movement("flossing", "daily")
             movement.save_to_db()
             update = Update(user, movement)
             update.save_to_db()
