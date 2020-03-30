@@ -5,7 +5,7 @@ from gridt.tests.base_test import BaseTest
 from gridt.db import db
 from gridt.models.movement import Movement
 from gridt.models.user import User
-from gridt.models.update import Update
+from gridt.models.update import Signal
 from gridt.models.movement_user_association import MovementUserAssociation
 
 
@@ -161,7 +161,7 @@ class MovementTest(BaseTest):
             user2s_leaders = list(map(lambda a: a.leader, user2.follower_associations))
             self.assertFalse(user1 in user2s_leaders)
 
-    @patch("gridt.models.update.Update._get_now", return_value=datetime(1996, 3, 15))
+    @patch("gridt.models.update.Signal._get_now", return_value=datetime(1996, 3, 15))
     def test_dictify(self, func):
         with self.app_context():
             movement = Movement("movement1", "daily", short_description="Hi")
@@ -170,7 +170,7 @@ class MovementTest(BaseTest):
             user2 = User("test2", "test2@test.com", "test")
             movement.add_user(user1)
             movement.add_user(user2)
-            update = Update(user1, movement)
+            update = Signal(user1, movement)
 
             user1.save_to_db()  # Make sure id == 1
             db.session.add_all([movement, user2, update])
@@ -187,21 +187,21 @@ class MovementTest(BaseTest):
                     {
                         "id": 1,
                         "username": "test1",
-                        "last_update": str(datetime(1996, 3, 15).astimezone()),
+                        "last_signal": str(datetime(1996, 3, 15).astimezone()),
                     }
                 ],
             }
 
             self.assertEqual(movement.dictify(user2), expected)
 
-    @patch("gridt.models.update.Update._get_now", return_value=datetime(1996, 3, 15))
+    @patch("gridt.models.update.Signal._get_now", return_value=datetime(1996, 3, 15))
     def test_dictify_subscribed(self, func):
         with self.app_context():
             movement = Movement("movement1", "twice daily")
             user1 = User("test1", "test1@gmail", "test")
             user2 = User("test2", "test2@gmail", "test")
             movement.add_user(user1)
-            update = Update(user1, movement)
+            update = Signal(user1, movement)
 
             user1.save_to_db()  # Make sure id == 1
             db.session.add_all([movement, user2, update])

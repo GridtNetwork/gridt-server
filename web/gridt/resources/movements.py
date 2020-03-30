@@ -7,7 +7,7 @@ from marshmallow import ValidationError
 from gridt.schemas import MovementSchema
 from gridt.models.movement import Movement
 from gridt.models.user import User
-from gridt.models.update import Update
+from gridt.models.update import Signal
 
 
 def get_movement(identifier):
@@ -123,27 +123,27 @@ class SwapLeaderResource(Resource):
             return {"message": "Could not find leader to replace the current one."}
 
         time_stamp = None
-        if Update.find_last(new_leader, movement):
-            time_stamp = str(Update.find_last(new_leader, movement).time_stamp)
+        if Signal.find_last(new_leader, movement):
+            time_stamp = str(Signal.find_last(new_leader, movement).time_stamp)
 
         return (
             {
                 "id": new_leader.id,
                 "username": new_leader.username,
-                "last_update": time_stamp,
+                "last_signal": time_stamp,
             },
             200,
         )
 
 
-class NewUpdateResource(Resource):
+class NewSignalResource(Resource):
     @jwt_required()
     def post(self, movement_id):
         movement = get_movement(movement_id)
         if current_identity not in movement.users:
             return {"message": "User is not subscribed to this movement."}, 400
 
-        update = Update(current_identity, movement)
+        update = Signal(current_identity, movement)
         update.save_to_db()
 
         return {"message": "Successfully created update."}, 201

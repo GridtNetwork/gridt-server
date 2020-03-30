@@ -6,7 +6,7 @@ from gridt.tests.base_test import BaseTest
 from gridt.db import db
 from gridt.models.user import User
 from gridt.models.movement import Movement
-from gridt.models.movement import Update
+from gridt.models.movement import Signal
 
 
 class MovementsTest(BaseTest):
@@ -21,8 +21,8 @@ class MovementsTest(BaseTest):
             db.session.commit()
 
             movement.add_user(user)
-            update = Update(user, movement)
-            update2 = Update(user, movement)
+            update = Signal(user, movement)
+            update2 = Signal(user, movement)
             db.session.add_all([update, update2])
             db.session.commit()
 
@@ -44,7 +44,7 @@ class MovementsTest(BaseTest):
                     "id": 1,
                     "description": "",
                     "interval": "twice daily",
-                    "leaders": [{"id": 1, "last_update": stamp, "username": "test1"}],
+                    "leaders": [{"id": 1, "last_signal": stamp, "username": "test1"}],
                     "name": "test",
                     "short_description": "Hello",
                     "subscribed": True,
@@ -387,7 +387,7 @@ class SwapTest(BaseTest):
             user4 = User("test4", "test4@test.com", "pass")
             user5 = User("test5", "test5@test.com", "pass")
 
-            update = Update(user3, movement)
+            update = Signal(user3, movement)
             time_stamp = update.time_stamp
 
             db.session.add_all([user1, user2, user2, user2, user2, update, movement])
@@ -465,8 +465,8 @@ class SwapTest(BaseTest):
             )
 
 
-class NewUpdateTest(BaseTest):
-    @patch("gridt.models.update.Update._get_now", return_value=datetime(1996, 3, 15))
+class NewSignalTest(BaseTest):
+    @patch("gridt.models.update.Signal._get_now", return_value=datetime(1996, 3, 15))
     def test_create_new_update(self, func):
         with self.app_context():
             movement = Movement("Flossing", "daily", "Hi")
@@ -491,7 +491,7 @@ class NewUpdateTest(BaseTest):
             user = User.find_by_id(1)
             movement = Movement.find_by_id(1)
             self.assertEqual(
-                Update.find_last(user, movement).time_stamp, datetime(1996, 3, 15)
+                Signal.find_last(user, movement).time_stamp, datetime(1996, 3, 15)
             )
 
     def test_movement_nonexistant(self):
@@ -543,8 +543,8 @@ class SubscriptionsResourceTest(BaseTest):
 
             # User test1 subscribes to movement1 and does an update
             movement.add_user(user)
-            update = Update(user, movement)
-            update2 = Update(user, movement)
+            update = Signal(user, movement)
+            update2 = Signal(user, movement)
             db.session.add_all([update, update2])
             db.session.commit()
 
@@ -568,7 +568,7 @@ class SubscriptionsResourceTest(BaseTest):
                     "id": 1,
                     "description": "",
                     "interval": "twice daily",
-                    "leaders": [{"id": 1, "last_update": stamp, "username": "test1"}],
+                    "leaders": [{"id": 1, "last_signal": stamp, "username": "test1"}],
                     "name": "movement1",
                     "short_description": "Hello",
                     "subscribed": True,

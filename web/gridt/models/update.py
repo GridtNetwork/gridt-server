@@ -3,7 +3,7 @@ from sqlalchemy import asc, desc
 from gridt.db import db
 
 
-class Update(db.Model):
+class Signal(db.Model):
     """
     Representation of updates in the database.
 

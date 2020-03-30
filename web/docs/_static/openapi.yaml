@@ -399,13 +399,13 @@ components:
           type: string
           description: The user's username
           example: robin
-        last_update:
+        last_signal:
           type: object
-          description: This is the last update that the user has given in this movement.
+          description: This is the last signal that the user has given in this movement.
           properties:
             time_stamp:
               type: string
-              description: Date time of the last update of the user.
+              description: Date time of the last signal of the user.
     userId:
       title: User id
       oneOf:

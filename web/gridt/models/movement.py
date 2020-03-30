@@ -5,7 +5,7 @@ from sqlalchemy.ext.associationproxy import association_proxy
 from gridt.db import db
 
 from gridt.models.user import User
-from gridt.models.update import Update
+from gridt.models.update import Signal
 from gridt.models.movement_user_association import MovementUserAssociation
 
 
@@ -206,10 +206,10 @@ class Movement(db.Model):
                 {
                     "username": user.username,
                     "id": user.id,
-                    "last_update": str(
-                        Update.find_last(user, self).time_stamp.astimezone()
+                    "last_signal": str(
+                        Signal.find_last(user, self).time_stamp.astimezone()
                     )
-                    if Update.find_last(user, self)
+                    if Signal.find_last(user, self)
                     else None,
                 }
                 for user in user.leaders(self)
