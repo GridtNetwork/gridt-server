@@ -8,7 +8,7 @@ RUN bash -c 'PIPENV_VENV_IN_PROJECT=1 pipenv install'
 
 FROM python:3.8
 ARG FLASK_CONFIGURATION
-ENV PYTHONUNBUFFERED=1
+ENV PYTHONUNBUFFERED 1
 
 RUN mkdir -p /usr/src/gridt-server
 COPY --from=builder /packages/ /packages

@@ -165,7 +165,14 @@ def create_app(overwrite_conf=None):
 
     load_config(app, overwrite_conf)
     construct_database_url(app)
-    db.init_app(app)
+    try:
+        db.init_app(app)
+    except ConnectionRefusedError:
+        print("Connection was refused, exiting.")
+        sys.exit(1)
+    except pymysql.err.ProgrammingError:
+        print("Programming error, exiting.")
+        sys.exit(1)
 
     if not database_exists(app.config["SQLALCHEMY_DATABASE_URI"]):
         create_database(app.config["SQLALCHEMY_DATABASE_URI"])

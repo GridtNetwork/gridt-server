@@ -18,12 +18,14 @@ services:
         build:
             context: ./web
             args:
-                FLASK_CONFIGURATION: conf/deployment.conf
+                FLASK_CONFIGURATION: /etc/gridt/gridt.conf
         secrets:
             - flask
         networks:
             - nginx_network
             - db_network
+        volumes:
+            - ./data/web:/etc/gridt
         depends_on:
             - db
     nginx:
@@ -55,4 +57,4 @@ networks:
         driver: bridge
 secrets:
     flask:
-        file: flask_secret_key.txt
+        file: ./data/web/flask_secret_key.txt
