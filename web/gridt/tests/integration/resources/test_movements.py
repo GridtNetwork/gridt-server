@@ -10,7 +10,7 @@ from gridt.models.movement import Signal
 
 
 class MovementsTest(BaseTest):
-    def test_get(self):
+    def test_get_movements(self):
         with self.app_context():
             # Create fake data
             user = User("test1", "test1@test.com", "pass")
@@ -44,6 +44,7 @@ class MovementsTest(BaseTest):
                     "id": 1,
                     "description": "",
                     "interval": "twice daily",
+                    "last_signal_sent": None,
                     "leaders": [{"id": 1, "last_signal": stamp, "username": "test1"}],
                     "name": "test",
                     "short_description": "Hello",
@@ -531,7 +532,7 @@ class NewSignalTest(BaseTest):
 
 
 class SubscriptionsResourceTest(BaseTest):
-    def test_get(self):
+    def test_get_subscriptions(self):
         with self.app_context():
             # Create fake data
             user = User("test1", "test1@test.com", "pass")
@@ -568,6 +569,7 @@ class SubscriptionsResourceTest(BaseTest):
                     "id": 1,
                     "description": "",
                     "interval": "twice daily",
+                    "last_signal_sent": None,
                     "leaders": [{"id": 1, "last_signal": stamp, "username": "test1"}],
                     "name": "movement1",
                     "short_description": "Hello",

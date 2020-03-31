@@ -170,10 +170,11 @@ class MovementTest(BaseTest):
             user2 = User("test2", "test2@test.com", "test")
             movement.add_user(user1)
             movement.add_user(user2)
-            update = Signal(user1, movement)
+            update1 = Signal(user1, movement)
+            update2 = Signal(user2, movement)
 
             user1.save_to_db()  # Make sure id == 1
-            db.session.add_all([movement, user2, update])
+            db.session.add_all([movement, user2, update1, update2])
             db.session.commit()
 
             expected = {
@@ -183,6 +184,9 @@ class MovementTest(BaseTest):
                 "description": "A long description",
                 "subscribed": True,
                 "interval": "daily",
+                "last_signal_sent": {
+                    "time_stamp": str(datetime(1996, 3, 15).astimezone())
+                },
                 "leaders": [
                     {
                         "id": 1,

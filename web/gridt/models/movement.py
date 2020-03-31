@@ -202,17 +202,23 @@ class Movement(db.Model):
         movement_dict["subscribed"] = False
         if user in self.users:
             movement_dict["subscribed"] = True
+            last_signal = Signal.find_last(user, self)
+            movement_dict["last_signal_sent"] = (
+                {"time_stamp": str(last_signal.time_stamp.astimezone())}
+                if last_signal
+                else None
+            )
             movement_dict["leaders"] = [
                 {
-                    "username": user.username,
-                    "id": user.id,
+                    "username": leader.username,
+                    "id": leader.id,
                     "last_signal": str(
-                        Signal.find_last(user, self).time_stamp.astimezone()
+                        Signal.find_last(leader, self).time_stamp.astimezone()
                     )
-                    if Signal.find_last(user, self)
+                    if Signal.find_last(leader, self)
                     else None,
                 }
-                for user in user.leaders(self)
+                for leader in user.leaders(self)
             ]
 
         return movement_dict
