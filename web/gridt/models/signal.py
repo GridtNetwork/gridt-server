@@ -5,13 +5,13 @@ from gridt.db import db
 
 class Signal(db.Model):
     """
-    Representation of updates in the database.
+    Representation of signals in the database.
 
-    :attribute leader: The leader that created this update.
-    :attribute movement: The movement that this update was created in.
+    :attribute leader: The leader that created this signal.
+    :attribute movement: The movement that this signal was created in.
     """
 
-    __tablename__ = "updates"
+    __tablename__ = "signals"
     id = db.Column(db.Integer, primary_key=True)
     leader_id = db.Column(db.Integer, db.ForeignKey("users.id"))
     movement_id = db.Column(db.Integer, db.ForeignKey("movements.id"))

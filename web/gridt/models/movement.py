@@ -5,7 +5,7 @@ from sqlalchemy.ext.associationproxy import association_proxy
 from gridt.db import db
 
 from gridt.models.user import User
-from gridt.models.update import Signal
+from gridt.models.signal import Signal
 from gridt.models.movement_user_association import MovementUserAssociation
 
 

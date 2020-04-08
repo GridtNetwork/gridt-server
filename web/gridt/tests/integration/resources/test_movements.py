@@ -21,16 +21,16 @@ class MovementsTest(BaseTest):
             db.session.commit()
 
             movement.add_user(user)
-            update = Signal(user, movement)
-            update2 = Signal(user, movement)
-            db.session.add_all([update, update2])
+            signal = Signal(user, movement)
+            signal2 = Signal(user, movement)
+            db.session.add_all([signal, signal2])
             db.session.commit()
 
             movement.add_user(user2)
             movement2.add_user(user)
 
             # To prevent sqlalchemy.orm.exc.DetachedInstanceError
-            stamp = str(update2.time_stamp.astimezone())
+            stamp = str(signal2.time_stamp.astimezone())
 
             token = self.obtain_token("test2@test.com", "pass")
 
@@ -388,10 +388,10 @@ class SwapTest(BaseTest):
             user4 = User("test4", "test4@test.com", "pass")
             user5 = User("test5", "test5@test.com", "pass")
 
-            update = Signal(user3, movement)
-            time_stamp = update.time_stamp
+            signal = Signal(user3, movement)
+            time_stamp = signal.time_stamp
 
-            db.session.add_all([user1, user2, user2, user2, user2, update, movement])
+            db.session.add_all([user1, user2, user2, user2, user2, signal, movement])
 
             movement.add_user(user1)
             movement.add_user(user2)
@@ -467,8 +467,8 @@ class SwapTest(BaseTest):
 
 
 class NewSignalTest(BaseTest):
-    @patch("gridt.models.update.Signal._get_now", return_value=datetime(1996, 3, 15))
-    def test_create_new_update(self, func):
+    @patch("gridt.models.signal.Signal._get_now", return_value=datetime(1996, 3, 15))
+    def test_create_new_signal(self, func):
         with self.app_context():
             movement = Movement("Flossing", "daily", "Hi")
             movement.save_to_db()
@@ -480,11 +480,11 @@ class NewSignalTest(BaseTest):
             token = self.obtain_token("test@test.com", "pass")
 
             resp = self.client.post(
-                "/movements/Flossing/update", headers={"Authorization": f"JWT {token}"}
+                "/movements/Flossing/signal", headers={"Authorization": f"JWT {token}"}
             )
 
             self.assertEqual(
-                json.loads(resp.data), {"message": "Successfully created update."}
+                json.loads(resp.data), {"message": "Successfully created signal."}
             )
             self.assertEqual(resp.status_code, 201)
 
@@ -503,7 +503,7 @@ class NewSignalTest(BaseTest):
             token = self.obtain_token("test@test.com", "pass")
 
             resp = self.client.post(
-                "/movements/Flossing/update", headers={"Authorization": f"JWT {token}"}
+                "/movements/Flossing/signal", headers={"Authorization": f"JWT {token}"}
             )
 
             self.assertEqual(resp.status_code, 404)
@@ -521,7 +521,7 @@ class NewSignalTest(BaseTest):
             token = self.obtain_token("test@test.com", "pass")
 
             resp = self.client.post(
-                "/movements/Flossing/update", headers={"Authorization": f"JWT {token}"}
+                "/movements/Flossing/signal", headers={"Authorization": f"JWT {token}"}
             )
 
             self.assertEqual(resp.status_code, 400)
@@ -542,11 +542,11 @@ class SubscriptionsResourceTest(BaseTest):
             db.session.add_all([user, user2, movement, movement2])
             db.session.commit()
 
-            # User test1 subscribes to movement1 and does an update
+            # User test1 subscribes to movement1 and does an signal
             movement.add_user(user)
-            update = Signal(user, movement)
-            update2 = Signal(user, movement)
-            db.session.add_all([update, update2])
+            signal = Signal(user, movement)
+            signal2 = Signal(user, movement)
+            db.session.add_all([signal, signal2])
             db.session.commit()
 
             # User test2 subscribes to movement1 and test1 to movement2
@@ -555,7 +555,7 @@ class SubscriptionsResourceTest(BaseTest):
 
             self.assertTrue(movement2 not in user2.movements)
             # To prevent sqlalchemy.orm.exc.DetachedInstanceError
-            stamp = str(update2.time_stamp.astimezone())
+            stamp = str(signal2.time_stamp.astimezone())
 
             token = self.obtain_token("test2@test.com", "pass")
 

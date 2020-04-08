@@ -100,7 +100,7 @@ def register_api_endpoints(api):
     api.add_resource(SubscriptionsResource, "/movements/subscriptions")
     api.add_resource(SubscribeResource, "/movements/<movement_id>/subscriber")
     api.add_resource(SwapLeaderResource, "/movements/<movement_id>/leader/<leader_id>")
-    api.add_resource(NewSignalResource, "/movements/<movement_id>/update")
+    api.add_resource(NewSignalResource, "/movements/<movement_id>/signal")
 
 
 def add_cli_commands(app, db):

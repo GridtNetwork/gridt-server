@@ -7,7 +7,7 @@ from marshmallow import ValidationError
 from gridt.schemas import MovementSchema
 from gridt.models.movement import Movement
 from gridt.models.user import User
-from gridt.models.update import Signal
+from gridt.models.signal import Signal
 
 
 def get_movement(identifier):
@@ -143,7 +143,7 @@ class NewSignalResource(Resource):
         if current_identity not in movement.users:
             return {"message": "User is not subscribed to this movement."}, 400
 
-        update = Signal(current_identity, movement)
-        update.save_to_db()
+        signal = Signal(current_identity, movement)
+        signal.save_to_db()
 
-        return {"message": "Successfully created update."}, 201
+        return {"message": "Successfully created signal."}, 201

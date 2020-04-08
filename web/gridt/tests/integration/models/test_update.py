@@ -3,13 +3,13 @@ from unittest.mock import patch
 
 from gridt.db import db
 from gridt.tests.base_test import BaseTest
-from gridt.models.update import Signal
+from gridt.models.signal import Signal
 from gridt.models.user import User
 from gridt.models.movement import Movement
 
 
 class SignalTest(BaseTest):
-    @patch("gridt.models.update.Signal._get_now", return_value=datetime.now())
+    @patch("gridt.models.signal.Signal._get_now", return_value=datetime.now())
     def test_crud(self, now):
         with self.app_context():
             user = User("username", "test@test.com", "password")
@@ -18,10 +18,10 @@ class SignalTest(BaseTest):
             movement.save_to_db()
 
             self.assertIsNone(Signal.find_last(user, movement))
-            update = Signal(user, movement)
-            update.save_to_db()
+            signal = Signal(user, movement)
+            signal.save_to_db()
 
-            self.assertEqual(Signal.find_last(user, movement), update)
+            self.assertEqual(Signal.find_last(user, movement), signal)
 
     def test_find_last(self):
         with self.app_context():
@@ -29,8 +29,8 @@ class SignalTest(BaseTest):
             user.save_to_db()
             movement = Movement("flossing", "daily")
             movement.save_to_db()
-            update = Signal(user, movement)
-            update.save_to_db()
+            signal = Signal(user, movement)
+            signal.save_to_db()
 
-            update2 = Signal(user, movement)
-            update2.save_to_db()
+            signal2 = Signal(user, movement)
+            signal2.save_to_db()
