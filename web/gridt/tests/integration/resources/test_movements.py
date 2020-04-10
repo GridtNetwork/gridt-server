@@ -15,22 +15,30 @@ class MovementsTest(BaseTest):
             # Create fake data
             user = User("test1", "test1@test.com", "pass")
             user2 = User("test2", "test2@test.com", "pass")
-            movement = Movement("test", "twice daily", "Hello")
-            movement2 = Movement("test", "daily", "Hello")
-            db.session.add_all([user, user2, movement, movement2])
+            movement1 = Movement("test1", "twice daily", "Hello")
+            movement2 = Movement("test2", "daily", "Hello")
+            movement3 = Movement("test3", "weekly", "Testing")
+            db.session.add_all([user, user2, movement1, movement2, movement3])
             db.session.commit()
 
-            movement.add_user(user)
-            signal = Signal(user, movement)
-            signal2 = Signal(user, movement)
+            movement1.add_user(user)
+            signal = Signal(user, movement1)
+            signal2 = Signal(user, movement1)
             db.session.add_all([signal, signal2])
             db.session.commit()
 
-            movement.add_user(user2)
+            movement1.add_user(user2)
             movement2.add_user(user)
 
+            movement3.add_user(user)
+            movement3.add_user(user2)
+            signal3 = Signal(user, movement3, "test message")
+            db.session.add(signal3)
+            db.session.commit()
+
             # To prevent sqlalchemy.orm.exc.DetachedInstanceError
-            stamp = str(signal2.time_stamp.astimezone())
+            stamp2 = str(signal2.time_stamp.astimezone())
+            stamp3 = str(signal3.time_stamp.astimezone())
 
             token = self.obtain_token("test2@test.com", "pass")
 
@@ -45,8 +53,14 @@ class MovementsTest(BaseTest):
                     "description": "",
                     "interval": "twice daily",
                     "last_signal_sent": None,
-                    "leaders": [{"id": 1, "last_signal": stamp, "username": "test1"}],
-                    "name": "test",
+                    "leaders": [
+                        {
+                            "id": 1,
+                            "last_signal": {"time_stamp": stamp2},
+                            "username": "test1",
+                        }
+                    ],
+                    "name": "test1",
                     "short_description": "Hello",
                     "subscribed": True,
                 },
@@ -54,9 +68,28 @@ class MovementsTest(BaseTest):
                     "id": 2,
                     "description": "",
                     "interval": "daily",
-                    "name": "test",
+                    "name": "test2",
                     "short_description": "Hello",
                     "subscribed": False,
+                },
+                {
+                    "id": 3,
+                    "description": "",
+                    "interval": "weekly",
+                    "name": "test3",
+                    "short_description": "Testing",
+                    "subscribed": True,
+                    "last_signal_sent": None,
+                    "leaders": [
+                        {
+                            "id": 1,
+                            "last_signal": {
+                                "time_stamp": stamp3,
+                                "message": "test message",
+                            },
+                            "username": "test1",
+                        }
+                    ],
                 },
             ]
 
@@ -570,7 +603,13 @@ class SubscriptionsResourceTest(BaseTest):
                     "description": "",
                     "interval": "twice daily",
                     "last_signal_sent": None,
-                    "leaders": [{"id": 1, "last_signal": stamp, "username": "test1"}],
+                    "leaders": [
+                        {
+                            "id": 1,
+                            "last_signal": {"time_stamp": stamp},
+                            "username": "test1",
+                        }
+                    ],
                     "name": "movement1",
                     "short_description": "Hello",
                     "subscribed": True,

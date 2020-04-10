@@ -1,6 +1,6 @@
 info:
   title: The Gridt Network API
-  version: "0.0.2"
+  version: "0.0.3"
   description: >-
     Interact with the gridt network via this API. It provides several endpoints
     for creating and subscribing (to) movements and switching leaders.
@@ -271,9 +271,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/message'
-  '/movements/{movementId}/update':
+  '/movements/{movementId}/signal':
     post:
-      summary: Post a new update in movement
+      summary: Post a new signal in movement
+      content:
+        application/json:
+          schema: 
+            message: 
+              type: string
+              description: Optional message that the leader can send with his signal
       description: >
         Tell the server that the user has performed the action related to this
         movement.
@@ -281,7 +287,7 @@ paths:
         - $ref: '#/components/parameters/movementId'
       responses:
         '201':
-          description: Successfully created update
+          description: Successfully created signal
           content:
             application/json:
               schema:
@@ -406,6 +412,9 @@ components:
             time_stamp:
               type: string
               description: Date time of the last signal of the user.
+            message:
+              type: string
+              description: Message that the leader gave with this signal.
     userId:
       title: User id
       oneOf:

@@ -9,6 +9,7 @@ class Signal(db.Model):
 
     :attribute leader: The leader that created this signal.
     :attribute movement: The movement that this signal was created in.
+    :attribute message: Message from the leader.
     """
 
     __tablename__ = "signals"
@@ -16,14 +17,16 @@ class Signal(db.Model):
     leader_id = db.Column(db.Integer, db.ForeignKey("users.id"))
     movement_id = db.Column(db.Integer, db.ForeignKey("movements.id"))
     time_stamp = db.Column(db.DateTime(timezone=True), nullable=False)
+    message = db.Column(db.String)
 
     leader = db.relationship("User")
     movement = db.relationship("Movement")
 
-    def __init__(self, leader, movement):
+    def __init__(self, leader, movement, message=None):
         self.leader = leader
         self.movement = movement
         self.time_stamp = self._get_now()
+        self.message = message
 
     @classmethod
     def find_last(cls, user, movement):
@@ -38,6 +41,16 @@ class Signal(db.Model):
         Useful for patching in tests.
         """
         return datetime.now()
+
+    def dictify(self):
+        signal_dict = {
+            "time_stamp": str(self.time_stamp.astimezone()),
+        }
+
+        if self.message:
+            signal_dict["message"] = self.message
+
+        return signal_dict
 
     def save_to_db(self):
         db.session.add(self)

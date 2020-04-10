@@ -212,9 +212,7 @@ class Movement(db.Model):
                 {
                     "username": leader.username,
                     "id": leader.id,
-                    "last_signal": str(
-                        Signal.find_last(leader, self).time_stamp.astimezone()
-                    )
+                    "last_signal": Signal.find_last(leader, self).dictify()
                     if Signal.find_last(leader, self)
                     else None,
                 }

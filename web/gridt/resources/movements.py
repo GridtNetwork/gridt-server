@@ -143,7 +143,11 @@ class NewSignalResource(Resource):
         if current_identity not in movement.users:
             return {"message": "User is not subscribed to this movement."}, 400
 
-        signal = Signal(current_identity, movement)
+        message = None
+        if request.get_json():
+            message = request.get_json().get("message")
+
+        signal = Signal(current_identity, movement, message)
         signal.save_to_db()
 
         return {"message": "Successfully created signal."}, 201

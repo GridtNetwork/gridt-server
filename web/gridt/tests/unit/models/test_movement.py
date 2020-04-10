@@ -191,7 +191,9 @@ class MovementTest(BaseTest):
                     {
                         "id": 1,
                         "username": "test1",
-                        "last_signal": str(datetime(1996, 3, 15).astimezone()),
+                        "last_signal": {
+                            "time_stamp": str(datetime(1996, 3, 15).astimezone())
+                        },
                     }
                 ],
             }
