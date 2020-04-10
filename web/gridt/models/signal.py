@@ -17,7 +17,7 @@ class Signal(db.Model):
     leader_id = db.Column(db.Integer, db.ForeignKey("users.id"))
     movement_id = db.Column(db.Integer, db.ForeignKey("movements.id"))
     time_stamp = db.Column(db.DateTime(timezone=True), nullable=False)
-    message = db.Column(db.String)
+    message = db.Column(db.String(140))
 
     leader = db.relationship("User")
     movement = db.relationship("Movement")
