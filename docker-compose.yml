@@ -44,6 +44,7 @@ services:
             - ./data/nginx/:/etc/nginx/conf.d
             - ./data/certbot/conf:/etc/letsencrypt
             - ./data/certbot/www:/var/www/certbot
+            - ./data/app/:/var/www/app
     certbot:
         image: certbot/certbot
         volumes:
