@@ -130,3 +130,4 @@ gridt.db
 
 .vscode/*
 data/certbot/*
+data/app/*
