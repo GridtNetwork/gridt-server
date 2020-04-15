@@ -27,6 +27,7 @@ from gridt.models.movement import Movement
 
 from gridt.auth.security import authenticate, identify
 from gridt.resources.register import LoggedInResource, RegisterResource
+from gridt.resources.user import BioResource
 from gridt.resources.movements import (
     MovementsResource,
     SubscriptionsResource,
@@ -101,6 +102,7 @@ def register_api_endpoints(api):
     api.add_resource(SubscribeResource, "/movements/<movement_id>/subscriber")
     api.add_resource(SwapLeaderResource, "/movements/<movement_id>/leader/<leader_id>")
     api.add_resource(NewSignalResource, "/movements/<movement_id>/signal")
+    api.add_resource(BioResource, "/bio")
 
 
 def add_cli_commands(app, db):

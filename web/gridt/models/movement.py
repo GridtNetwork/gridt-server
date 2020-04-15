@@ -202,20 +202,24 @@ class Movement(db.Model):
         movement_dict["subscribed"] = False
         if user in self.users:
             movement_dict["subscribed"] = True
+
             last_signal = Signal.find_last(user, self)
             movement_dict["last_signal_sent"] = (
                 {"time_stamp": str(last_signal.time_stamp.astimezone())}
                 if last_signal
                 else None
             )
+
+            # Extend the user dictionary with the last signal
             movement_dict["leaders"] = [
-                {
-                    "username": leader.username,
-                    "id": leader.id,
-                    "last_signal": Signal.find_last(leader, self).dictify()
-                    if Signal.find_last(leader, self)
-                    else None,
-                }
+                dict(
+                    leader.dictify(),
+                    **(
+                        {"last_signal": Signal.find_last(leader, self).dictify()}
+                        if Signal.find_last(leader, self)
+                        else {}
+                    )
+                )
                 for leader in user.leaders(self)
             ]
 

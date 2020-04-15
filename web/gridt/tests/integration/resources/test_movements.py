@@ -58,6 +58,7 @@ class MovementsTest(BaseTest):
                             "id": 1,
                             "last_signal": {"time_stamp": stamp2},
                             "username": "test1",
+                            "bio": "",
                         }
                     ],
                     "name": "test1",
@@ -88,6 +89,7 @@ class MovementsTest(BaseTest):
                                 "message": "test message",
                             },
                             "username": "test1",
+                            "bio": "",
                         }
                     ],
                 },
@@ -567,53 +569,42 @@ class NewSignalTest(BaseTest):
 class SubscriptionsResourceTest(BaseTest):
     def test_get_subscriptions(self):
         with self.app_context():
-            # Create fake data
-            user = User("test1", "test1@test.com", "pass")
-            user2 = User("test2", "test2@test.com", "pass")
-            movement = Movement("movement1", "twice daily", "Hello")
-            movement2 = Movement("movement2", "daily", "Hello")
-            db.session.add_all([user, user2, movement, movement2])
-            db.session.commit()
+            self.create_movement()
+            self.create_movement()
 
-            # User test1 subscribes to movement1 and does an signal
-            movement.add_user(user)
-            signal = Signal(user, movement)
-            signal2 = Signal(user, movement)
-            db.session.add_all([signal, signal2])
-            db.session.commit()
+            now = datetime(1995, 1, 15, 8)
+            later = datetime(1996, 3, 15, 11)
 
-            # User test2 subscribes to movement1 and test1 to movement2
-            movement.add_user(user2)
-            movement2.add_user(user)
+            self.create_user_in_movement(self.movements[0])
+            self.signal_as_user(self.users[0], self.movements[0], moment=now)
+            self.signal_as_user(self.users[0], self.movements[0], moment=later)
 
-            self.assertTrue(movement2 not in user2.movements)
-            # To prevent sqlalchemy.orm.exc.DetachedInstanceError
-            stamp = str(signal2.time_stamp.astimezone())
+            self.create_user_in_movement(self.movements[0])
+            self.movements[1].add_user(self.get_user(0))
 
-            token = self.obtain_token("test2@test.com", "pass")
+            self.assertTrue(self.movements[1] not in self.get_user(1).movements)
 
-            # Check that the response matches expectation
-            resp = self.client.get(
-                "/movements/subscriptions", headers={"Authorization": f"JWT {token}"}
+            resp = self.request_as_user(
+                self.users[1], "GET", "/movements/subscriptions"
             )
+
+            user_dict = self.users[0]
+            del user_dict["password"]
+            del user_dict["email"]
+            user_dict["last_signal"] = {"time_stamp": str(later.astimezone())}
 
             expected = [
                 {
                     "id": 1,
-                    "description": "",
-                    "interval": "twice daily",
-                    "last_signal_sent": None,
-                    "leaders": [
-                        {
-                            "id": 1,
-                            "last_signal": {"time_stamp": stamp},
-                            "username": "test1",
-                        }
-                    ],
-                    "name": "movement1",
-                    "short_description": "Hello",
+                    "name": self.movements[0].name,
+                    "interval": self.movements[0].interval,
+                    "short_description": self.movements[0].short_description,
+                    "description": self.movements[0].description,
                     "subscribed": True,
+                    "last_signal_sent": None,
+                    "leaders": [user_dict],
                 }
             ]
             data = json.loads(resp.data)
+            self.maxDiff = None
             self.assertEqual(data, expected)

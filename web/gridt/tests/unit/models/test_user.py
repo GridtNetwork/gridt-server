@@ -24,10 +24,18 @@ class UserTest(BaseTest):
             self.assertEqual(user2.verify_password("password2"), True)
             self.assertEqual(user2.role, "administrator")
 
+            user3 = User("name", "email", "password", role="role", bio="bio")
+            user3.save_to_db()
+
+            self.assertIsNotNone(user3.id)
+            self.assertEqual(user3.username, "name")
+            self.assertEqual(user3.email, "email")
+            self.assertEqual(user3.role, "role")
+            self.assertEqual(user3.bio, "bio")
+
     def test_hash(self):
         user = User("username", "test@test.com", "test")
-
-        self.assertEqual(user.verify_password("test"), True)
+        self.assertTrue(user.verify_password("test"))
 
     def test_leaders(self):
         with self.app_context():

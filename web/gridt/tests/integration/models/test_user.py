@@ -8,7 +8,6 @@ class UserTest(BaseTest):
             self.assertIsNone(User.find_by_name("username"))
 
             user = User("username", "test@test.com", "password")
-
             user.save_to_db()
 
             self.assertEqual(user, User.find_by_name("username"))

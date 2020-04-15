@@ -166,16 +166,24 @@ class MovementTest(BaseTest):
         with self.app_context():
             movement = Movement("movement1", "daily", short_description="Hi")
             movement.description = "A long description"
-            user1 = User("test1", "test1@test.com", "test")
-            user2 = User("test2", "test2@test.com", "test")
-            movement.add_user(user1)
-            movement.add_user(user2)
-            signal1 = Signal(user1, movement)
-            signal2 = Signal(user2, movement)
+            movement.save_to_db()
+            self.movements.append(movement)
 
-            user1.save_to_db()  # Make sure id == 1
-            db.session.add_all([movement, user2, signal1, signal2])
-            db.session.commit()
+            self.create_user_in_movement(movement)
+            self.create_user_in_movement(movement, generate_bio=True)
+
+            now = datetime(1995, 1, 15, 12)
+            later = datetime(1996, 3, 15, 8)
+
+            message = "This is a message"
+
+            self.signal_as_user(self.users[0], movement, moment=now)
+            self.signal_as_user(self.users[1], movement, message=message, moment=later)
+
+            user_dict = self.users[0]
+            del user_dict["password"]
+            del user_dict["email"]
+            user_dict["last_signal"] = {"time_stamp": str(now.astimezone())}
 
             expected = {
                 "id": 1,
@@ -184,21 +192,11 @@ class MovementTest(BaseTest):
                 "description": "A long description",
                 "subscribed": True,
                 "interval": "daily",
-                "last_signal_sent": {
-                    "time_stamp": str(datetime(1996, 3, 15).astimezone())
-                },
-                "leaders": [
-                    {
-                        "id": 1,
-                        "username": "test1",
-                        "last_signal": {
-                            "time_stamp": str(datetime(1996, 3, 15).astimezone())
-                        },
-                    }
-                ],
+                "last_signal_sent": {"time_stamp": str(later.astimezone())},
+                "leaders": [user_dict],
             }
-
-            self.assertEqual(movement.dictify(user2), expected)
+            user = User.find_by_id(self.users[1]["id"])
+            self.assertEqual(movement.dictify(user), expected)
 
     @patch("gridt.models.signal.Signal._get_now", return_value=datetime(1996, 3, 15))
     def test_dictify_subscribed(self, func):

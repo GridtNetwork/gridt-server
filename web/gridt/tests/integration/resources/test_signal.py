@@ -37,14 +37,11 @@ class SignalTest(BaseTest):
             )
 
             expected1 = {"time_stamp": str(NOW.astimezone())}
-            self.assertEqual(
-                json.loads(resp1.data)["leaders"][0]["last_signal"], expected1
-            )
+            self.assertEqual(resp1.get_json()["leaders"][0]["last_signal"], expected1)
 
             self.client.post(
                 "/movements/1/signal",
-                data=json.dumps({"message": "Hello"}),
-                content_type="application/json",
+                json={"message": "Hello"},
                 headers={"Authorization": f"JWT {token1}"},
             )
 
@@ -53,6 +50,4 @@ class SignalTest(BaseTest):
             )
 
             expected2 = {"time_stamp": str(LATER.astimezone()), "message": "Hello"}
-            self.assertEqual(
-                json.loads(resp2.data)["leaders"][0]["last_signal"], expected2
-            )
+            self.assertEqual(resp2.get_json()["leaders"][0]["last_signal"], expected2)

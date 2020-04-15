@@ -1,6 +1,6 @@
 info:
   title: The Gridt Network API
-  version: "0.0.3"
+  version: "0.0.4"
   description: >-
     Interact with the gridt network via this API. It provides several endpoints
     for creating and subscribing (to) movements and switching leaders.
@@ -302,6 +302,31 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/MovementNotFoundError'
+  '/bio':
+    put:
+      summary: Update the user bio
+      description: Permanently change the bio of this user.
+      content:
+        application/json:
+          schema:
+            bio:
+              type: string
+              required: true
+      responses:
+        '200': 
+          description: Update successful.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/message'
+        '400': 
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/message'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
 components:
   responses:
     UnauthorizedError:
@@ -405,6 +430,13 @@ components:
           type: string
           description: The user's username
           example: robin
+        bio:
+          type: string
+          description: Small biography describing the user.
+          example: >-
+            I am Robin, a code, musician and physics student. I love spending
+            time with my wife, she is awesome! Soon my first child will be born, I am 
+            curious how that will be for me.
         last_signal:
           type: object
           description: This is the last signal that the user has given in this movement.

@@ -24,9 +24,6 @@ class RegisterResource(Resource):
         except ValidationError:
             return {"message": "Bad request"}, 400
 
-        if User.find_by_name(data["username"]):
-            return {"message": "Username already in use."}, 400
-
         user = User(data["username"], data["email"], data["password"])
         user.save_to_db()
 

@@ -16,6 +16,7 @@ class User(db.Model):
     :param str username: Username that the user has chosen.
     :param str email: Email that the user has chosen.
     :param str password: Password that the user has chosen.
+    :param str bio: Small biography of the uesr.
 
     :attribute password_hash: Hashed version of the users's password.
     :attribute follower_associations: All associations to movements where the follower is this user. Useful for determining the leaders of a user.
@@ -31,6 +32,7 @@ class User(db.Model):
     email = db.Column(db.String(40), unique=True, nullable=False)
     password_hash = db.Column(db.String(128))
     role = db.Column(db.String(32))
+    bio = db.Column(db.UnicodeText)
 
     follower_associations = db.relationship(
         "MovementUserAssociation", foreign_keys="MovementUserAssociation.follower_id"
@@ -42,11 +44,12 @@ class User(db.Model):
         creator=lambda movement: MovementUserAssociation(movement=movement),
     )
 
-    def __init__(self, username, email, password, role="user"):
+    def __init__(self, username, email, password, role="user", bio=""):
         self.username = username
         self.email = email
         self.hash_password(password)
         self.role = role
+        self.bio = bio
 
     def __repr__(self):
         return f"<User {self.username}>"
@@ -89,6 +92,9 @@ class User(db.Model):
             not_(MovementUserAssociation.leader_id == None),
         ).all()
         return [a.leader for a in associations]
+
+    def dictify(self):
+        return {"username": self.username, "id": self.id, "bio": self.bio}
 
     def save_to_db(self):
         """
