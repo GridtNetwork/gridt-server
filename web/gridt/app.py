@@ -176,8 +176,12 @@ def create_app(overwrite_conf=None):
         print("Programming error, exiting.")
         sys.exit(1)
 
-    if not database_exists(app.config["SQLALCHEMY_DATABASE_URI"]):
-        create_database(app.config["SQLALCHEMY_DATABASE_URI"])
+    try:
+        if not database_exists(app.config["SQLALCHEMY_DATABASE_URI"]):
+            create_database(app.config["SQLALCHEMY_DATABASE_URI"])
+    except sqlalchemy.exc.OperationalError:
+        print("Could not connect to database.")
+        sys.exit(1)
 
     if app.config.get("FLASK_DEBUG", True):
         with app.app_context():
