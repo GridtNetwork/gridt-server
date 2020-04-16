@@ -145,11 +145,6 @@ class Movement(db.Model):
         mau.leader = new_leader
         mau.save_to_db()
 
-        # for association in user.follower_associations:
-        #     if association.leader == leader and association.movement == self:
-        #         association.leader = new_leader
-        #         association.save_to_db()
-
         return new_leader
 
     def add_user(self, user):
