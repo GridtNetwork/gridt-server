@@ -29,11 +29,20 @@ class Signal(db.Model):
         self.message = message
 
     @classmethod
-    def find_last(cls, user, movement):
+    def find_last(cls, user, movement, n=1):
         return (
             cls.query.filter_by(leader=user, movement=movement)
             .order_by(desc("time_stamp"))
             .first()
+        )
+
+    @classmethod
+    def get_signal_history(cls, user, movement, n):
+        return (
+            cls.query.filter_by(leader=user, movement=movement)
+            .order_by(desc("time_stamp"))
+            .limit(n)
+            .all()
         )
 
     def _get_now(self):

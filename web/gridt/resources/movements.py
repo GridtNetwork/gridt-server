@@ -9,28 +9,7 @@ from gridt.models.movement import Movement
 from gridt.models.user import User
 from gridt.models.signal import Signal
 
-
-def get_movement(identifier):
-    try:
-        identifier = int(identifier)
-        movement = Movement.find_by_id(identifier)
-    except ValueError:
-        movement = Movement.find_by_name(identifier)
-
-    if not movement:
-        abort(404, message="This movement does not exist.")
-
-    return movement
-
-
-def get_user(identifier):
-    try:
-        identifier = int(identifier)
-        user = User.find_by_id(identifier)
-    except ValueError:
-        user = User.find_by_name(identifier)
-
-    return user
+from .helpers import get_user, get_movement
 
 
 class MovementsResource(Resource):
@@ -99,41 +78,6 @@ class SubscribeResource(Resource):
         if current_identity in movement.users:
             movement.remove_user(current_identity)
         return {"message": "Successfully unsubscribed from this movement."}, 200
-
-
-class SwapLeaderResource(Resource):
-    @jwt_required()
-    def post(self, movement_id, leader_id):
-        movement = get_movement(movement_id)
-
-        if not current_identity in movement.users:
-            return {"message": "User is not subscribed to this movement."}, 400
-
-        leader = get_user(leader_id)
-
-        # This prevents a malicious user from finding user ids.
-        # Returning a 404 for a nonexistant user would give them more
-        # infromation than we want to share.
-        if not leader or leader not in current_identity.leaders(movement):
-            return {"message": "User is not following this leader."}, 400
-
-        new_leader = movement.swap_leader(current_identity, leader)
-
-        if not new_leader:
-            return {"message": "Could not find leader to replace the current one."}
-
-        time_stamp = None
-        if Signal.find_last(new_leader, movement):
-            time_stamp = str(Signal.find_last(new_leader, movement).time_stamp)
-
-        return (
-            {
-                "id": new_leader.id,
-                "username": new_leader.username,
-                "last_signal": time_stamp,
-            },
-            200,
-        )
 
 
 class NewSignalResource(Resource):

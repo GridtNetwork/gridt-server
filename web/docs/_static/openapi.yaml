@@ -148,7 +148,7 @@ paths:
                   $ref: '#/components/schemas/movement'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-  '/movements/{movementId}':
+  /movements/{movementId}:
     get:
       summary: Get a movement
       parameters:
@@ -164,7 +164,7 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/MovementNotFoundError'
-  '/movements/{movementId}/subscriber':
+  /movements/{movementId}/subscriber:
     put:
       summary: Subscribe user to movement
       description: >-
@@ -201,7 +201,7 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/MovementNotFoundError'
-  '/movements/{movementId}/leader':
+  /movements/{movementId}/leader:
     post:
       summary: Find a leader
       description: 'If the user has any empty leader, find one for him.'
@@ -236,7 +236,52 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/message'
-  '/movements/{movementId}/leader/{userId}/':
+  /movements/{movementId}/leader/{userId}/:
+    get:
+      summary: Get the profile of this leader
+      description: >-
+        Obtain the information that the leader has shared in this movement.
+        Among others this will display a recent message history and a biography.
+      parameters:
+        - $ref: '#/components/parameters/movementId'
+        - name: userId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/userId'
+      responses:
+        '200': 
+          description: >
+            Leader profile found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    description: Identifier
+                    type: number
+                  username:
+                    description: Non-unique identifier for the user
+                    type: string
+                  bio:
+                    description: Short biography from the user 
+                    type: string
+                  message_history:
+                    description: List detailing the last 3 messages the user has sent.
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/signal'
+        '400':
+          description: >-
+            User is not subscribed to this movement. Or: User is not following
+            this leader.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/message'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
     post:
       summary: Swap leader in movement
       description: Swap a leader in a movement with a different one.
@@ -271,15 +316,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/message'
-  '/movements/{movementId}/signal':
+  /movements/{movementId}/signal:
     post:
       summary: Post a new signal in movement
-      content:
-        application/json:
-          schema: 
-            message: 
-              type: string
-              description: Optional message that the leader can send with his signal
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message: 
+                  type: string
+                  description: Optional message that the leader can send with his signal
       description: >
         Tell the server that the user has performed the action related to this
         movement.
@@ -302,16 +350,20 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/MovementNotFoundError'
-  '/bio':
+  /bio:
     put:
       summary: Update the user bio
       description: Permanently change the bio of this user.
-      content:
-        application/json:
-          schema:
-            bio:
-              type: string
-              required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - bio
+              properties:
+                bio:
+                  type: string
       responses:
         '200': 
           description: Update successful.
@@ -411,10 +463,10 @@ components:
             Flossing once a day has been shown to reduce almost any dental issue
             and can greatly reduce risks for all kinds of diseases.
         interval:
-          type: string
-          decription: >-
+          type: string 
+          description: >-
             Describes how often the movement timer gets reset.
-          oneOf:
+          enum:
             - daily
             - twice daily
             - weekly  
@@ -438,22 +490,29 @@ components:
             time with my wife, she is awesome! Soon my first child will be born, I am 
             curious how that will be for me.
         last_signal:
-          type: object
-          description: This is the last signal that the user has given in this movement.
-          properties:
-            time_stamp:
-              type: string
-              description: Date time of the last signal of the user.
-            message:
-              type: string
-              description: Message that the leader gave with this signal.
+          $ref: '#/components/schemas/signal'
     userId:
       title: User id
       oneOf:
         - type: integer
         - type: string
+    signal:
+      title: Signal
+      description: >
+        A signal that a leader can send to the server to communicate that he has performed the by the movement required action.
+      type: object
+      required:
+        - time_stamp
+      properties:
+        time_stamp:
+          type: string
+          description: Datetime with timezone in ISO format detailing when the server received the signal.
+        message:
+          type: string
+          description: Optional message that the user can send with the time stamp.
 openapi: 3.0.1
 externalDocs:
   url: 'http://gridt-server.readthedocs.io'
   description: Complete documentation of models and resources.
-servers: [api.gridt.org]
+servers: 
+  - url: http://api.gridt.org/

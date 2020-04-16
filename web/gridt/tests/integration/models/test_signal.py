@@ -1,3 +1,4 @@
+import lorem
 from datetime import datetime, timedelta
 from unittest.mock import patch
 
@@ -51,3 +52,26 @@ class SignalTest(BaseTest):
 
             signal2 = Signal(user, movement)
             signal2.save_to_db()
+
+    def test_get_signal_history(self):
+        with self.app_context():
+            movement = self.create_movement()
+            user = self.create_user_in_movement(movement)
+
+            dates = [
+                datetime(2001, 1, 2),
+                datetime(2017, 9, 15),
+                datetime(2019, 10, 18, 16),
+                datetime(2020, 9, 2, 9),
+            ]
+
+            signals = [
+                self.signal_as_user(
+                    self.users[0], movement, moment=date, message=lorem.sentence()
+                )
+                for date in dates
+            ]
+
+            expected = list(reversed(signals[-2:]))
+
+            self.assertEqual(Signal.get_signal_history(user, movement, 2), expected)

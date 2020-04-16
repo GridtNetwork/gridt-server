@@ -16,7 +16,8 @@ class Movement(db.Model):
         flossing = Movement('flossing', 'daily')
         robin = User.find_by_id(1)
         pieter = User.find_by_id(2)
-        jorn = User.find_by_id(3) flossing.users = [robin, pieter, jorn]
+        jorn = User.find_by_id(3) 
+        flossing.users = [robin, pieter, jorn]
         flossing.save_to_db()
 
     :Note: changes are only saved to the database when :func:`Movement.save_to_db` is called.
