@@ -123,6 +123,9 @@ class Movement(db.Model):
         :param leader: The leader that will be swapped.
         :return: New leader or None
         """
+        if not leader:
+            raise ValueError("Cannot swap a leader that does not exist.")
+
         # We can not change someone's leader if they are not already following that leader.
         if leader and leader not in user.leaders(self):
             raise ValueError("User is not following that leader.")
@@ -133,10 +136,19 @@ class Movement(db.Model):
             return None
 
         new_leader = random.choice(possible_leaders)
-        for association in user.follower_associations:
-            if association.leader == leader and association.movement == self:
-                association.leader = new_leader
-                association.save_to_db()
+        mau = MovementUserAssociation.query.filter(
+            MovementUserAssociation.follower_id == user.id,
+            MovementUserAssociation.leader_id == leader.id,
+            MovementUserAssociation.movement_id == self.id,
+        ).one()
+
+        mau.leader = new_leader
+        mau.save_to_db()
+
+        # for association in user.follower_associations:
+        #     if association.leader == leader and association.movement == self:
+        #         association.leader = new_leader
+        #         association.save_to_db()
 
         return new_leader
 

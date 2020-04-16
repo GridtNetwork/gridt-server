@@ -52,9 +52,6 @@ class MovementTest(BaseTest):
             self.assertTrue(movement.swap_leader(user2, user1))
             self.assertEqual(len(user2.leaders(movement)), 1)
 
-            self.assertTrue(movement.swap_leader(user1, None))
-            self.assertIn(user1.leaders(movement)[0], [user2, user3, user4, user5])
-
     def test_swap_leader_complicated(self):
         with self.app_context():
             user1 = User("user1", "test1@test.com", "password")
