@@ -42,34 +42,30 @@ class UserTest(BaseTest):
             user1 = User("user1", "test1@test.com", "test")
             user2 = User("user2", "test2@test.com", "test")
             user3 = User("user3", "test3@test.com", "test")
+
+            movement = Movement("movement1", "daily")
+
+            assoc1 = MovementUserAssociation(movement, user1, user2)
+            assoc2 = MovementUserAssociation(movement, user1, user3)
+
+            self.assertEqual(user1.leaders(movement), [user2, user3])
+        
+    def test_leaders_removed():
+        with self.app_context():
+            user1 = User("user1", "test1@test.com", "test")
+            user2 = User("user2", "test2@test.com", "test")
+            user3 = User("user3", "test3@test.com", "test")
             user4 = User("user4", "test4@test.com", "test")
 
-            movement1 = Movement("movement1", "daily")
-            movement2 = Movement("movement2", "daily")
+            movement = Movement("movement1", "daily")
 
-            assoc1 = MovementUserAssociation(movement1, user1, user2)
-            assoc2 = MovementUserAssociation(movement1, user1, user3)
-            assoc3 = MovementUserAssociation(movement1, user2, user1)
-            assoc4 = MovementUserAssociation(movement2, user1, user2)
-            assoc5 = MovementUserAssociation(movement2, user2, user1)
-            assoc6 = MovementUserAssociation(movement1, user1, None)
+            assoc1 = MovementUserAssociation(movement, user1, user2)
+            assoc2 = MovementUserAssociation(movement, user1, user3)
+            assoc4 = MovementUserAssociation(movement, user1, user4)
+            assoc4.destroy()
 
-            # db.session.add_all(
-            #     [
-            #         user1,
-            #         user2,
-            #         user3,
-            #         user4,
-            #         movement1,
-            #         movement2,
-            #         assoc1,
-            #         assoc2,
-            #         assoc3,
-            #         assoc4,
-            #         assoc5,
-            #         assoc6,
-            #     ]
-            # )
-            # db.session.commit()
-
-            self.assertEqual(user1.leaders(movement1), [user2, user3])
+            self.assertEqual(
+                user1.leaders(movement), 
+                [user2, user3],
+                "Destroyed MUAs must not yield leaders for a user."
+            )

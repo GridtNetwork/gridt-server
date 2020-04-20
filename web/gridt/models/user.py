@@ -90,6 +90,7 @@ class User(db.Model):
             MovementUserAssociation.follower_id == self.id,
             MovementUserAssociation.movement_id == movement.id,
             not_(MovementUserAssociation.leader_id == None),
+            not_(MovementUserAssociation.destroyed),
         ).all()
         return [a.leader for a in associations]
 
