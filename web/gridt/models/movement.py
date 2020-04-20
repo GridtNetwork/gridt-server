@@ -200,6 +200,9 @@ class Movement(db.Model):
         for asso in self.user_associations:
             if asso.follower == user:
                 asso.destroyed = datetime.now()
+            if asso.leader == user:
+                asso.destroyed = datetime.now()
+        # Update the following to current_users:
         self.users = list(filter(lambda u: u != user, self.users))
 
     def dictify(self, user):
