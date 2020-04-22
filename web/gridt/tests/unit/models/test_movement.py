@@ -37,31 +37,37 @@ class MovementTest(BaseTest):
             movement2 = Movement("movement2", "twice daily")        
 
             self.assertEqual(len(user1.follower_associations), 0)
+            self.assertEqual(len(user1.leaders(movement1)), 0)
             self.assertEqual(len(user2.follower_associations), 0)
+            self.assertEqual(len(user2.leaders(movement1)), 0)
             self.assertEqual(len(movement1.user_associations), 0)
             self.assertEqual(len(movement2.user_associations), 0)
 
             movement1.add_user(user1)
 
             self.assertEqual(len(user1.follower_associations), 1)
+            self.assertEqual(len(user1.leaders(movement1)), 0)
             self.assertEqual(len(user2.follower_associations), 0)
             self.assertEqual(len(movement1.user_associations), 1)
             self.assertEqual(len(movement2.user_associations), 0)
 
             movement1.add_user(user2)
 
-            self.assertEqual(len(user1.follower_associations), 1)
+            self.assertEqual(len(user1.follower_associations), 2)
+            self.assertEqual(len(user1.leaders(movement1)), 1)
             self.assertEqual(len(user2.follower_associations), 1)
-            self.assertEqual(len(movement1.user_associations), 2)
+            self.assertEqual(len(user1.leaders(movement1)), 1)
+            self.assertEqual(len(movement1.user_associations), 3)
             self.assertEqual(len(movement2.user_associations), 0)
             self.assertIn(user1, user2.leaders(movement1))
             self.assertIn(user2, user1.leaders(movement1))
 
             movement1.add_user(user3)
 
-            self.assertEqual(len(user1.follower_associations), 2)
+            self.assertEqual(len(user1.follower_associations), 3)
             self.assertEqual(len(user2.follower_associations), 2)
-            self.assertEqual(len(movement1.user_associations), 6)
+            self.assertEqual(len(user3.follower_associations), 2)
+            self.assertEqual(len(movement1.user_associations), 7)
             self.assertEqual(len(movement2.user_associations), 0)
             self.assertIn(user1, user2.leaders(movement1))
             self.assertIn(user1, user3.leaders(movement1))
@@ -239,22 +245,22 @@ class MovementTest(BaseTest):
             )
 
             self.assertEqual(len(user1.leaders(movement)), 4)
-            self.assertEqual(len(user1.follower_associations), 4)
-            self.assertIn(user1.leaders(movement), user2)
-            self.assertIn(user1.leaders(movement), user3)
-            self.assertIn(user1.leaders(movement), user4)
-            self.assertIn(user1.leaders(movement), user5)
+            self.assertEqual(len(user1.follower_associations), 5)
+            self.assertIn(user2, user1.leaders(movement))
+            self.assertIn(user3, user1.leaders(movement))
+            self.assertIn(user4, user1.leaders(movement))
+            self.assertIn(user5, user1.leaders(movement))
 
             movement.remove_user(user5)
 
             db.session.commit()
 
             self.assertEqual(len(user1.leaders(movement)), 4)
-            self.assertEqual(len(user1.follower_associations), 5)
-            self.assertIn(user1.leaders(movement), user2)
-            self.assertIn(user1.leaders(movement), user3)
-            self.assertIn(user1.leaders(movement), user4)
-            self.assertIn(user1.leaders(movement), user6)
+            self.assertEqual(len(user1.follower_associations), 6)
+            self.assertIn(user2, user1.leaders(movement))
+            self.assertIn(user3, user1.leaders(movement))
+            self.assertIn(user4, user1.leaders(movement))
+            self.assertIn(user6, user1.leaders(movement))
 
     def test_last_leader_removed(self):
         # To test whether leaders are not empty after removing last leader.
@@ -269,6 +275,7 @@ class MovementTest(BaseTest):
             movement = Movement("movement", "daily")
 
             mua1 = MovementUserAssociation(movement, user1, user2)
+            mua2 = MovementUserAssociation(movement, user3, None)
 
             self.assertEqual(len(user1.leaders(movement)), 1)
             self.assertIn(user2, user1.leaders(movement))

@@ -209,7 +209,7 @@ class Movement(db.Model):
                     MovementUserAssociation.follower_id == follower.id,
                     MovementUserAssociation.leader_id == None,
                 )
-                .group_by(MovementUserAssocation.follower_id)
+                .group_by(MovementUserAssociation.follower_id)
                 .all()
             )
 
