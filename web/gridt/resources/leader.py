@@ -59,11 +59,10 @@ class LeaderResource(Resource):
         if Signal.find_last(new_leader, movement):
             time_stamp = str(Signal.find_last(new_leader, movement).time_stamp)
 
+        leader_dict = new_leader.dictify()
+        leader_dict["last_signal"] = time_stamp
+
         return (
-            {
-                "id": new_leader.id,
-                "username": new_leader.username,
-                "last_signal": time_stamp,
-            },
+            leader_dict,
             200,
         )
