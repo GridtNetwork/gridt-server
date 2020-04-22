@@ -151,7 +151,8 @@ class Movement(db.Model):
         mua.destroy()
 
         new_leader = random.choice(possible_leaders)
-        new_assoc = MovementUserAssociation(self, user1, new_leader)
+        new_assoc = MovementUserAssociation(self, user, new_leader)
+
         new_assoc.save_to_db()
 
         return new_leader
@@ -181,32 +182,35 @@ class Movement(db.Model):
                 else:
                     break
 
-        # Bug: the following will allow "excluded" leaders to rejoin the movement
-        # and "force" excluding users with too few leaders into MUA
-        # Can we give users an attribute "excluded" instead?
+        # Bug: the following will allow "excluded" leaders to rejoin 
+        # the movement and "force" excluding users with too few leaders 
+        # into MUA. Can we give users an attribute "exclude" instead?
         # It will span all of Gridt, not just a single movement.
-        movement = self
 
         leaderless = (
             db.session.query(User)
             .filter(
                 not_(User.id == user.id),
                 # Any user still in the movement
-                len(User.leaders(User, movement)) >= 1,
+                len(User.leaders(User, self)) >= 1,
                 # Any user with too few leaders
-                len(User.leaders(User, movement)) < 4,
+                len(User.leaders(User, self)) < 4,
             )
             .all()
         )
 
-        for follower in leaderless:
-            # Remove any follower associations MUA(movement, follower, None):
+        for new_follower in leaderless:
+            association = MovementUserAssociation(self, new_follower, user)
+            association.save_to_db()
+
+            # Destroy any MUA(movement, follower, None):
             # (must be put back if last leader leaves)
+
             assoc_none = (
                 db.session.query(MovementUserAssociation)
                 .filter(
                     MovementUserAssociation.movement_id == self.id,
-                    MovementUserAssociation.follower_id == follower.id,
+                    MovementUserAssociation.follower_id == new_follower.id,
                     MovementUserAssociation.leader_id == None,
                 )
                 .group_by(MovementUserAssociation.follower_id)
@@ -215,9 +219,6 @@ class Movement(db.Model):
 
             for a in assoc_none:
                 a.destroy()
-
-            association = MovementUserAssociation(self, follower, user)
-            association.save_to_db()
 
     def remove_user(self, user):
         """
@@ -233,7 +234,7 @@ class Movement(db.Model):
                 asso.destroyed = datetime.now()
         # Update the following to current_users:
         self.users = list(filter(lambda u: u != user, self.users))
-        # Update all followers' leaders.
+        # TODO: Update all followers' leaders.
 
     def dictify(self, user):
         """
