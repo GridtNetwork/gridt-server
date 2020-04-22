@@ -1,5 +1,6 @@
 from datetime import datetime
 from unittest.mock import patch
+from freezegun import freeze_time
 
 from gridt.tests.base_test import BaseTest
 from gridt.db import db
@@ -35,35 +36,29 @@ class MovementTest(BaseTest):
             movement1 = Movement("movement1", "daily")
             movement2 = Movement("movement2", "twice daily")
 
-            db.session.add_all([user1, user2, user3, movement1, movement2])
-            db.session.commit()
-
             self.assertEqual(len(user1.follower_associations), 0)
             self.assertEqual(len(user2.follower_associations), 0)
             self.assertEqual(len(movement1.user_associations), 0)
             self.assertEqual(len(movement2.user_associations), 0)
 
             movement1.add_user(user1)
-
-            self.assertEqual(len(user1.follower_associations), 4)
+            self.assertEqual(len(user1.follower_associations), 1)
             self.assertEqual(len(user2.follower_associations), 0)
-            self.assertEqual(len(movement1.user_associations), 4)
+            self.assertEqual(len(movement1.user_associations), 1)
             self.assertEqual(len(movement2.user_associations), 0)
 
             movement1.add_user(user2)
-
-            self.assertEqual(len(user1.follower_associations), 4)
-            self.assertEqual(len(user2.follower_associations), 4)
-            self.assertEqual(len(movement1.user_associations), 8)
+            self.assertEqual(len(user1.follower_associations), 1)
+            self.assertEqual(len(user2.follower_associations), 1)
+            self.assertEqual(len(movement1.user_associations), 2)
             self.assertEqual(len(movement2.user_associations), 0)
             self.assertIn(user1, user2.leaders(movement1))
             self.assertIn(user2, user1.leaders(movement1))
 
             movement1.add_user(user3)
-
-            self.assertEqual(len(user1.follower_associations), 4)
-            self.assertEqual(len(user2.follower_associations), 4)
-            self.assertEqual(len(movement1.user_associations), 12)
+            self.assertEqual(len(user1.follower_associations), 2)
+            self.assertEqual(len(user2.follower_associations), 2)
+            self.assertEqual(len(movement1.user_associations), 6)
             self.assertEqual(len(movement2.user_associations), 0)
             self.assertIn(user1, user2.leaders(movement1))
             self.assertIn(user1, user3.leaders(movement1))
@@ -104,8 +99,30 @@ class MovementTest(BaseTest):
             assoc10 = MovementUserAssociation(movement2, user4, None)
             assoc10.destroy()
 
+            db.session.add_all(
+                [
+                    user1,
+                    user2,
+                    user3,
+                    user4,
+                    user5,
+                    movement1,
+                    movement2,
+                    assoc1,
+                    assoc2,
+                    assoc3,
+                    assoc4,
+                    assoc5,
+                    assoc6,
+                    assoc7,
+                    assoc8,
+                    assoc9,
+                ]
+            )
+            db.session.commit()
+
             self.assertEqual(movement1.find_leaders(user1), [user2, user4])
-            self.assertEqual(movement2.find_leaders(user3), [user1, user5])
+            self.assertEqual(movement2.find_leaders(user3), [user1, user4])
 
     def test_remove_user_from_movement(self):
         with self.app_context():
@@ -123,12 +140,12 @@ class MovementTest(BaseTest):
             self.assertEqual(
                 len(user1.follower_associations), 
                 1,
-                "Mua must be present after destruction.",
+                "Mua must still be present after destruction.",
             )
             self.assertEqual(
                 user1.follower_associations[0].destroyed,
-                datetime(2020, 4, 18, 22, 10)
-                "Mua must be destroyed when user is removed from movement."
+                datetime(2020, 4, 18, 22, 10),
+                "Mua must be destroyed when user is removed from movement.",
             )
             self.assertTrue(len(movement1.user_associations) == 0)
 
@@ -149,6 +166,14 @@ class MovementTest(BaseTest):
 
             user2s_leaders = list(map(lambda a: a.leader, user2.follower_associations))
             self.assertFalse(user1 in user2s_leaders)
+
+            # To test whether leaders are not empty after removing a leader.
+
+            # self.assertNotEqual(
+            #     len(user2s_leaders),
+            #     0,
+            #     "user2 must still have a leader after last leader is removed."
+            # )
 
     @patch("gridt.models.signal.Signal._get_now", return_value=datetime(1996, 3, 15))
     def test_dictify(self, func):

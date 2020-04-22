@@ -48,9 +48,20 @@ class UserTest(BaseTest):
             assoc1 = MovementUserAssociation(movement, user1, user2)
             assoc2 = MovementUserAssociation(movement, user1, user3)
 
+            db.session.add_all(
+                [
+                    user1,
+                    user2,
+                    user3,
+                    assoc1,
+                    assoc2,
+                ]
+            )
+            db.session.commit()
+
             self.assertEqual(user1.leaders(movement), [user2, user3])
         
-    def test_leaders_removed():
+    def test_leaders_removed(self):
         with self.app_context():
             user1 = User("user1", "test1@test.com", "test")
             user2 = User("user2", "test2@test.com", "test")
@@ -61,8 +72,21 @@ class UserTest(BaseTest):
 
             assoc1 = MovementUserAssociation(movement, user1, user2)
             assoc2 = MovementUserAssociation(movement, user1, user3)
-            assoc4 = MovementUserAssociation(movement, user1, user4)
-            assoc4.destroy()
+            assoc3 = MovementUserAssociation(movement, user1, user4)
+            assoc3.destroy()
+
+            db.session.add_all(
+                [
+                    user1,
+                    user2,
+                    user3,
+                    user4,
+                    assoc1,
+                    assoc2,
+                    assoc3,
+                ]
+            )
+            db.session.commit()
 
             self.assertEqual(
                 user1.leaders(movement), 

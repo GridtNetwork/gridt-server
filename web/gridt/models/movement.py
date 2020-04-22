@@ -1,4 +1,5 @@
 import random
+from datetime import datetime
 from sqlalchemy import not_, and_
 from sqlalchemy.ext.associationproxy import association_proxy
 
@@ -20,14 +21,17 @@ class Movement(db.Model):
         flossing.users = [robin, pieter, jorn]
         flossing.save_to_db()
 
-    :Note: changes are only saved to the database when :func:`Movement.save_to_db` is called.
+    :Note: changes are only saved to the database when :func:`Movement.save_to_db` 
+    is called.
 
     :param str name: Name of the movement
     :param str interval: Interval in which the user is supposed to repeat the action.
     :param str short_description: Give a short description for your movement.
     :attribute str description: More elaborate description of your movement.
     :attribute users: All user that have been subscribed to this movement.
-    :attribute user_associations: All instances of :class:`models.movement_user_association.MovementUserAssociation` with that link to this movement.
+    :attribute user_associations: All instances of 
+    :class:`models.movement_user_association.MovementUserAssociation` with that 
+    link to this movement.
     """
 
     __tablename__ = "movements"
@@ -95,7 +99,8 @@ class Movement(db.Model):
         Private function to look for ids of leaders that this user could use.
 
         :param gridt.models.user.User user: User that needs new leaders.
-        :param list exclude: List of users (can be a user model or an id) to exclude from search.
+        :param list exclude: List of users (can be a user model or an id) to 
+        exclude from search.
         :returns: A list of ids of users, or None if the user is not in this movement.
         """
         current_leader_ids = [leader.id for leader in user.leaders(self)]
@@ -126,7 +131,8 @@ class Movement(db.Model):
         if not leader:
             raise ValueError("Cannot swap a leader that does not exist.")
 
-        # We can not change someone's leader if they are not already following that leader.
+        # We can not change someone's leader if they are not already 
+        # following that leader.
         if leader and leader not in user.leaders(self):
             raise ValueError("User is not following that leader.")
 
@@ -149,9 +155,11 @@ class Movement(db.Model):
 
     def add_user(self, user):
         """
-        Add a new user to self.users and give it appropriate leaders. Find followers without leaders and the user as a leader.
+        Add a new user to self.users and give it appropriate leaders. 
+        Find followers without leaders and the user as a leader.
 
-        :param gridt.models.user.User user: the user that is to be subscribed to this movement
+        :param gridt.models.user.User user: the user that is to be 
+        subscribed to this movement
 
         :todo: Move find leader logic into private function.
         """
@@ -164,6 +172,7 @@ class Movement(db.Model):
 
             assoc.save_to_db()
 
+        # Edit to also include people with only destroyed MUAs.
         leaderless = (
             db.session.query(MovementUserAssociation)
             .filter(
@@ -190,7 +199,7 @@ class Movement(db.Model):
         # movement and a leader are left.
         for asso in self.user_associations:
             if asso.follower == user:
-                asso.delete_from_db()
+                asso.destroyed = datetime.now()
         self.users = list(filter(lambda u: u != user, self.users))
 
     def dictify(self, user):
