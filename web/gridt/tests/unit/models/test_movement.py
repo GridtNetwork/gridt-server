@@ -12,12 +12,12 @@ from gridt.models.movement_user_association import MovementUserAssociation
 
 class MovementTest(BaseTest):
     def test_create(self):
-        movement = Movement("movement1", "daily")
+        movement1 = Movement("movement1", "daily")
 
-        self.assertEqual(movement.name, "movement1")
-        self.assertEqual(movement.interval, "daily")
-        self.assertEqual(movement.short_description, "")
-        self.assertEqual(movement.description, "")
+        self.assertEqual(movement1.name, "movement1")
+        self.assertEqual(movement1.interval, "daily")
+        self.assertEqual(movement1.short_description, "")
+        self.assertEqual(movement1.description, "")
 
         movement2 = Movement(
             "toothpicking", "twice daily", "pick your teeth every day!"
@@ -26,7 +26,7 @@ class MovementTest(BaseTest):
         self.assertEqual(movement2.name, "toothpicking")
         self.assertEqual(movement2.interval, "twice daily")
         self.assertEqual(movement2.short_description, "pick your teeth every day!")
-        self.assertEqual(movement.description, "")
+        self.assertEqual(movement2.description, "")
 
     def test_add_user(self):
         with self.app_context():
@@ -34,22 +34,22 @@ class MovementTest(BaseTest):
             user2 = User("user2", "test2@test.com", "pass")
             user3 = User("user3", "test3@test.com", "pass")
             movement1 = Movement("movement1", "daily")
-            movement2 = Movement("movement2", "twice daily")
-            
-            # To make sure the following is true, look at
-            # Movement.add_user()
+            movement2 = Movement("movement2", "twice daily")        
+
             self.assertEqual(len(user1.follower_associations), 0)
             self.assertEqual(len(user2.follower_associations), 0)
             self.assertEqual(len(movement1.user_associations), 0)
             self.assertEqual(len(movement2.user_associations), 0)
 
             movement1.add_user(user1)
+
             self.assertEqual(len(user1.follower_associations), 1)
             self.assertEqual(len(user2.follower_associations), 0)
             self.assertEqual(len(movement1.user_associations), 1)
             self.assertEqual(len(movement2.user_associations), 0)
 
             movement1.add_user(user2)
+
             self.assertEqual(len(user1.follower_associations), 1)
             self.assertEqual(len(user2.follower_associations), 1)
             self.assertEqual(len(movement1.user_associations), 2)
@@ -58,6 +58,7 @@ class MovementTest(BaseTest):
             self.assertIn(user2, user1.leaders(movement1))
 
             movement1.add_user(user3)
+
             self.assertEqual(len(user1.follower_associations), 2)
             self.assertEqual(len(user2.follower_associations), 2)
             self.assertEqual(len(movement1.user_associations), 6)
@@ -89,17 +90,20 @@ class MovementTest(BaseTest):
             #
             #   1 -> 5   3
             #
-            assoc1 = MovementUserAssociation(movement1, user1, None)
-            assoc2 = MovementUserAssociation(movement1, user2, None)
-            assoc3 = MovementUserAssociation(movement1, user1, None)
-            assoc4 = MovementUserAssociation(movement1, user4, None)
-            assoc5 = MovementUserAssociation(movement1, user5, None)
-            assoc6 = MovementUserAssociation(movement1, user1, user5)
-            assoc7 = MovementUserAssociation(movement2, user1, user5)
-            assoc8 = MovementUserAssociation(movement2, user1, None)
-            assoc9 = MovementUserAssociation(movement2, user3, None)
-            assoc10 = MovementUserAssociation(movement2, user4, None)
-            assoc10.destroy()
+
+            assoc1 = MovementUserAssociation(movement1, user1, user2)
+            assoc2 = MovementUserAssociation(movement1, user1, user4)
+            assoc3 = MovementUserAssociation(movement1, user1, user5)
+            assoc4 = MovementUserAssociation(movement1, user2, None)
+            assoc5 = MovementUserAssociation(movement1, user3, None)
+            assoc6 = MovementUserAssociation(movement1, user4, None)
+            assoc7 = MovementUserAssociation(movement1, user5, None)
+            assoc8 = MovementUserAssociation(movement2, user1, user3)
+            assoc9 = MovementUserAssociation(movement2, user1, user5)
+            assoc10 = MovementUserAssociation(movement2, user2, None)
+            assoc11 = MovementUserAssociation(movement2, user3, None)
+            assoc12 = MovementUserAssociation(movement2, user4, None)
+            assoc13 = MovementUserAssociation(movement2, user5, None)
 
             db.session.add_all(
                 [
@@ -119,12 +123,31 @@ class MovementTest(BaseTest):
                     assoc7,
                     assoc8,
                     assoc9,
+                    assoc10,
+                    assoc11,
+                    assoc12,
+                    assoc13,
                 ]
             )
             db.session.commit()
 
-            self.assertEqual(movement1.find_leaders(user1), [user2, user4])
-            self.assertEqual(movement2.find_leaders(user3), [user1, user4])
+            self.assertEqual(len(movement1.find_leaders(user1)), 1)
+            self.assertIn(user3, movement1.find_leaders(user1))
+            self.assertEqual(len(movement2.find_leaders(user1)), 2)
+            self.assertIn(user2, movement2.find_leaders(user1))
+            self.assertIn(user4, movement2.find_leaders(user1))
+
+            assoc1.destroy()
+
+            db.session.add_all([assoc1])
+            db.session.commit()
+
+            self.assertEqual(len(movement1.find_leaders(user1)), 2)
+            self.assertIn(user2, movement1.find_leaders(user1))
+            self.assertIn(user3, movement1.find_leaders(user1))
+            self.assertEqual(len(movement2.find_leaders(user1)), 2)
+            self.assertIn(user2, movement2.find_leaders(user1))
+            self.assertIn(user4, movement2.find_leaders(user1))
 
     def test_remove_user_from_movement(self):
         with self.app_context():
@@ -133,14 +156,16 @@ class MovementTest(BaseTest):
             movement1 = Movement("movement1", "daily")
 
             mua1 = MovementUserAssociation(movement1, user1, None)
-            
+
             with freeze_time("2020-04-18 22:10:00"):
                 movement1.remove_user(user1)
 
+            # use current_users and current_movements
+            # (simple requirement: MUA not destroyed)
             self.assertFalse(user1 in movement1.users)
             self.assertFalse(movement1 in user1.movements)
             self.assertEqual(
-                len(user1.follower_associations), 
+                len(user1.follower_associations),
                 1,
                 "Mua must still be present after destruction.",
             )
@@ -161,37 +186,103 @@ class MovementTest(BaseTest):
             movement.add_user(user1)
             movement.add_user(user2)
 
-            user2s_leader_assoc = list(map(lambda a: a.leader, user2.follower_associations))
-            self.assertTrue(user1 in user2s_leader_assoc)
+            user2_all_leaders = list(
+                map(lambda a: a.leader, user2.follower_associations)
+            )
+            self.assertTrue(user1 in user2_all_leaders)
             self.assertEqual(user2.leaders(movement), [user1])
 
             movement.remove_user(user1)
 
-            user2_all_leaders = list(map(lambda a: a.leader, user2.follower_associations))
+            user2_all_leaders = list(
+                map(lambda a: a.leader, user2.follower_associations)
+            )
             self.assertTrue(user1 in user2_all_leaders)
             self.assertEqual(user2.leaders(movement), [])
 
-            # To test whether leaders are not empty after removing a leader. (separate test)
+    def test_one_leader_removed(self):
+        with self.app_context():
+            user1 = User("user1", "test1@test.com", "pass")
+            user2 = User("user2", "test2@test.com", "pass")
+            user3 = User("user3", "test3@test.com", "pass")
+            user4 = User("user4", "test4@test.com", "pass")
+            user5 = User("user5", "test5@test.com", "pass")
+            user6 = User("user6", "test6@test.com", "pass")
 
+            movement = Movement("movement1", "daily")
+
+            # Movement 1
+            #   First:
+            #       1 -> 2 3 4 5
+            #   Then:
+            #       1 -> 2 3 4 6
+
+            assoc1 = MovementUserAssociation(movement, user1, user2)
+            assoc2 = MovementUserAssociation(movement, user1, user3)
+            assoc3 = MovementUserAssociation(movement, user1, user4)
+            assoc4 = MovementUserAssociation(movement, user1, user5)
+
+            db.session.add_all(
+                [
+                    user1,
+                    user2,
+                    user3,
+                    user4,
+                    user5,
+                    user6,
+                    movement,
+                    assoc1,
+                    assoc2,
+                    assoc3,
+                    assoc4,
+                ]
+            )
+
+            self.assertEqual(len(user1.leaders(movement)), 4)
+            self.assertEqual(len(user1.follower_associations), 4)
+            self.assertIn(user1.leaders(movement), user2)
+            self.assertIn(user1.leaders(movement), user3)
+            self.assertIn(user1.leaders(movement), user4)
+            self.assertIn(user1.leaders(movement), user5)
+
+            movement.remove_user(user5)
+
+            db.session.commit()
+
+            self.assertEqual(len(user1.leaders(movement)), 4)
+            self.assertEqual(len(user1.follower_associations), 5)
+            self.assertIn(user1.leaders(movement), user2)
+            self.assertIn(user1.leaders(movement), user3)
+            self.assertIn(user1.leaders(movement), user4)
+            self.assertIn(user1.leaders(movement), user6)
+
+    def test_last_leader_removed(self):
+        # To test whether leaders are not empty after removing last leader.
+        pass
 
     def test_swap_leader(self):
         with self.app_context():
             user1 = User("user1", "test1@test.com", "password")
             user2 = User("user2", "test2@test.com", "password")
             user3 = User("user3", "test3@test.com", "password")
-            user4 = User("user4", "test4@test.com", "password")
 
             movement = Movement("movement", "daily")
 
             mua1 = MovementUserAssociation(movement, user1, user2)
-            mua2 = MovementUserAssociation(moveemnt, user1, user3)
-            self.assertEqual(user1.leaders(movement), user2)
+
+            self.assertEqual(len(user1.leaders(movement)), 1)
+            self.assertIn(user2, user1.leaders(movement))
 
             movement.swap_leader(user1, user2)
 
-            user1_all_leaders = list(map(lambda a: a.leader, user1,follower_relations))
-            self.assertEqual(user1_all_leaders, [user2, user3, user4])
-            self.assertEqual(user1.leaders(movement), [user3, user4])
+            user1_all_leaders = list(map(lambda a: a.leader, user1, follower_relations))
+
+            self.assertEqual(len(user1_all_leaders), 2)
+            self.assertIn(user2, user1_all_leaders)
+            self.assertIn(user3, user1_all_leaders)
+
+            self.assertEqual(len(user1.leaders(movement)), 1)
+            self.assertIn(user3, user1.leaders(movement))
 
     @patch("gridt.models.signal.Signal._get_now", return_value=datetime(1996, 3, 15))
     def test_dictify(self, func):

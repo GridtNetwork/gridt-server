@@ -166,29 +166,57 @@ class Movement(db.Model):
 
         :todo: Move find leader logic into private function.
         """
-        for i in range(4):
+        possible_leaders = self.find_leaders(user)
+        while len(user.leaders(self)) < 4:
             possible_leaders = self.find_leaders(user)
-
-            assoc = MovementUserAssociation(self, user)
             if possible_leaders:
+                assoc = MovementUserAssociation(self, user)
                 assoc.leader = random.choice(possible_leaders)
+                assoc.save_to_db()
+            else:
+                if len(user.leaders(self)) == 0:
+                    assoc = MovementUserAssociation(self, user, None)
+                    assoc.save_to_db()
+                    break
+                else:
+                    break
 
-            assoc.save_to_db()
+        # Bug: the following will allow "excluded" leaders to rejoin the movement
+        # and "force" excluding users with too few leaders into MUA
+        # Can we give users an attribute "excluded" instead?
+        # It will span all of Gridt, not just a single movement.
+        movement = self
 
-        # Edit to also include people with fewer than 3 non-destroyed MUAs
         leaderless = (
-            db.session.query(MovementUserAssociation)
+            db.session.query(User)
             .filter(
-                not_(MovementUserAssociation.follower_id == user.id),
-                MovementUserAssociation.leader_id == None,
-                MovementUserAssociation.movement_id == self.id,
+                not_(User.id == user.id),
+                # Any user still in the movement
+                len(User.leaders(User, movement)) >= 1,
+                # Any user with too few leaders
+                len(User.leaders(User, movement)) < 4,
             )
-            .group_by(MovementUserAssociation.follower_id)
             .all()
         )
 
-        for association in leaderless:
-            association.leader = user
+        for follower in leaderless:
+            # Remove any follower associations MUA(movement, follower, None):
+            # (must be put back if last leader leaves)
+            assoc_none = (
+                db.session.query(MovementUserAssociation)
+                .filter(
+                    MovementUserAssociation.movement_id == self.id,
+                    MovementUserAssociation.follower_id == follower.id,
+                    MovementUserAssociation.leader_id == None,
+                )
+                .group_by(MovementUserAssocation.follower_id)
+                .all()
+            )
+
+            for a in assoc_none:
+                a.destroy()
+
+            association = MovementUserAssociation(self, follower, user)
             association.save_to_db()
 
     def remove_user(self, user):
@@ -198,8 +226,6 @@ class Movement(db.Model):
 
         :param user: user to be deleted.
         """
-        # This must be done so that no empty user associations with just a
-        # movement and a leader are left.
         for asso in self.user_associations:
             if asso.follower == user:
                 asso.destroyed = datetime.now()
@@ -207,6 +233,7 @@ class Movement(db.Model):
                 asso.destroyed = datetime.now()
         # Update the following to current_users:
         self.users = list(filter(lambda u: u != user, self.users))
+        # Update all followers' leaders.
 
     def dictify(self, user):
         """
