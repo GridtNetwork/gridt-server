@@ -34,7 +34,18 @@ class MovementTest(BaseTest):
             user2 = User("user2", "test2@test.com", "pass")
             user3 = User("user3", "test3@test.com", "pass")
             movement1 = Movement("movement1", "daily")
-            movement2 = Movement("movement2", "twice daily")        
+            movement2 = Movement("movement2", "twice daily")
+
+            db.session.add_all(
+                [
+                    user1,
+                    user2,
+                    user3,
+                    movement1,
+                    movement2,
+                ]
+            )     
+            db.session.commit()
 
             self.assertEqual(len(user1.follower_associations), 0)
             self.assertEqual(len(user1.leaders(movement1)), 0)
@@ -216,6 +227,18 @@ class MovementTest(BaseTest):
             user6 = User("user6", "test6@test.com", "pass")
 
             movement = Movement("movement1", "daily")
+
+            db.session.add_all(
+                [
+                    user1,
+                    user2,
+                    user3,
+                    user4,
+                    user5,
+                    user6,
+                    movement,
+                ]
+            )
 
             movement.add_user(user1)
             movement.add_user(user2)
