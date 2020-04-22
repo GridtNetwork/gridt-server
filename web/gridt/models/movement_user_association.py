@@ -35,7 +35,10 @@ class MovementUserAssociation(db.Model):
     )
     leader = db.relationship("User", foreign_keys=[leader_id])
 
-    def __init__(self, movement, follower, leader=None):
+    def __init__(self, movement=None, follower=None, leader=None):
+        # movement=None and follower=None 
+        # are required for correct functioning of
+        # user_associations in ./movement.py
         self.follower = follower
         self.movement = movement
         self.leader = leader

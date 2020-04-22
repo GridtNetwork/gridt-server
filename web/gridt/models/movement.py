@@ -136,20 +136,23 @@ class Movement(db.Model):
         if leader and leader not in user.leaders(self):
             raise ValueError("User is not following that leader.")
 
-        # If there is no other possible leaders than we can't perform the swap.
+        # If there are no other possible leaders than we can't perform the swap.
         possible_leaders = self.find_leaders(user)
         if not possible_leaders:
             return None
 
-        new_leader = random.choice(possible_leaders)
-        mau = MovementUserAssociation.query.filter(
+        mua = MovementUserAssociation.query.filter(
             MovementUserAssociation.follower_id == user.id,
             MovementUserAssociation.leader_id == leader.id,
             MovementUserAssociation.movement_id == self.id,
+            MovementUserAssociation.destroyed == None,
         ).one()
 
-        mau.leader = new_leader
-        mau.save_to_db()
+        mua.destroy()
+
+        new_leader = random.choice(possible_leaders)
+        new_assoc = MovementUserAssociation(self, user1, new_leader)
+        new_assoc.save_to_db()
 
         return new_leader
 
@@ -172,7 +175,7 @@ class Movement(db.Model):
 
             assoc.save_to_db()
 
-        # Edit to also include people with only destroyed MUAs.
+        # Edit to also include people with fewer than 3 non-destroyed MUAs
         leaderless = (
             db.session.query(MovementUserAssociation)
             .filter(

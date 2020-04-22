@@ -35,7 +35,9 @@ class MovementTest(BaseTest):
             user3 = User("user3", "test3@test.com", "pass")
             movement1 = Movement("movement1", "daily")
             movement2 = Movement("movement2", "twice daily")
-
+            
+            # To make sure the following is true, look at
+            # Movement.add_user()
             self.assertEqual(len(user1.follower_associations), 0)
             self.assertEqual(len(user2.follower_associations), 0)
             self.assertEqual(len(movement1.user_associations), 0)
@@ -154,26 +156,42 @@ class MovementTest(BaseTest):
             user1 = User("user1", "test1@test.com", "password")
             user2 = User("user2", "test2@test.com", "password")
 
-            movement1 = Movement("movement1", "daily")
+            movement = Movement("movement", "daily")
 
-            movement1.add_user(user1)
-            movement1.add_user(user2)
+            movement.add_user(user1)
+            movement.add_user(user2)
 
-            user2s_leaders = list(map(lambda a: a.leader, user2.follower_associations))
-            self.assertTrue(user1 in user2s_leaders)
+            user2s_leader_assoc = list(map(lambda a: a.leader, user2.follower_associations))
+            self.assertTrue(user1 in user2s_leader_assoc)
+            self.assertEqual(user2.leaders(movement), [user1])
 
-            movement1.remove_user(user1)
+            movement.remove_user(user1)
 
-            user2s_leaders = list(map(lambda a: a.leader, user2.follower_associations))
-            self.assertFalse(user1 in user2s_leaders)
+            user2_all_leaders = list(map(lambda a: a.leader, user2.follower_associations))
+            self.assertTrue(user1 in user2_all_leaders)
+            self.assertEqual(user2.leaders(movement), [])
 
-            # To test whether leaders are not empty after removing a leader.
+            # To test whether leaders are not empty after removing a leader. (separate test)
 
-            # self.assertNotEqual(
-            #     len(user2s_leaders),
-            #     0,
-            #     "user2 must still have a leader after last leader is removed."
-            # )
+
+    def test_swap_leader(self):
+        with self.app_context():
+            user1 = User("user1", "test1@test.com", "password")
+            user2 = User("user2", "test2@test.com", "password")
+            user3 = User("user3", "test3@test.com", "password")
+            user4 = User("user4", "test4@test.com", "password")
+
+            movement = Movement("movement", "daily")
+
+            mua1 = MovementUserAssociation(movement, user1, user2)
+            mua2 = MovementUserAssociation(moveemnt, user1, user3)
+            self.assertEqual(user1.leaders(movement), user2)
+
+            movement.swap_leader(user1, user2)
+
+            user1_all_leaders = list(map(lambda a: a.leader, user1,follower_relations))
+            self.assertEqual(user1_all_leaders, [user2, user3, user4])
+            self.assertEqual(user1.leaders(movement), [user3, user4])
 
     @patch("gridt.models.signal.Signal._get_now", return_value=datetime(1996, 3, 15))
     def test_dictify(self, func):
