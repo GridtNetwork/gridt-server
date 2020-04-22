@@ -49,18 +49,14 @@ class UserTest(BaseTest):
             assoc2 = MovementUserAssociation(movement, user1, user3)
 
             db.session.add_all(
-                [
-                    user1,
-                    user2,
-                    user3,
-                    assoc1,
-                    assoc2,
-                ]
+                [user1, user2, user3, assoc1, assoc2,]
             )
             db.session.commit()
 
-            self.assertEqual(user1.leaders(movement), [user2, user3])
-        
+            self.assertEqual(len(user1.leaders(movement)), 2)
+            self.assertIn(user2, user1.leaders(movement))
+            self.assertIn(user3, user1.leaders(movement))
+
     def test_leaders_removed(self):
         with self.app_context():
             user1 = User("user1", "test1@test.com", "test")
@@ -76,20 +72,10 @@ class UserTest(BaseTest):
             assoc3.destroy()
 
             db.session.add_all(
-                [
-                    user1,
-                    user2,
-                    user3,
-                    user4,
-                    assoc1,
-                    assoc2,
-                    assoc3,
-                ]
+                [user1, user2, user3, user4, assoc1, assoc2, assoc3,]
             )
             db.session.commit()
 
-            self.assertEqual(
-                user1.leaders(movement), 
-                [user2, user3],
-                "Destroyed MUAs must not yield leaders for a user."
-            )
+            self.assertEqual(len(user1.leaders(movement)), 2)
+            self.assertIn(user2, user1.leaders(movement))
+            self.assertIn(user3, user1.leaders(movement))
