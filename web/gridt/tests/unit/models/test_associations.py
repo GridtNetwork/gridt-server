@@ -15,19 +15,19 @@ class AssociationTest(BaseTest):
             jorn = User("jorn", "jorn@test.com", "password")
             flossing = Movement("flossing", "daily")
             assoc = MovementUserAssociation(flossing, robin, jorn)
-            
+
             with freeze_time("2020-04-18 22:52:00"):
                 assoc.destroy()
             self.assertEqual(
                 assoc.destroyed,
                 datetime(2020, 4, 18, 22, 52),
-                "Mua's 'destroyed' value must be equal to a datetime object."
+                "Mua's 'destroyed' value must be equal to a datetime object.",
             )
 
     @freeze_time("2020-04-18 21:39:00")
     def test_create(self):
         with self.app_context():
-            movement = self.create_movement()
+            movement = Movement("flossing", "daily")
             user1 = User("user1", "user1@user.com", "password")
             user2 = User("user2", "user2@user.com", "password")
             mua = MovementUserAssociation(movement, user1, user2)
