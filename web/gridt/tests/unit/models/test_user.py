@@ -54,22 +54,22 @@ class UserTest(BaseTest):
             assoc5 = MovementUserAssociation(movement2, user2, user1)
             assoc6 = MovementUserAssociation(movement1, user1, None)
 
-            db.session.add_all(
-                [
-                    user1,
-                    user2,
-                    user3,
-                    user4,
-                    movement1,
-                    movement2,
-                    assoc1,
-                    assoc2,
-                    assoc3,
-                    assoc4,
-                    assoc5,
-                    assoc6,
-                ]
-            )
-            db.session.commit()
+            # db.session.add_all(
+            #     [
+            #         user1,
+            #         user2,
+            #         user3,
+            #         user4,
+            #         movement1,
+            #         movement2,
+            #         assoc1,
+            #         assoc2,
+            #         assoc3,
+            #         assoc4,
+            #         assoc5,
+            #         assoc6,
+            #     ]
+            # )
+            # db.session.commit()
 
             self.assertEqual(user1.leaders(movement1), [user2, user3])

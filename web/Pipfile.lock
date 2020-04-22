@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "041e240b586fbbf9d2a07caee663ab066626ee113fe666096fecbf9bb7e652df"
+            "sha256": "73cc880a3de8277d117707c2e2419f5ee1247545aa6403a6033637dfe569d924"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -387,10 +387,10 @@
         },
         "urllib3": {
             "hashes": [
-                "sha256:2f3db8b19923a873b3e5256dc9c2dedfa883e33d87c690d9c7913e1f40673cdc",
-                "sha256:87716c2d2a7121198ebcb7ce7cccf6ce5e9ba539041cfbaeecfb641dc0bf6acc"
+                "sha256:3018294ebefce6572a474f0604c2021e33b3fd8006ecd11d62107a5d2a963527",
+                "sha256:88206b0eb87e6d677d424843ac5209e3fb9d0190d0ee169599165ec25e9d9115"
             ],
-            "version": "==1.25.8"
+            "version": "==1.25.9"
         },
         "werkzeug": {
             "hashes": [
@@ -431,6 +431,14 @@
             "index": "pypi",
             "version": "==7.1.1"
         },
+        "freezegun": {
+            "hashes": [
+                "sha256:82c757a05b7c7ca3e176bfebd7d6779fd9139c7cb4ef969c38a28d74deef89b2",
+                "sha256:e2062f2c7f95cc276a834c22f1a17179467176b624cc6f936e8bc3be5535ad1b"
+            ],
+            "index": "pypi",
+            "version": "==0.3.15"
+        },
         "lorem": {
             "hashes": [
                 "sha256:785f4109a241fc2891e59705e85d065f6e6d3ed6ad91750a8cb54d4f3e59d934",
@@ -453,6 +461,13 @@
             ],
             "index": "pypi",
             "version": "==4.0.2"
+        },
+        "python-dateutil": {
+            "hashes": [
+                "sha256:73ebfe9dbf22e832286dafa60473e4cd239f8592f699aa5adaf10050e6e1823c",
+                "sha256:75bb3f31ea686f1197762692a9ee6a7550b59fc6ca3a1f4b5d7e32fb98e2da2a"
+            ],
+            "version": "==2.8.1"
         },
         "regex": {
             "hashes": [
@@ -479,6 +494,13 @@
                 "sha256:fb95debbd1a824b2c4376932f2216cc186912e389bdb0e27147778cf6acb3f89"
             ],
             "version": "==2020.4.4"
+        },
+        "six": {
+            "hashes": [
+                "sha256:236bdbdce46e6e6a3d61a337c0f8b763ca1e8717c03b369e87a7ec7ce1319c0a",
+                "sha256:8f3cd2e254d8f793e7f3d6d9df77b92252b52637291d0f0da013c76ea2724b6c"
+            ],
+            "version": "==1.14.0"
         },
         "toml": {
             "hashes": [

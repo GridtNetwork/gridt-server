@@ -101,46 +101,35 @@ class MovementTest(BaseTest):
             assoc7 = MovementUserAssociation(movement2, user1, user5)
             assoc8 = MovementUserAssociation(movement2, user1, None)
             assoc9 = MovementUserAssociation(movement2, user3, None)
-
-            db.session.add_all(
-                [
-                    user1,
-                    user2,
-                    user3,
-                    movement1,
-                    movement2,
-                    assoc1,
-                    assoc2,
-                    assoc3,
-                    assoc4,
-                    assoc5,
-                    assoc6,
-                    assoc7,
-                    assoc8,
-                    assoc9,
-                ]
-            )
-            db.session.commit()
+            assoc10 = MovementUserAssociation(movement2, user4, None)
+            assoc10.destroy()
 
             self.assertEqual(movement1.find_leaders(user1), [user2, user4])
+            self.assertEqual(movement2.find_leaders(user3), [user1, user5])
 
     def test_remove_user_from_movement(self):
         with self.app_context():
             user1 = User("user1", "test1@test.com", "password")
-            user2 = User("user2", "test2@test.com", "password")
 
             movement1 = Movement("movement1", "daily")
 
-            movement1.add_user(user1)
-            movement1.add_user(user2)
-            movement1.remove_user(user1)
+            mua1 = MovementUserAssociation(movement1, user1, None)
+            
+            with freeze_time("2020-04-18 22:10:00"):
+                movement1.remove_user(user1)
 
             self.assertFalse(user1 in movement1.users)
             self.assertFalse(movement1 in user1.movements)
-            self.assertTrue(len(user1.follower_associations) == 0)
-            self.assertTrue(len(movement1.user_associations) == 4)
-
-            movement1.remove_user(user2)
+            self.assertEqual(
+                len(user1.follower_associations), 
+                1,
+                "Mua must be present after destruction.",
+            )
+            self.assertEqual(
+                user1.follower_associations[0].destroyed,
+                datetime(2020, 4, 18, 22, 10)
+                "Mua must be destroyed when user is removed from movement."
+            )
             self.assertTrue(len(movement1.user_associations) == 0)
 
     def test_remove_leader_from_movement(self):
