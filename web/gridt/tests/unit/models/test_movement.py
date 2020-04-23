@@ -1,5 +1,6 @@
 from datetime import datetime
 from unittest.mock import patch
+from sqlalchemy import not_, and_, func
 from freezegun import freeze_time
 
 from gridt.tests.base_test import BaseTest
@@ -37,22 +38,16 @@ class MovementTest(BaseTest):
             movement2 = Movement("movement2", "twice daily")
 
             db.session.add_all(
-                [
-                    user1,
-                    user2,
-                    user3,
-                    movement1,
-                    movement2,
-                ]
-            )     
+                [user1, user2, user3, movement1, movement2,]
+            )
             db.session.commit()
 
-            self.assertEqual(len(user1.follower_associations), 0)
-            self.assertEqual(len(user1.leaders(movement1)), 0)
-            self.assertEqual(len(user2.follower_associations), 0)
-            self.assertEqual(len(user2.leaders(movement1)), 0)
-            self.assertEqual(len(movement1.user_associations), 0)
-            self.assertEqual(len(movement2.user_associations), 0)
+            self.assertEqual(user1.follower_associations, [])
+            self.assertEqual(user1.leaders(movement1), [])
+            self.assertEqual(user2.follower_associations, [])
+            self.assertEqual(user2.leaders(movement1), [])
+            self.assertEqual(movement1.user_associations, [])
+            self.assertEqual(movement2.user_associations, [])
 
             movement1.add_user(user1)
 
@@ -75,17 +70,9 @@ class MovementTest(BaseTest):
 
             movement1.add_user(user3)
 
-            # self.assertEqual(len(user1.follower_associations), 3)
-            # self.assertEqual(len(user2.follower_associations), 2)
-            # self.assertEqual(len(user3.follower_associations), 2)
-            # self.assertEqual(len(movement1.user_associations), 7)
-            # self.assertEqual(len(movement2.user_associations), 0)
-            self.assertIn(user1, user3.leaders(movement1))
-            self.assertIn(user2, user3.leaders(movement1))
-            self.assertIn(user1, user2.leaders(movement1))
-            self.assertIn(user3, user2.leaders(movement1))
-            self.assertIn(user2, user1.leaders(movement1))
-            self.assertIn(user3, user1.leaders(movement1))
+            self.assertEqual(set(user3.leaders(movement1)), set(user1, user2))
+            self.assertEqual(set(user2.leaders(movement1), set(user1, user3)))
+            self.assertEqual(set(user1.leaders(movement1), set(user2, user3)))
 
     def test_find_leaders(self):
         with self.app_context():
@@ -148,23 +135,11 @@ class MovementTest(BaseTest):
             )
             db.session.commit()
 
-            self.assertEqual(len(movement1.find_leaders(user1)), 1)
-            self.assertIn(user3, movement1.find_leaders(user1))
-            self.assertEqual(len(movement2.find_leaders(user1)), 2)
-            self.assertIn(user2, movement2.find_leaders(user1))
-            self.assertIn(user4, movement2.find_leaders(user1))
-
-            assoc1.destroy()
-
-            db.session.add_all([assoc1])
-            db.session.commit()
-
-            self.assertEqual(len(movement1.find_leaders(user1)), 2)
-            self.assertIn(user2, movement1.find_leaders(user1))
-            self.assertIn(user3, movement1.find_leaders(user1))
-            self.assertEqual(len(movement2.find_leaders(user1)), 2)
-            self.assertIn(user2, movement2.find_leaders(user1))
-            self.assertIn(user4, movement2.find_leaders(user1))
+            # Set because order does not matter
+            self.assertEqual(set(movement1.find_leaders(user1)), set(user3))
+            self.assertEqual(set(movement2.find_leaders(user1)), set(user2, user4))
+            self.assertEqual(set(movement1.find_leaders(user1)), set(user2, user3))
+            self.assertEqual(set(movement2.find_leaders(user1)), set(user2, user4))
 
     def test_remove_user_from_movement(self):
         with self.app_context():
@@ -229,15 +204,7 @@ class MovementTest(BaseTest):
             movement = Movement("movement1", "daily")
 
             db.session.add_all(
-                [
-                    user1,
-                    user2,
-                    user3,
-                    user4,
-                    user5,
-                    user6,
-                    movement,
-                ]
+                [user1, user2, user3, user4, user5, user6, movement,]
             )
 
             movement.add_user(user1)
@@ -279,14 +246,7 @@ class MovementTest(BaseTest):
             mua2 = MovementUserAssociation(movement, user3, None)
 
             db.session.add_all(
-                [
-                    user1,
-                    user2,
-                    user3,
-                    movement,
-                    mua1,
-                    mua2,
-                ]
+                [user1, user2, user3, movement, mua1, mua2,]
             )
             db.session.commit()
 
@@ -295,7 +255,9 @@ class MovementTest(BaseTest):
 
             movement.swap_leader(user1, user2)
 
-            user1_all_leaders = list(map(lambda a: a.leader, user1.follower_associations))
+            user1_all_leaders = list(
+                map(lambda a: a.leader, user1.follower_associations)
+            )
 
             self.assertEqual(len(user1_all_leaders), 2)
             self.assertIn(user2, user1_all_leaders)
