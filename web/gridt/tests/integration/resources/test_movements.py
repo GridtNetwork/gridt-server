@@ -309,8 +309,8 @@ class SubscribeTest(BaseTest):
                 {"message": "Successfully subscribed to this movement."},
             )
 
-            self.assertTrue(user in movement.users)
-            self.assertTrue(movement in user.movements)
+            self.assertTrue(user in movement.current_users)
+            self.assertTrue(movement in user.current_movements)
 
             # Do it twice, should not change anything.
             resp = self.client.put(
@@ -323,8 +323,8 @@ class SubscribeTest(BaseTest):
                 {"message": "Successfully subscribed to this movement."},
             )
 
-            self.assertTrue(user in movement.users)
-            self.assertTrue(movement in user.movements)
+            self.assertTrue(user in movement.current_users)
+            self.assertTrue(movement in user.current_movements)
 
     def test_subscribe_non_existing(self):
         with self.app_context():
@@ -351,8 +351,8 @@ class SubscribeTest(BaseTest):
             movement.add_user(user)
 
             # To prevent sqlalchemy.orm.exc.DetachedInstanceError
-            users = movement.users
-            movements = user.movements
+            users = movement.current_users
+            movements = user.current_movements
 
             token = self.obtain_token("test@test.com", "pass")
 
@@ -374,8 +374,8 @@ class SubscribeTest(BaseTest):
                 {"message": "Successfully unsubscribed from this movement."},
             )
 
-            self.assertTrue(not user in movement.users)
-            self.assertTrue(not movement in user.movements)
+            self.assertTrue(not user in movement.current_users)
+            self.assertTrue(not movement in user.current_movements)
 
             # Do it twice, should not change anything.
             resp = self.client.delete(
@@ -393,8 +393,8 @@ class SubscribeTest(BaseTest):
             user = User.find_by_id(1)
             movement = Movement.find_by_id(1)
 
-            self.assertTrue(not user in movement.users)
-            self.assertTrue(not movement in user.movements)
+            self.assertTrue(not user in movement.current_users)
+            self.assertTrue(not movement in user.current_movements)
 
     def test_unsubscribe_non_existing(self):
         with self.app_context():

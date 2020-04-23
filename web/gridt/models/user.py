@@ -6,6 +6,7 @@ from flask import current_app
 from passlib.apps import custom_app_context as pwd_context
 
 from gridt.db import db
+
 from gridt.models.movement_user_association import MovementUserAssociation
 
 
@@ -43,6 +44,19 @@ class User(db.Model):
         "movement",
         creator=lambda movement: MovementUserAssociation(movement=movement),
     )
+
+    @property
+    def current_movements(self):
+        return (Movement.query.join(
+            MovementUserAssociation
+        ).filter(
+            MovementUserAssociation.movement_id == Movement.id,
+            MovementUserAssociation.follower_id == self.id,
+            MovementUserAssociation.destroyed == None,
+        ).group_by(
+            Movement.id
+        ).all()
+        )
 
     def __init__(self, username, email, password, role="user", bio=""):
         self.username = username

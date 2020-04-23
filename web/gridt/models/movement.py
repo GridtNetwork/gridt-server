@@ -2,6 +2,7 @@ import random
 from datetime import datetime
 from sqlalchemy import not_, and_
 from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy import func
 
 from gridt.db import db
 
@@ -53,6 +54,17 @@ class Movement(db.Model):
         "follower",
         creator=lambda user: MovementUserAssociation(follower=user),
     )
+
+    @property
+    def current_users(self):
+        return (User.query.join(User.follower_associations)
+        .filter(
+            MovementUserAssociation.movement_id == self.id,
+            MovementUserAssociation.destroyed == None,
+        )
+        .group_by(User.id)
+        .all()
+        )
 
     def __init__(self, name, interval, short_description="", description=""):
         self.name = name
@@ -157,17 +169,36 @@ class Movement(db.Model):
 
         return new_leader
 
+    def find_leaderless(self, user):
+        """
+        Find the active users in this movement
+        (movement.current_users) that have fewer than four leaders.
+        These users should not be user and not have user as leader.
+        """
+        MUA = MovementUserAssociation
+        leaderless = (
+            db.session.query(
+                User
+            ).join(
+                User.follower_associations
+            ).filter(
+                not_(User.id == user.id),
+                MUA.movement_id == self.id,
+                not_(MUA.leader_id == user.id),
+                MUA.destroyed == None,
+            ).group_by(
+                MUA.follower_id
+            ).having(func.count(MUA.id) < 4)
+        )
+        return leaderless
+
     def add_user(self, user):
         """
-        Add a new user to self.users and give it appropriate leaders. 
-        Find followers without leaders and the user as a leader.
+        Add a new user to self.users and give it appropriate leaders.
 
         :param gridt.models.user.User user: the user that is to be 
         subscribed to this movement
-
-        :todo: Move find leader logic into private function.
         """
-        possible_leaders = self.find_leaders(user)
         while len(user.leaders(self)) < 4:
             possible_leaders = self.find_leaders(user)
             if possible_leaders:
@@ -186,25 +217,10 @@ class Movement(db.Model):
         # the movement and "force" excluding users with too few leaders 
         # into MUA. Can we give users an attribute "exclude" instead?
         # It will span all of Gridt, not just a single movement.
-
-        leaderless = (
-            db.session.query(User)
-            .filter(
-                not_(User.id == user.id),
-                # Any user still in the movement
-                len(User.leaders(User, self)) >= 1,
-                # Any user with too few leaders
-                len(User.leaders(User, self)) < 4,
-            )
-            .all()
-        )
-
+        leaderless = self.find_leaderless(user)
         for new_follower in leaderless:
             association = MovementUserAssociation(self, new_follower, user)
             association.save_to_db()
-
-            # Destroy any MUA(movement, follower, None):
-            # (must be put back if last leader leaves)
 
             assoc_none = (
                 db.session.query(MovementUserAssociation)
@@ -216,7 +232,6 @@ class Movement(db.Model):
                 .group_by(MovementUserAssociation.follower_id)
                 .all()
             )
-
             for a in assoc_none:
                 a.destroy()
 
@@ -227,14 +242,34 @@ class Movement(db.Model):
 
         :param user: user to be deleted.
         """
-        for asso in self.user_associations:
-            if asso.follower == user:
-                asso.destroyed = datetime.now()
-            if asso.leader == user:
-                asso.destroyed = datetime.now()
-        # Update the following to current_users:
-        self.users = list(filter(lambda u: u != user, self.users))
-        # TODO: Update all followers' leaders.
+        leader_muas_to_destroy = db.session.query(
+            MovementUserAssociation
+        ).filter(
+            MovementUserAssociation.movement_id == self.id,
+            MovementUserAssociation.destroyed == None,
+            MovementUserAssociation.leader_id == user.id,
+        ).all()
+
+        follower_muas_to_destroy = db.session.query(
+            MovementUserAssociation
+        ).filter(
+            MovementUserAssociation.movement_id == self.id,
+            MovementUserAssociation.destroyed == None,
+            MovementUserAssociation.follower_id == user.id,
+        ).all()
+
+        for mua in follower_muas_to_destroy:
+            mua.destroy()
+        
+        for mua in leader_muas_to_destroy:
+            possible_leaders = self.find_leaders(mua.follower)
+            mua.destroy()
+            # Add new MUAs for each former follower.
+            new_leader = random.choice(possible_leaders)
+            new_mua = MovementUserAssociation(
+                self, mua.follower, new_leader
+            )
+            new_mua.save_to_db()
 
     def dictify(self, user):
         """
@@ -251,7 +286,7 @@ class Movement(db.Model):
         }
 
         movement_dict["subscribed"] = False
-        if user in self.users:
+        if user in self.current_users:
             movement_dict["subscribed"] = True
 
             last_signal = Signal.find_last(user, self)
