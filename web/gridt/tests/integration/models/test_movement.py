@@ -30,26 +30,24 @@ class MovementTest(BaseTest):
             db.session.commit()
 
             #
-            # 1 <-> 2  4 5
+            #  1 <-> 2  4 5
             #
             assoc1 = MovementUserAssociation(movement, user1, user2)
             assoc2 = MovementUserAssociation(movement, user2, user1)
-            assoc3 = MovementUserAssociation(movement, user1, None)
 
             self.assertFalse(movement.swap_leader(user1, user2))
 
             user4 = User("user4", "test4@test.com", "password")
             user5 = User("user5", "test5@test.com", "password")
-            db.session.add_all([user4, user5, assoc1, assoc2, assoc3])
+            assoc3 = MovementUserAssociation(movement, user4, None)
+            assoc4 = MovementUserAssociation(movement, user5, None)
+            db.session.add_all([user4, user5, assoc1, assoc2, assoc3, assoc4])
             db.session.commit()
-
-            movement.add_user(user4)
-            movement.add_user(user5)
 
             # Make sure that the changes are permanent.
             db.session.rollback()
 
-            self.assertTrue(movement.swap_leader(user2, user1))
+            self.assertIn(movement.swap_leader(user2, user1), [user4, user5])
             self.assertEqual(len(user2.leaders(movement)), 1)
 
     def test_swap_leader_complicated(self):

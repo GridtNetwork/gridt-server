@@ -5,9 +5,7 @@ from datetime import datetime
 
 from gridt.tests.base_test import BaseTest
 from gridt.db import db
-from gridt.models.user import User
-from gridt.models.movement import Movement
-from gridt.models.movement import Signal
+from gridt.models import User, Movement, Signal, MovementUserAssociation
 
 
 class MovementsTest(BaseTest):
@@ -344,43 +342,32 @@ class SubscribeTest(BaseTest):
 
     def test_unsubscribe(self):
         with self.app_context():
-            user = User("test1", "test@test.com", "pass")
-            user.save_to_db()
-            movement = Movement("Flossing", "daily", "Hello")
-            movement.save_to_db()
-            movement.add_user(user)
+            movement = self.create_movement()
+            user = self.create_user_in_movement(movement)
 
-            # To prevent sqlalchemy.orm.exc.DetachedInstanceError
-            users = movement.current_users
-            movements = user.current_movements
-
-            token = self.obtain_token("test@test.com", "pass")
-
-            resp = self.client.delete(
-                "/movements/Flossing/subscriber",
-                headers={"Authorization": f"JWT {token}"},
+            resp = self.request_as_user(
+                self.users[0], "DELETE", f"/movements/{movement.id}/subscriber",
             )
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertEqual(
+                json.loads(resp.data),
+                {"message": "Successfully unsubscribed from this movement."},
+            )
+
+            user = User.find_by_id(1)
+            movement = Movement.find_by_id(1)
+
+            self.assertNotIn(user, movement.current_users)
+            self.assertNotIn(movement, user.current_movements)
 
         # Using self.client will call db.session.commit(), this will close the
         # current session. We will have to create a new one and load the
         # movement and the user again.
         with self.app_context():
-            user = User.find_by_id(1)
-            movement = Movement.find_by_id(1)
-
-            self.assertEqual(resp.status_code, 200)
-            self.assertEqual(
-                json.loads(resp.data),
-                {"message": "Successfully unsubscribed from this movement."},
-            )
-
-            self.assertTrue(not user in movement.current_users)
-            self.assertTrue(not movement in user.current_movements)
-
             # Do it twice, should not change anything.
-            resp = self.client.delete(
-                "/movements/Flossing/subscriber",
-                headers={"Authorization": f"JWT {token}"},
+            resp = self.request_as_user(
+                self.users[0], "DELETE", f"/movements/{movement.id}/subscriber",
             )
 
             self.assertEqual(resp.status_code, 200)
@@ -388,10 +375,6 @@ class SubscribeTest(BaseTest):
                 json.loads(resp.data),
                 {"message": "Successfully unsubscribed from this movement."},
             )
-
-        with self.app_context():
-            user = User.find_by_id(1)
-            movement = Movement.find_by_id(1)
 
             self.assertTrue(not user in movement.current_users)
             self.assertTrue(not movement in user.current_movements)

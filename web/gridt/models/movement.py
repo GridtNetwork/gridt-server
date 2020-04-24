@@ -57,13 +57,14 @@ class Movement(db.Model):
 
     @property
     def current_users(self):
-        return (User.query.join(User.follower_associations)
-        .filter(
-            MovementUserAssociation.movement_id == self.id,
-            MovementUserAssociation.destroyed == None,
-        )
-        .group_by(User.id)
-        .all()
+        return (
+            User.query.join(User.follower_associations)
+            .filter(
+                MovementUserAssociation.movement_id == self.id,
+                MovementUserAssociation.destroyed == None,
+            )
+            .group_by(User.id)
+            .all()
         )
 
     def __init__(self, name, interval, short_description="", description=""):
@@ -143,7 +144,7 @@ class Movement(db.Model):
         if not leader:
             raise ValueError("Cannot swap a leader that does not exist.")
 
-        # We can not change someone's leader if they are not already 
+        # We can not change someone's leader if they are not already
         # following that leader.
         if leader and leader not in user.leaders(self):
             raise ValueError("User is not following that leader.")
@@ -177,27 +178,32 @@ class Movement(db.Model):
         """
         MUA = MovementUserAssociation
 
-        valid_muas = db.session.query(
-            MUA,
-            func.count('*').label('mua_count'),
-        ).filter(
-            MUA.movement_id == self.id,
-            MUA.destroyed == None,
-        ).group_by(
-            MUA.follower_id
-        ).subquery('valid_muas')
+        leader_associations = [
+            r[0]
+            for r in db.session.query(MUA.follower_id)
+            .filter(MUA.movement_id == self.id, MUA.leader_id == user.id)
+            .all()
+        ]
 
-        leaderless = db.session.query(
-            User
-        ).join(
-            User.follower_associations
-        ).filter(
-            not_(User.id == user.id),
-            valid_muas.c.follower_id == User.id,
-            valid_muas.c.mua_count < 4,
-        ).group_by(
-            MUA.follower_id
+        valid_muas = (
+            db.session.query(MUA, func.count().label("mua_count"),)
+            .filter(MUA.movement_id == self.id, MUA.destroyed == None,)
+            .group_by(MUA.follower_id)
+            .subquery()
         )
+
+        leaderless = (
+            db.session.query(User)
+            .join(User.follower_associations)
+            .filter(
+                not_(User.id == user.id),
+                valid_muas.c.follower_id == User.id,
+                valid_muas.c.mua_count < 4,
+            )
+            .group_by(MUA.follower_id)
+            .filter(not_(User.id.in_(leader_associations)))
+        )
+
         return leaderless
 
     def add_user(self, user):
@@ -221,8 +227,8 @@ class Movement(db.Model):
                 else:
                     break
 
-        # Bug: the following will allow "excluded" leaders to rejoin 
-        # the movement and "force" excluding users with too few leaders 
+        # Bug: the following will allow "excluded" leaders to rejoin
+        # the movement and "force" excluding users with too few leaders
         # into MUA. Can we give users an attribute "exclude" instead?
         # It will span all of Gridt, not just a single movement.
         leaderless = self.find_leaderless(user)
@@ -250,38 +256,40 @@ class Movement(db.Model):
 
         :param user: user to be deleted.
         """
-        leader_muas_to_destroy = db.session.query(
-            MovementUserAssociation
-        ).filter(
-            MovementUserAssociation.movement_id == self.id,
-            MovementUserAssociation.destroyed == None,
-            MovementUserAssociation.leader_id == user.id,
-        ).all()
+        leader_muas_to_destroy = (
+            db.session.query(MovementUserAssociation)
+            .filter(
+                MovementUserAssociation.movement_id == self.id,
+                MovementUserAssociation.destroyed == None,
+                MovementUserAssociation.leader_id == user.id,
+            )
+            .all()
+        )
 
-        follower_muas_to_destroy = db.session.query(
-            MovementUserAssociation
-        ).filter(
-            MovementUserAssociation.movement_id == self.id,
-            MovementUserAssociation.destroyed == None,
-            MovementUserAssociation.follower_id == user.id,
-        ).all()
+        follower_muas_to_destroy = (
+            db.session.query(MovementUserAssociation)
+            .filter(
+                MovementUserAssociation.movement_id == self.id,
+                MovementUserAssociation.destroyed == None,
+                MovementUserAssociation.follower_id == user.id,
+            )
+            .all()
+        )
 
         for mua in follower_muas_to_destroy:
             mua.destroy()
-        
+            mua.save_to_db()
+
         for mua in leader_muas_to_destroy:
             possible_leaders = self.find_leaders(mua.follower)
             mua.destroy()
+            mua.save_to_db()
             # Add new MUAs for each former follower.
             if possible_leaders:
                 new_leader = random.choice(possible_leaders)
-                new_mua = MovementUserAssociation(
-                    self, mua.follower, new_leader
-                )
+                new_mua = MovementUserAssociation(self, mua.follower, new_leader)
             else:
-                new_mua = MovementUserAssociation(
-                    self, mua.follower, None
-                )
+                new_mua = MovementUserAssociation(self, mua.follower, None)
             new_mua.save_to_db()
 
     def dictify(self, user):

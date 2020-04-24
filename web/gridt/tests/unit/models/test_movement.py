@@ -155,13 +155,11 @@ class MovementTest(BaseTest):
             movement1 = Movement("movement1", "daily")
 
             mua1 = MovementUserAssociation(movement1, user1, None)
+            mua1.save_to_db()
 
             with freeze_time("2020-04-18 22:10:00"):
                 movement1.remove_user(user1)
-            
-            # TODO: implement the following:
-            # use current_users and current_movements
-            # (simple requirement: MUA not destroyed)
+
             self.assertFalse(user1 in movement1.current_users)
             self.assertFalse(movement1 in user1.current_movements)
 
@@ -170,12 +168,12 @@ class MovementTest(BaseTest):
                 1,
                 "Mua must still be present after destruction.",
             )
+
             self.assertEqual(
                 user1.follower_associations[0].destroyed,
                 datetime(2020, 4, 18, 22, 10),
                 "Mua must be destroyed when user is removed from movement.",
             )
-            self.assertTrue(len(movement1.user_associations) == 0)
 
     def test_one_leader_removed(self):
         with self.app_context():
@@ -215,11 +213,7 @@ class MovementTest(BaseTest):
             movement = Movement("movement", "daily")
 
             db.session.add_all(
-                [
-                    user1,
-                    user2,
-                    movement,
-                ]
+                [user1, user2, movement,]
             )
             db.session.commit()
 
@@ -285,7 +279,6 @@ class MovementTest(BaseTest):
                 MUA(movement1, users[1], users[0]),
                 MUA(movement1, users[1], users[2]),
                 MUA(movement1, users[1], users[3]),
-                MUA(movement1, users[1], users[4]),
                 MUA(movement1, users[2], users[1]),
                 MUA(movement1, users[2], users[5]),
                 MUA(movement1, users[2], users[3]),
@@ -304,46 +297,32 @@ class MovementTest(BaseTest):
             db.session.commit()
 
             self.assertEqual(
-                set(movement1.find_leaderless(users[0])),
-                set(users[3:]),
+                set(movement1.find_leaderless(users[0])), set(users[3:]),
             )
-            self.assertEqual(
-                set(movement2.find_leaderless(users[0])),
-                set(users[1:4])
-            )
+            self.assertEqual(set(movement2.find_leaderless(users[0])), set(users[1:4]))
 
-            mua1 = MUA.query.\
-                filter(MUA.id == 1).\
-                one()
+            mua1 = MUA.query.filter(MUA.id == 1).one()
             mua1.destroy()
             mua1.save_to_db()
 
             self.assertEqual(
-                set(movement1.find_leaderless(users[0])),
-                set(users[3:]),
+                set(movement1.find_leaderless(users[0])), set(users[3:]),
             )
-            self.assertEqual(
-                set(movement2.find_leaderless(users[0])),
-                set(users[1:4])
-            )
+            self.assertEqual(set(movement2.find_leaderless(users[0])), set(users[1:4]))
 
-            mua2 = MUA.query.\
-                filter(
-                    MUA.follower_id == users[1].id,
-                    MUA.leader_id == users[2].id,
-                    MUA.movement_id == movement1.id
-                ).one()
+            mua2 = MUA.query.filter(
+                MUA.follower_id == users[1].id,
+                MUA.leader_id == users[2].id,
+                MUA.movement_id == movement1.id,
+            ).one()
             mua2.destroy()
             mua2.save_to_db()
 
             self.assertEqual(
                 set(movement1.find_leaderless(users[0])),
-                set([users[1], users[3], users[4], users[5]]),
+                set([users[3], users[4], users[5]]),
             )
-            self.assertEqual(
-                set(movement2.find_leaderless(users[0])),
-                set(users[1:4])
-            )
+            self.assertEqual(set(movement2.find_leaderless(users[0])), set(users[1:4]))
 
     @patch("gridt.models.signal.Signal._get_now", return_value=datetime(1996, 3, 15))
     def test_dictify(self, func):

@@ -47,15 +47,18 @@ class User(db.Model):
 
     @property
     def current_movements(self):
-        return (Movement.query.join(
-            MovementUserAssociation
-        ).filter(
-            MovementUserAssociation.movement_id == Movement.id,
-            MovementUserAssociation.follower_id == self.id,
-            MovementUserAssociation.destroyed == None,
-        ).group_by(
-            Movement.id
-        ).all()
+        # To prevent circular imports this is done here
+        from .movement import Movement
+
+        return (
+            Movement.query.join(MovementUserAssociation)
+            .filter(
+                MovementUserAssociation.movement_id == Movement.id,
+                MovementUserAssociation.follower_id == self.id,
+                MovementUserAssociation.destroyed == None,
+            )
+            .group_by(Movement.id)
+            .all()
         )
 
     def __init__(self, username, email, password, role="user", bio=""):

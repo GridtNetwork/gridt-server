@@ -46,7 +46,7 @@ class MovementUserAssociation(db.Model):
         self.destroyed = None
 
     def __repr__(self):
-        return f"<Association id={self.id} {self.follower}->{self.leader} in {self.movement}>"
+        return f"<Association id={self.id} {self.follower}->{self.leader} in {self.movement}{'x' if self.destroyed else ''}>"
 
     def save_to_db(self):
         """
