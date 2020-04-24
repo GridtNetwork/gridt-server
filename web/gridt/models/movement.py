@@ -176,19 +176,27 @@ class Movement(db.Model):
         These users should not be user and not have user as leader.
         """
         MUA = MovementUserAssociation
-        leaderless = (
-            db.session.query(
-                User
-            ).join(
-                User.follower_associations
-            ).filter(
-                not_(User.id == user.id),
-                MUA.movement_id == self.id,
-                not_(MUA.leader_id == user.id),
-                MUA.destroyed == None,
-            ).group_by(
-                MUA.follower_id
-            ).having(func.count(MUA.id) < 4)
+
+        valid_muas = db.session.query(
+            MUA,
+            func.count('*').label('mua_count'),
+        ).filter(
+            MUA.movement_id == self.id,
+            MUA.destroyed == None,
+        ).group_by(
+            MUA.follower_id
+        ).subquery('valid_muas')
+
+        leaderless = db.session.query(
+            User
+        ).join(
+            User.follower_associations
+        ).filter(
+            not_(User.id == user.id),
+            valid_muas.c.follower_id == User.id,
+            valid_muas.c.mua_count < 4,
+        ).group_by(
+            MUA.follower_id
         )
         return leaderless
 
@@ -265,10 +273,15 @@ class Movement(db.Model):
             possible_leaders = self.find_leaders(mua.follower)
             mua.destroy()
             # Add new MUAs for each former follower.
-            new_leader = random.choice(possible_leaders)
-            new_mua = MovementUserAssociation(
-                self, mua.follower, new_leader
-            )
+            if possible_leaders:
+                new_leader = random.choice(possible_leaders)
+                new_mua = MovementUserAssociation(
+                    self, mua.follower, new_leader
+                )
+            else:
+                new_mua = MovementUserAssociation(
+                    self, mua.follower, None
+                )
             new_mua.save_to_db()
 
     def dictify(self, user):

@@ -63,8 +63,8 @@ class MovementTest(BaseTest):
             self.assertEqual(len(user2.follower_associations), 1)
             self.assertEqual(len(movement1.user_associations), 3)
             self.assertEqual(len(movement2.user_associations), 0)
-            self.assertIn(set(user1.leaders(movement1)), {user2})
-            self.assertIn(set(user2.leaders(movement1)), {user1})
+            self.assertEqual(user1.leaders(movement1), [user2])
+            self.assertEqual(user2.leaders(movement1), [user1])
 
             movement1.add_user(user3)
 
@@ -200,7 +200,7 @@ class MovementTest(BaseTest):
             movement.add_user(user6)
 
             self.assertEqual(set(user1.leaders(movement)), {user2, user3, user4, user5})
-            self.assetEqual(len(user1.follower_associations), 5)
+            self.assertEqual(len(user1.follower_associations), 5)
 
             movement.remove_user(user5)
 
@@ -229,16 +229,16 @@ class MovementTest(BaseTest):
             user2_all_leaders = list(
                 map(lambda a: a.leader, user2.follower_associations)
             )
-            self.assertEqual(set(user2_all_leaders), {user1})
-            self.assertEqual(set(user2.leaders(movement)), {user1})
+            self.assertEqual(user2_all_leaders, [user1])
+            self.assertEqual(user2.leaders(movement), [user1])
 
             movement.remove_user(user1)
 
             user2_all_leaders = list(
                 map(lambda a: a.leader, user2.follower_associations)
             )
-            self.assertEqual(set(user2_all_leaders), {None, user1})
-            self.assertEqual(set(user2.leaders(movement)), {None})
+            self.assertEqual(set(user2_all_leaders), set([None, user1]))
+            self.assertEqual(user2.leaders(movement), [])
 
     def test_swap_leader(self):
         with self.app_context():
@@ -305,11 +305,11 @@ class MovementTest(BaseTest):
 
             self.assertEqual(
                 set(movement1.find_leaderless(users[0])),
-                set(users[3:5]),
+                set(users[3:]),
             )
             self.assertEqual(
                 set(movement2.find_leaderless(users[0])),
-                set(users[1:3])
+                set(users[1:4])
             )
 
             mua1 = MUA.query.\
@@ -320,11 +320,11 @@ class MovementTest(BaseTest):
 
             self.assertEqual(
                 set(movement1.find_leaderless(users[0])),
-                {},
+                set(users[3:]),
             )
             self.assertEqual(
                 set(movement2.find_leaderless(users[0])),
-                set(users[1:3])
+                set(users[1:4])
             )
 
             mua2 = MUA.query.\
@@ -338,11 +338,11 @@ class MovementTest(BaseTest):
 
             self.assertEqual(
                 set(movement1.find_leaderless(users[0])),
-                {users[1], users[3], users[4], users[5]]},
+                set([users[1], users[3], users[4], users[5]]),
             )
             self.assertEqual(
                 set(movement2.find_leaderless(users[0])),
-                set([users[1:3]])
+                set(users[1:4])
             )
 
     @patch("gridt.models.signal.Signal._get_now", return_value=datetime(1996, 3, 15))
