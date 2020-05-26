@@ -20,6 +20,10 @@ class MovementTest(BaseTest):
             self.assertIsNone(Movement.query.filter_by(name="flossing").first())
 
     def test_swap_leader(self):
+        """
+        1 <-> 2  
+        4 5
+        """
         with self.app_context():
             user1 = User("user1", "test1@test.com", "password")
             user2 = User("user2", "test2@test.com", "password")
@@ -29,9 +33,6 @@ class MovementTest(BaseTest):
             db.session.add_all([user1, user2, user3, movement])
             db.session.commit()
 
-            #
-            #  1 <-> 2  4 5
-            #
             assoc1 = MovementUserAssociation(movement, user1, user2)
             assoc2 = MovementUserAssociation(movement, user2, user1)
 
@@ -44,39 +45,255 @@ class MovementTest(BaseTest):
             db.session.add_all([user4, user5, assoc1, assoc2, assoc3, assoc4])
             db.session.commit()
 
-            # Make sure that the changes are permanent.
-            db.session.rollback()
-
+            # Will not catch possible mistake (movement.swap_leader(..., ...) == user3) 
+            # 2/3 of the time
             self.assertIn(movement.swap_leader(user2, user1), [user4, user5])
             self.assertEqual(len(user2.leaders(movement)), 1)
 
     def test_swap_leader_complicated(self):
+        """
+        Movement 1
+            
+              3 -> 1 <-> 2
+                   |
+                   v
+                   4
+            
+        ------------------------------------------------------
+        Movement 2
+        
+            1 <-> 5
+            
+        """
         with self.app_context():
             user1 = User("user1", "test1@test.com", "password")
             user2 = User("user2", "test2@test.com", "password")
             user3 = User("user3", "test3@test.com", "password")
             user4 = User("user4", "test4@test.com", "password")
-            movement1 = Movement("movement1", "daily")
+            movement1 = Movement("movement1", "daily")from gridt.db import db
+from gridt.tests.base_test import BaseTest
+from gridt.models.movement import Movement
+from gridt.models.user import User
+from gridt.models.movement_user_association import MovementUserAssociation
+
+
+class MovementTest(BaseTest):
+    def test_crud(self):
+        with self.app_context():
+            self.assertIsNone(Movement.query.filter_by(name="flossing").first())
+
+            movement = Movement("flossing", "daily")
+            movement.save_to_db()
+
+            self.assertIsNotNone(Movement.query.filter_by(name="flossing").first())
+
+            movement.delete_from_db()
+
+            self.assertIsNone(Movement.query.filter_by(name="flossing").first())
+
+    def test_swap_leader(self):
+        """
+        1 <-> 2  
+        4 5
+        """
+        with self.app_context():
+            user1 = User("user1", "test1@test.com", "password")
+            user2 = User("user2", "test2@test.com", "password")
+            user3 = User("user3", "test3@test.com", "password")
+            movement = Movement("movement1", "daily")
+
+            db.session.add_all([user1, user2, user3, movement])
+            db.session.commit()
+
+            assoc1 = MovementUserAssociation(movement, user1, user2)
+            assoc2 = MovementUserAssociation(movement, user2, user1)
+
+            self.assertFalse(movement.swap_leader(user1, user2))
+
+            user4 = User("user4", "test4@test.com", "password")
+            user5 = User("user5", "test5@test.com", "password")
+            assoc3 = MovementUserAssociation(movement, user4, None)
+            assoc4 = MovementUserAssociation(movement, user5, None)
+            db.session.add_all([user4, user5, assoc1, assoc2, assoc3, assoc4])
+            db.session.commit()
+
+            # Will not catch possible mistake (movement.swap_leader(..., ...) == user3) 
+            # 2/3 of the time
+            self.assertIn(movement.swap_leader(user2, user1), [user4, user5])
+            self.assertEqual(len(user2.leaders(movement)), 1)
+
+    def test_swap_leader_complicated(self):
+        """
+        Movement 1
+            
+              3 -> 1 <-> 2
+                   |
+                   v
+                   4
+            
+        ------------------------------------------------------
+        Movement 2
+        
+            1 <-> 5
+            
+        """
+        with self.app_context():
+            user1 = User("user1", "test1@test.com", "password")
+            user2 = User("user2", "test2@test.com", "password")
+            user3 = User("user3", "test3@test.com", "password")
+            user4 = User("user4", "test4@test.com", "password")from gridt.db import db
+from gridt.tests.base_test import BaseTest
+from gridt.models.movement import Movement
+from gridt.models.user import User
+from gridt.models.movement_user_association import MovementUserAssociation
+
+
+class MovementTest(BaseTest):
+    def test_crud(self):
+        with self.app_context():
+            self.assertIsNone(Movement.query.filter_by(name="flossing").first())
+
+            movement = Movement("flossing", "daily")
+            movement.save_to_db()
+
+            self.assertIsNotNone(Movement.query.filter_by(name="flossing").first())
+
+            movement.delete_from_db()
+
+            self.assertIsNone(Movement.query.filter_by(name="flossing").first())
+
+    def test_swap_leader(self):
+        """
+        1 <-> 2  
+        4 5
+        """
+        with self.app_context():
+            user1 = User("user1", "test1@test.com", "password")
+            user2 = User("user2", "test2@test.com", "password")
+            user3 = User("user3", "test3@test.com", "password")
+            movement = Movement("movement1", "daily")
+
+            db.session.add_all([user1, user2, user3, movement])
+            db.session.commit()
+
+            assoc1 = MovementUserAssociation(movement, user1, user2)
+            assoc2 = MovementUserAssociation(movement, user2, user1)
+
+            self.assertFalse(movement.swap_leader(user1, user2))
+
+            user4 = User("user4", "test4@test.com", "password")
+            user5 = User("user5", "test5@test.com", "password")
+            assoc3 = MovementUserAssociation(movement, user4, None)
+            assoc4 = MovementUserAssociation(movement, user5, None)
+            db.session.add_all([user4, user5, assoc1, assoc2, assoc3, assoc4])
+            db.session.commit()
+
+            # Will not catch possible mistake (movement.swap_leader(..., ...) == user3) 
+            # 2/3 of the time
+            self.assertIn(movement.swap_leader(user2, user1), [user4, user5])
+            self.assertEqual(len(user2.leaders(movement)), 1)
+
+    def test_swap_leader_complicated(self):
+        """
+        Movement 1
+            
+              3 -> 1 <-> 2
+                   |
+                   v
+                   4
+            
+        ------------------------------------------------------
+        Movement 2
+        
+            1 <-> 5
+            
+        """
+        with self.app_context():
+            user1 = User("user1", "test1@test.com", "password")
+            user2 = User("user2", "test2@test.com", "password")
+            user3 = User("user3", "test3@test.com", "password")
+            user4 = User("user4", "test4@test.com", "password")
+            movement1 = Movement("movement1", "daily")from gridt.db import db
+from gridt.tests.base_test import BaseTest
+from gridt.models.movement import Movement
+from gridt.models.user import User
+from gridt.models.movement_user_association import MovementUserAssociation
+
+
+class MovementTest(BaseTest):
+    def test_crud(self):
+        with self.app_context():
+            self.assertIsNone(Movement.query.filter_by(name="flossing").first())
+
+            movement = Movement("flossing", "daily")
+            movement.save_to_db()
+
+            self.assertIsNotNone(Movement.query.filter_by(name="flossing").first())
+
+            movement.delete_from_db()
+
+            self.assertIsNone(Movement.query.filter_by(name="flossing").first())
+
+    def test_swap_leader(self):
+        """
+        1 <-> 2  
+        4 5
+        """
+        with self.app_context():
+            user1 = User("user1", "test1@test.com", "password")
+            user2 = User("user2", "test2@test.com", "password")
+            user3 = User("user3", "test3@test.com", "password")
+            movement = Movement("movement1", "daily")
+
+            db.session.add_all([user1, user2, user3, movement])
+            db.session.commit()
+
+            assoc1 = MovementUserAssociation(movement, user1, user2)
+            assoc2 = MovementUserAssociation(movement, user2, user1)
+
+            self.assertFalse(movement.swap_leader(user1, user2))
+
+            user4 = User("user4", "test4@test.com", "password")
+            user5 = User("user5", "test5@test.com", "password")
+            assoc3 = MovementUserAssociation(movement, user4, None)
+            assoc4 = MovementUserAssociation(movement, user5, None)
+            db.session.add_all([user4, user5, assoc1, assoc2, assoc3, assoc4])
+            db.session.commit()
+
+            # Will not catch possible mistake (movement.swap_leader(..., ...) == user3) 
+            # 2/3 of the time
+            self.assertIn(movement.swap_leader(user2, user1), [user4, user5])
+            self.assertEqual(len(user2.leaders(movement)), 1)
+
+    def test_swap_leader_complicated(self):
+        """
+        Movement 1
+            
+              3 -> 1 <-> 2
+                   |
+                   v
+                   4
+            
+        ------------------------------------------------------
+        Movement 2
+        
+            1 <-> 5
+            
+        """
+        with self.app_context():
+            user1 = User("user1", "test1@test.com", "password")
+            user2 = User("user2", "test2@test.com", "password")
+            user3 = User("user3", "test3@test.com", "password")
+            user4 = User("user4", "test4@test.com", "password")
+            user5 = User("user5", "test5@test.com", "password")
             movement2 = Movement("movement2", "daily")
 
-            # Movement 1
-            #
-            #   3 -> 1 <-> 2
-            #        |
-            #        v
-            #        4
-            #
-            # ------------------------------------------------------
-            # Movement 2
-            #
-            #   1 <-> 2
-            #
             assoc1 = MovementUserAssociation(movement1, user1, user2)
             assoc2 = MovementUserAssociation(movement1, user2, user1)
             assoc3 = MovementUserAssociation(movement1, user3, user1)
             assoc4 = MovementUserAssociation(movement1, user1, user4)
-            assoc5 = MovementUserAssociation(movement2, user1, user2)
-            assoc6 = MovementUserAssociation(movement2, user2, user1)
+            assoc5 = MovementUserAssociation(movement2, user1, user5)
+            assoc6 = MovementUserAssociation(movement2, user5, user1)
 
             db.session.add_all(
                 [
@@ -103,7 +320,7 @@ class MovementTest(BaseTest):
             with self.assertRaises(ValueError):
                 movement1.swap_leader(user1, user2)
 
-            self.assertIsNone(movement2.swap_leader(user1, user2))
+            self.assertIsNone(movement2.swap_leader(user1, user5))
 
     def test_add_user(self):
         with self.app_context():
@@ -154,7 +371,6 @@ class MovementTest(BaseTest):
             self.assertEqual(set(user3.leaders(movement1)), set([user1, user2]))
 
     def test_find_leaders(self):
-        # Test doesn't work yet.
         with self.app_context():
             user1 = User("user1", "test1@test", "pass")
             user2 = User("user2", "test2@test", "pass")

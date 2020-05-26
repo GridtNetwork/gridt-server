@@ -35,6 +35,9 @@ class UserTest(BaseTest):
             self.assertEqual(user.bio, "bio")
 
     def test_leaders(self):
+        """
+        3 <- 1 -> 2
+        """
         with self.app_context():
             user1 = User("user1", "test1@test.com", "test")
             user2 = User("user2", "test2@test.com", "test")
@@ -51,10 +54,15 @@ class UserTest(BaseTest):
             db.session.commit()
 
             self.assertEqual(len(user1.leaders(movement)), 2)
-            self.assertIn(user2, user1.leaders(movement))
-            self.assertIn(user3, user1.leaders(movement))
+            self.asserEqual(set(user1.leaders(movement)), set([user2, user3]))
     
     def test_leaders_removed(self):
+        """
+        3 <- 1 -> 2
+             X
+             v
+             4
+        """
         with self.app_context():
             user1 = User("user1", "test1@test.com", "test")
             user2 = User("user2", "test2@test.com", "test")
@@ -74,5 +82,4 @@ class UserTest(BaseTest):
             db.session.commit()
 
             self.assertEqual(len(user1.leaders(movement)), 2)
-            self.assertIn(user2, user1.leaders(movement))
-            self.assertIn(user3, user1.leaders(movement))
+            self.asserEqual(set(user1.leaders(movement)), set([user2, user3]))
