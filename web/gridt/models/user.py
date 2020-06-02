@@ -4,6 +4,7 @@ from sqlalchemy.orm.collections import attribute_mapped_collection
 from flask import current_app
 
 from passlib.apps import custom_app_context as pwd_context
+import hashlib
 
 from gridt.db import db
 
@@ -65,6 +66,7 @@ class User(db.Model):
         self.username = username
         self.email = email
         self.hash_password(password)
+        self.hash_email(email)
         self.role = role
         self.bio = bio
 
@@ -90,6 +92,15 @@ class User(db.Model):
         """
         self.password_hash = pwd_context.hash(password)
 
+    def hash_email(self, email):
+        """
+        Hash e-mail with md5 and set it as hash_email
+        :param str email: Email that is to be hashed.
+        """
+        h = hashlib.md5()
+        h.update(bytes(email, format="unicode"))
+        self.email_hash = h.hexdigest()
+
     def verify_password(self, password):
         """
         Verify that this password matches with the hashed version in the database.
@@ -112,7 +123,7 @@ class User(db.Model):
         return [a.leader for a in associations]
 
     def dictify(self):
-        return {"username": self.username, "id": self.id, "bio": self.bio}
+        return {"username": self.username, "id": self.id, "bio": self.bio, "avatar": self.email_hash}
 
     def save_to_db(self):
         """
