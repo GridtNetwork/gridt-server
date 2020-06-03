@@ -33,6 +33,7 @@ class User(db.Model):
     username = db.Column(db.String(32))
     email = db.Column(db.String(40), unique=True, nullable=False)
     password_hash = db.Column(db.String(128))
+    email_hash = db.Column(db.String(128))
     role = db.Column(db.String(32))
     bio = db.Column(db.UnicodeText)
 
@@ -98,7 +99,7 @@ class User(db.Model):
         :param str email: Email that is to be hashed.
         """
         h = hashlib.md5()
-        h.update(bytes(email, format="unicode"))
+        h.update(bytes(email, "utf-8"))
         self.email_hash = h.hexdigest()
 
     def verify_password(self, password):
