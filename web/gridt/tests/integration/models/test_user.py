@@ -1,6 +1,10 @@
-from gridt.tests.base_test import BaseTest
-from gridt.models.user import User
+from util.nostderr import nostderr
 
+from gridt.tests.base_test import BaseTest
+from gridt.db import db
+from gridt.models.user import User
+from gridt.models.movement import Movement
+from gridt.models.movement_user_association import MovementUserAssociation
 
 class UserTest(BaseTest):
     def test_find(self):
@@ -54,7 +58,7 @@ class UserTest(BaseTest):
             db.session.commit()
 
             self.assertEqual(len(user1.leaders(movement)), 2)
-            self.asserEqual(set(user1.leaders(movement)), set([user2, user3]))
+            self.assertEqual(set(user1.leaders(movement)), set([user2, user3]))
     
     def test_leaders_removed(self):
         """
@@ -82,4 +86,4 @@ class UserTest(BaseTest):
             db.session.commit()
 
             self.assertEqual(len(user1.leaders(movement)), 2)
-            self.asserEqual(set(user1.leaders(movement)), set([user2, user3]))
+            self.assertEqual(set(user1.leaders(movement)), set([user2, user3]))
