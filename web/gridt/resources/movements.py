@@ -68,14 +68,14 @@ class SubscribeResource(Resource):
     @jwt_required()
     def put(self, movement_id):
         movement = get_movement(movement_id)
-        if not current_identity in movement.users:
+        if not current_identity in movement.current_users:
             movement.add_user(current_identity)
         return {"message": "Successfully subscribed to this movement."}, 200
 
     @jwt_required()
     def delete(self, movement_id):
         movement = get_movement(movement_id)
-        if current_identity in movement.users:
+        if current_identity in movement.current_users:
             movement.remove_user(current_identity)
         return {"message": "Successfully unsubscribed from this movement."}, 200
 
@@ -84,7 +84,7 @@ class NewSignalResource(Resource):
     @jwt_required()
     def post(self, movement_id):
         movement = get_movement(movement_id)
-        if current_identity not in movement.users:
+        if current_identity not in movement.current_users:
             return {"message": "User is not subscribed to this movement."}, 400
 
         message = None

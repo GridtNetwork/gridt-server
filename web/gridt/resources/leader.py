@@ -18,7 +18,7 @@ class LeaderResource(Resource):
         print("Received request")
         movement = get_movement(movement_id)
 
-        if not current_identity in movement.users:
+        if not current_identity in movement.current_users:
             return {"message": "User is not subscribed to this movement."}, 400
 
         leader = get_user(leader_id)
@@ -39,7 +39,7 @@ class LeaderResource(Resource):
     def post(self, movement_id, leader_id):
         movement = get_movement(movement_id)
 
-        if not current_identity in movement.users:
+        if not current_identity in movement.current_users:
             return {"message": "User is not subscribed to this movement."}, 400
 
         leader = get_user(leader_id)
