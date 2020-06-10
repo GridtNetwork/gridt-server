@@ -58,6 +58,7 @@ class MovementsTest(BaseTest):
                             "last_signal": {"time_stamp": stamp2},
                             "username": "test1",
                             "bio": "",
+                            "avatar": user.get_email_hash(),
                         }
                     ],
                     "name": "test1",
@@ -89,6 +90,7 @@ class MovementsTest(BaseTest):
                             },
                             "username": "test1",
                             "bio": "",
+                            "avatar": user.get_email_hash(),
                         }
                     ],
                 },
