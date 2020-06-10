@@ -30,4 +30,4 @@ class UserTest(BaseTest):
     
     def test_avatar(self):
         user = User("username", "test@test.com", "test")
-        self.assertEqual(user.email_hash, 'b642b4217b34b1e8d3bd915fc65c4452')
+        self.assertEqual(user.get_email_hash(), 'b642b4217b34b1e8d3bd915fc65c4452')

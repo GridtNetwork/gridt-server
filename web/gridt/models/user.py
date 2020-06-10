@@ -33,7 +33,6 @@ class User(db.Model):
     username = db.Column(db.String(32))
     email = db.Column(db.String(40), unique=True, nullable=False)
     password_hash = db.Column(db.String(128))
-    email_hash = db.Column(db.String(128))
     role = db.Column(db.String(32))
     bio = db.Column(db.UnicodeText)
 
@@ -67,7 +66,6 @@ class User(db.Model):
         self.username = username
         self.email = email
         self.hash_password(password)
-        self.hash_email(email)
         self.role = role
         self.bio = bio
 
@@ -93,14 +91,14 @@ class User(db.Model):
         """
         self.password_hash = pwd_context.hash(password)
 
-    def hash_email(self, email):
+    def get_email_hash(self):
         """
-        Hash e-mail with md5 and set it as hash_email
-        :param str email: Email that is to be hashed.
+        Hash e-mail with md5.
         """
         h = hashlib.md5()
-        h.update(bytes(email, "utf-8"))
-        self.email_hash = h.hexdigest()
+        h.update(bytes(self.email, "utf-8"))
+        email_hash = h.hexdigest()
+        return email_hash
 
     def verify_password(self, password):
         """
@@ -124,7 +122,7 @@ class User(db.Model):
         return [a.leader for a in associations]
 
     def dictify(self):
-        return {"username": self.username, "id": self.id, "bio": self.bio, "avatar": self.email_hash}
+        return {"username": self.username, "id": self.id, "bio": self.bio, "avatar": self.get_email_hash()}
 
     def save_to_db(self):
         """

@@ -126,7 +126,7 @@ class BaseTest(LoggedTestCase):
             "email": email,
             "bio": bio,
             "password": password,
-            "avatar": user.email_hash,
+            "avatar": user.get_email_hash(),
         }
         self.users.append(user_dict)
 
