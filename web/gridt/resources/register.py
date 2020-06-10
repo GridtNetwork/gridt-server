@@ -15,9 +15,8 @@ class LoggedInResource(Resource):
             "id": current_identity.id,
             "username": current_identity.username,
             "bio": current_identity.bio,
-            "avatar": current_identity.email_hash,
+            "avatar": current_identity.get_email_hash(),
         }, 200
-
 
 class RegisterResource(Resource):
     def post(self):
