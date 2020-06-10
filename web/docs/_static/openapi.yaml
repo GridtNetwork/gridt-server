@@ -77,12 +77,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/message'
-  /logged_in:
+  /identity:
     get:
-      summary: "Check if the user is logged in."
+      summary: "Check the identity of current user."
       responses:
         '200':
-          description: User is logged in.
+          description: >-
+            This will return the current user's id, username, bio and avatar. 
           content:
             application/json:
               schema:
