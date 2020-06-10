@@ -1,6 +1,6 @@
 info:
   title: The Gridt Network API
-  version: "0.0.4"
+  version: "0.0.5"
   description: >-
     Interact with the gridt network via this API. It provides several endpoints
     for creating and subscribing (to) movements and switching leaders.
@@ -87,7 +87,27 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/message'
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    description: The user's id
+                    example: 1021031
+                  username:
+                    type: string
+                    description: The user's username
+                    example: robin
+                  bio:
+                    type: string
+                    description: Small biography describing the user.
+                    example: >-
+                      I am Robin, a code, musician and physics student. I love spending
+                      time with my wife, she is awesome! Soon my first child will be born, I am 
+                      curious how that will be for me.
+                  email:
+                    type: string
+                    description: User's email
+                    example: robin@gridt.org
         '400':
           description: User is not logged in.
           content:
@@ -492,6 +512,10 @@ components:
             curious how that will be for me.
         last_signal:
           $ref: '#/components/schemas/signal'
+        avatar:
+          type: string
+          description: User's gravatar
+          example: 
     userId:
       title: User id
       oneOf:
