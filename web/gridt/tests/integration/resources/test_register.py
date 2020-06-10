@@ -33,9 +33,9 @@ class RegistrationResourceTest(BaseTest):
             )["access_token"]
 
             resp = self.client.get(
-                "/logged_in", headers={"Authorization": f"JWT {token}"}
+                "/identity", headers={"Authorization": f"JWT {token}"}
             )
             self.assertEqual(resp.status_code, 200)
             self.assertEqual(
-                json.loads(resp.data), {"message": "Hi robin, you are logged in."}
+                json.loads(resp.data), {"id": user.id, "username": user.username, "bio": user.bio, "avatar": user.email_hash}
             )
