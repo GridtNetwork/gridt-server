@@ -8,10 +8,18 @@ from gridt.schemas import NewUserSchema
 from marshmallow import ValidationError
 
 
-class LoggedInResource(Resource):
+class IdentityResource(Resource):
     @jwt_required()
     def get(self):
-        return {"message": f"Hi { current_identity.username }, you are logged in."}, 200
+        return (
+            {
+                "id": current_identity.id,
+                "username": current_identity.username,
+                "bio": current_identity.bio,
+                "avatar": current_identity.get_email_hash(),
+            },
+            200,
+        )
 
 
 class RegisterResource(Resource):

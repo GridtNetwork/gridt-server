@@ -1,6 +1,6 @@
 info:
   title: The Gridt Network API
-  version: "0.0.4"
+  version: "0.0.5"
   description: >-
     Interact with the gridt network via this API. It provides several endpoints
     for creating and subscribing (to) movements and switching leaders.
@@ -77,16 +77,42 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/message'
-  /logged_in:
+  /identity:
     get:
-      summary: "Check if the user is logged in."
+      summary: "Check the identity of current user."
       responses:
         '200':
-          description: User is logged in.
+          description: >-
+            This will return the current user's id, username, bio and avatar. 
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/message'
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    description: The user's id
+                    example: 1021031
+                  username:
+                    type: string
+                    description: The user's username
+                    example: robin
+                  bio:
+                    type: string
+                    description: Small biography describing the user.
+                    example: >-
+                      I am Robin, a code, musician and physics student. I love spending
+                      time with my wife, she is awesome! Soon my first child will be born, I am 
+                      curious how that will be for me.
+                  email:
+                    type: string
+                    description: User's email
+                    example: robin@gridt.org
+                  avatar:
+                    type: string
+                    description: User's gravatar
+                    example: 0f1d8086585c2580e6f2231886ba5e38
+
         '400':
           description: User is not logged in.
           content:
@@ -491,6 +517,10 @@ components:
             curious how that will be for me.
         last_signal:
           $ref: '#/components/schemas/signal'
+        avatar:
+          type: string
+          description: User's gravatar
+          example: 0f1d8086585c2580e6f2231886ba5e38
     userId:
       title: User id
       oneOf:

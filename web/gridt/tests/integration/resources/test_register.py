@@ -21,21 +21,17 @@ class RegistrationResourceTest(BaseTest):
 
     def test_logged_in(self):
         with self.app_context():
-            user = User("robin", "robin@gridt.org", "secret")
-            user.save_to_db()
+            movement = self.create_movement()
+            user = self.create_user_in_movement(movement)
 
-            token = json.loads(
-                self.client.post(
-                    "/auth",
-                    json={"username": "robin@gridt.org", "password": "secret"},
-                    headers={"Content-Type": "application/json"},
-                ).data
-            )["access_token"]
-
-            resp = self.client.get(
-                "/logged_in", headers={"Authorization": f"JWT {token}"}
-            )
+            resp = self.request_as_user(self.users[0], "GET", "/identity")
             self.assertEqual(resp.status_code, 200)
             self.assertEqual(
-                json.loads(resp.data), {"message": "Hi robin, you are logged in."}
+                json.loads(resp.data),
+                {
+                    "id": user.id,
+                    "username": user.username,
+                    "bio": user.bio,
+                    "avatar": user.get_email_hash(),
+                },
             )
