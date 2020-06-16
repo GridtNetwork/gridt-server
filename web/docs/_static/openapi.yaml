@@ -108,6 +108,11 @@ paths:
                     type: string
                     description: User's email
                     example: robin@gridt.org
+                  avatar:
+                    type: string
+                    description: User's gravatar
+                    example: 0f1d8086585c2580e6f2231886ba5e38
+
         '400':
           description: User is not logged in.
           content:

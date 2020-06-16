@@ -26,7 +26,7 @@ from gridt.db import db
 from gridt.models.movement import Movement
 
 from gridt.auth.security import authenticate, identify
-from gridt.resources.register import LoggedInResource, RegisterResource
+from gridt.resources.register import IdentityResource, RegisterResource
 from gridt.resources.user import BioResource
 from gridt.resources.leader import LeaderResource
 from gridt.resources.movements import (
@@ -94,7 +94,7 @@ def register_api_endpoints(api):
     """
     Connect all resources with an appropriate url.
     """
-    api.add_resource(LoggedInResource, "/logged_in")
+    api.add_resource(IdentityResource, "/identity")
     api.add_resource(RegisterResource, "/register")
     api.add_resource(MovementsResource, "/movements")
     api.add_resource(SingleMovementResource, "/movements/<identifier>")
