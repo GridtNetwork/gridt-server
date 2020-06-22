@@ -8,6 +8,7 @@ from gridt.tests.base_test import BaseTest
 from gridt.db import db
 from gridt.models import User, Movement, Signal, MovementUserAssociation
 
+
 class MovementTest(BaseTest):
     def test_crud(self):
         with self.app_context():
@@ -48,7 +49,7 @@ class MovementTest(BaseTest):
             db.session.add_all([user4, user5, assoc1, assoc2, assoc3, assoc4])
             db.session.commit()
 
-            # Will not catch possible mistake (movement.swap_leader(..., ...) == user3) 
+            # Will not catch possible mistake (movement.swap_leader(..., ...) == user3)
             # 2/3 of the time
             self.assertIn(movement.swap_leader(user2, user1), [user4, user5])
             self.assertEqual(len(user2.leaders(movement)), 1)
