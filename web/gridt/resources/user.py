@@ -5,7 +5,7 @@ from flask_jwt import jwt_required, current_identity
 from marshmallow import ValidationError
 
 from gridt.models.user import User
-from gridt.schemas import BioSchema
+from gridt.schemas import BioSchema, ChangePasswordSchema
 
 
 class BioResource(Resource):
@@ -24,3 +24,19 @@ class BioResource(Resource):
         current_identity.save_to_db()
 
         return {"message": "Bio successfully changed."}
+
+
+class ChangePasswordResource(Resource):
+    schema = ChangePasswordSchema()
+
+    @jwt_required()
+    def post(self):
+
+        try:
+            res = self.schema.load(request.get_json())
+        except ValidationError as error:
+            field = list(error.messages.keys())[0]
+            return ({"message": f"{field}: {error.messages[field][0]}"}, 400)
+
+        if current_identity.password_hash != res["old_password"]:
+            return ({"message": "Failed to identify user with given password."}, 400)
