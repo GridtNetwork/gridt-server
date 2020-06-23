@@ -4,6 +4,8 @@ from flask_jwt import jwt_required, current_identity
 
 from marshmallow import ValidationError
 
+from passlib.apps import custom_app_context as pwd_context
+
 from gridt.models.user import User
 from gridt.schemas import BioSchema, ChangePasswordSchema
 
@@ -38,5 +40,9 @@ class ChangePasswordResource(Resource):
             field = list(error.messages.keys())[0]
             return ({"message": f"{field}: {error.messages[field][0]}"}, 400)
 
-        if current_identity.password_hash != res["old_password"]:
+        if not current_identity.verify_password(res["old_password"]):
             return ({"message": "Failed to identify user with given password."}, 400)
+        
+        if current_identity.verify_password(res["old_password"]):
+            current_identity.hash_password(res["new_password"])
+            return ({"message": "Successfully changed password."}, 200)
