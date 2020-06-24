@@ -139,3 +139,20 @@ class UserResourceTest(BaseTest):
             self.assertIn("message", resp.get_json())
             self.assertEqual(resp.status_code, 200)
             self.assertEqual(user.email, "example@test.com")
+
+    def test_invalid_email(self):
+        with self.app_context():
+            user = self.create_user()
+
+            resp = self.request_as_user(
+                self.users[0],
+                "POST",
+                "/change_email",
+                json={
+                    "password": self.users[0]["password"],
+                    "new_email": "bademail"
+                }
+            )
+
+            self.assertIn("message", resp.get_json())
+            self.assertEqual(resp.status_code, 400)
