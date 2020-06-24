@@ -149,7 +149,8 @@ paths:
         '400':
           description: >-
             No password or new email given
-            OR wrong password given.
+            OR wrong password given
+            OR email invalid
           content:
             application/json:
               schema:
