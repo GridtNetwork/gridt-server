@@ -6,6 +6,7 @@ from gridt.models.user import User
 from gridt.models.movement import Movement
 from gridt.models.movement_user_association import MovementUserAssociation
 
+
 class UserTest(BaseTest):
     def test_find(self):
         with self.app_context():
@@ -59,7 +60,7 @@ class UserTest(BaseTest):
 
             self.assertEqual(len(user1.leaders(movement)), 2)
             self.assertEqual(set(user1.leaders(movement)), set([user2, user3]))
-    
+
     def test_leaders_removed(self):
         """
         3 <- 1 -> 2

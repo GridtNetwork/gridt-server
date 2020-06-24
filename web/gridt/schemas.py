@@ -19,3 +19,8 @@ class MovementSchema(Schema):
     interval = fields.Str(
         required=True, validate=OneOf(["daily", "twice daily", "weekly"])
     )
+
+
+class ChangePasswordSchema(Schema):
+    old_password = fields.Str(required=True)
+    new_password = fields.Str(required=True)

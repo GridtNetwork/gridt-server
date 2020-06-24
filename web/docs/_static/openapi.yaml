@@ -79,7 +79,7 @@ paths:
                 $ref: '#/components/schemas/message'
   /identity:
     get:
-      summary: "Check the identity of current user."
+      summary: Check the identity of current user.
       responses:
         '200':
           description: >-
@@ -112,9 +112,26 @@ paths:
                     type: string
                     description: User's gravatar
                     example: 0f1d8086585c2580e6f2231886ba5e38
-
         '400':
           description: User is not logged in.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/message'
+  /change_password:
+    post:
+      summary: Change the current user's password.
+      responses:
+        '200':
+          description: Successfully changed current user's password.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/message'
+        '400':
+          description: >-
+            No old password given OR no new password given
+            OR wrong old password given.
           content:
             application/json:
               schema:

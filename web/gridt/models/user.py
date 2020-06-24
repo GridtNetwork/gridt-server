@@ -122,7 +122,12 @@ class User(db.Model):
         return [a.leader for a in associations]
 
     def dictify(self):
-        return {"username": self.username, "id": self.id, "bio": self.bio, "avatar": self.get_email_hash()}
+        return {
+            "username": self.username,
+            "id": self.id,
+            "bio": self.bio,
+            "avatar": self.get_email_hash(),
+        }
 
     def save_to_db(self):
         """

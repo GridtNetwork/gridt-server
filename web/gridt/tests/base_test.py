@@ -90,6 +90,31 @@ class BaseTest(LoggedTestCase):
 
         return token
 
+    def create_user(self, generate_bio=False):
+        username = lorem.sentence()
+        email = lorem.sentence()
+        password = lorem.sentence()
+        bio = ""
+
+        if bio:
+            bio = lorem.paragraph()
+
+        user = User(username, email, password, role="user")
+
+        user.save_to_db()
+
+        user_dict = {
+            "id": user.id,
+            "username": username,
+            "email": email,
+            "bio": bio,
+            "password": password,
+            "avatar": user.get_email_hash(),
+        }
+        self.users.append(user_dict)
+
+        return user
+
     def create_movement(self):
         name = lorem.sentence().split()[0]
         movement = Movement(
@@ -107,29 +132,8 @@ class BaseTest(LoggedTestCase):
     def create_user_in_movement(self, movement, generate_bio=False):
         if movement not in self.movements:
             raise ValueError("Movement not registered")
-
-        username = lorem.sentence()
-        email = lorem.sentence()
-        password = lorem.sentence()
-        bio = ""
-
-        if bio:
-            bio = lorem.paragraph()
-
-        user = User(username, email, password, role="user")
+        user = self.create_user(generate_bio)
         movement.add_user(user)
-        user.save_to_db()
-
-        user_dict = {
-            "id": user.id,
-            "username": username,
-            "email": email,
-            "bio": bio,
-            "password": password,
-            "avatar": user.get_email_hash(),
-        }
-        self.users.append(user_dict)
-
         return user
 
     def request_as_user(self, user_dict, request_type, *args, **kwargs):
