@@ -136,6 +136,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/message'
+  /change_email:
+    post:
+      summary: Change the current user's email.
+      responses: 
+        '200':
+          description: Succesfully changed current user's email.
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/message'
+        '400':
+          description: >-
+            No password or new email given
+            OR wrong password given.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/message'
   /movements:
     get:
       summary: List of all movements
