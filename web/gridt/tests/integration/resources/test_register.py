@@ -32,6 +32,7 @@ class RegistrationResourceTest(BaseTest):
                     "id": user.id,
                     "username": user.username,
                     "bio": user.bio,
+                    "email": user.email,
                     "avatar": user.get_email_hash(),
                 },
             )
