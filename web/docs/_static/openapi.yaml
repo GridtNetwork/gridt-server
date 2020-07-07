@@ -121,6 +121,19 @@ paths:
   /change_password:
     post:
       summary: Change the current user's password.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                old_password:
+                  type: string
+                  example: SuperSecretPassword
+                new_password:
+                  type: string
+                  example: NewSuperSecretPassword
       responses:
         '200':
           description: Successfully changed current user's password.
@@ -139,6 +152,19 @@ paths:
   /change_email:
     post:
       summary: Change the current user's email.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+                  example: SuperSecretPassword
+                new_email:
+                  type: string
+                  example: robin@gridt.org
       responses: 
         '200':
           description: Succesfully changed current user's email.
