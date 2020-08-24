@@ -1,5 +1,9 @@
 from util.nostderr import nostderr
 
+from flask import current_app
+from freezegun import freeze_time
+import jwt
+
 from gridt.tests.base_test import BaseTest
 from gridt.db import db
 from gridt.models.user import User
@@ -31,3 +35,20 @@ class UserTest(BaseTest):
     def test_avatar(self):
         user = User("username", "test@test.com", "test")
         self.assertEqual(user.get_email_hash(), "b642b4217b34b1e8d3bd915fc65c4452")
+
+    def test_get_password_reset_token(self):
+        with self.app_context():
+            user = User("username", "test@test.com", "password")
+            current_app.config["SECRET_KEY"] = "test"
+            with freeze_time("2020-04-18 22:10:00"):
+                self.assertEqual(
+                    jwt.decode(
+                        user.get_password_reset_token(),
+                        "test",
+                        algorithms=["HS256"]
+                    ),
+                    {
+                        "reset_password": user.id,
+                        "exp": 1587334200.0
+                    }
+                )

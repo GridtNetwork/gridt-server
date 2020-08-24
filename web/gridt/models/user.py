@@ -6,6 +6,9 @@ from flask import current_app
 from passlib.apps import custom_app_context as pwd_context
 import hashlib
 
+import datetime
+import jwt
+
 from gridt.db import db
 
 from gridt.models.movement_user_association import MovementUserAssociation
@@ -99,6 +102,27 @@ class User(db.Model):
         h.update(bytes(self.email, "utf-8"))
         email_hash = h.hexdigest()
         return email_hash
+
+    def get_password_reset_token(self):
+        """
+        Make a dictionary containing the e-mail for password reset
+        + an expiration timestamp such that the token is valid for 1 day
+        and encodes it into a JWT.
+        """
+        now = datetime.datetime.now()
+        valid = datetime.timedelta(days=1)
+        exp = now + valid
+        exp = exp.timestamp()
+
+        secret_key = current_app.config["SECRET_KEY"]
+
+        token_dict = {
+            "reset_password": self.id,
+            "exp": exp
+        }
+
+        token = jwt.encode(token_dict, secret_key, algorithm="HS256").decode('utf-8')
+        return token
 
     def verify_password(self, password):
         """
