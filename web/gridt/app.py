@@ -27,7 +27,12 @@ from gridt.models.movement import Movement
 
 from gridt.auth.security import authenticate, identify
 from gridt.resources.register import IdentityResource, RegisterResource
-from gridt.resources.user import BioResource, ChangePasswordResource
+from gridt.resources.user import (
+    BioResource, 
+    ChangePasswordResource, 
+    RequestPasswordResetResource,
+    ResetPasswordResource
+)
 from gridt.resources.leader import LeaderResource
 from gridt.resources.movements import (
     MovementsResource,
@@ -104,6 +109,8 @@ def register_api_endpoints(api):
     api.add_resource(NewSignalResource, "/movements/<movement_id>/signal")
     api.add_resource(BioResource, "/bio")
     api.add_resource(ChangePasswordResource, "/change_password")
+    api.add_resource(RequestPasswordResetResource, "/request_password_reset")
+    api.add_resource(ResetPasswordResource, "/reset_password")
 
 
 def add_cli_commands(app, db):

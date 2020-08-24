@@ -1,5 +1,5 @@
 from marshmallow import Schema, fields, validates_schema, ValidationError
-from marshmallow.validate import Length, OneOf
+from marshmallow.validate import Length, OneOf, Equal
 
 
 class BioSchema(Schema):
@@ -24,3 +24,12 @@ class MovementSchema(Schema):
 class ChangePasswordSchema(Schema):
     old_password = fields.Str(required=True)
     new_password = fields.Str(required=True)
+
+
+class RequestPasswordResetSchema(Schema):
+    email = fields.Email(required=True)
+
+class ResetPasswordSchema(Schema):
+    token = fields.Str(required=True)
+    password = fields.Str(required=True)
+    password2 = fields.Str(required=True, validate=Equal(password))
