@@ -106,11 +106,11 @@ class User(db.Model):
     def get_password_reset_token(self):
         """
         Make a dictionary containing the e-mail for password reset
-        + an expiration timestamp such that the token is valid for 1 day
+        + an expiration timestamp such that the token is valid for 2 hours
         and encodes it into a JWT.
         """
         now = datetime.datetime.now()
-        valid = datetime.timedelta(days=1)
+        valid = datetime.timedelta(hours=2)
         exp = now + valid
         exp = exp.timestamp()
 

@@ -14,6 +14,10 @@ from gridt.schemas import (
     ResetPasswordSchema
 )
 
+from gridt.db import db
+import jwt
+from util import send_email
+
 
 class BioResource(Resource):
     @jwt_required()
@@ -38,7 +42,6 @@ class ChangePasswordResource(Resource):
 
     @jwt_required()
     def post(self):
-
         try:
             res = self.schema.load(request.get_json())
         except ValidationError as error:
@@ -57,30 +60,50 @@ class RequestPasswordResetResource(Resource):
     schema = RequestPasswordResetSchema()
     
     def post(self):
-
-        try:
-            res = self.schema.load(request.get_json())
-        except ValidationError as error:
-            field = list(error.messages.keys())[0]
-            return ({"message": f"{field}: {error.messages[field][0]}"}, 400)
-
-        if not current_app.config["EMAIL_API_KEY"]:
-            return ({"message": "Could not send e-mail: API key not available."}, 500)
-
-
-class ResetPasswordResource(Resource):
-    schema = ResetPasswordSchema()
-
-    def post(self):
-
         try:
             res = self.schema.load(request.get_json())
         except ValidationError as error:
             field = list(error.messages.keys())[0]
             return ({"message": f"{field}: {error.messages[field][0]}"}, 400)
         
-        if not res["password"] == res["password2"]:
-            return ({"message": "Passwords do not match."}, 400)
+        # Currently does not do anything since EMAIL_API_KEY is in environment variables,
+        # not in config.
+        if not current_app.config["EMAIL_API_KEY"]:
+            return ({"message": "Could not send e-mail: API key not available."}, 500)
 
-        if 
-            
+        user = User.find_by_email(res["email"])
+        token = user.get_password_reset_token()
+        link = f"https://app.gridt.org/reset_password?token={token}"
+        subj = "Reset your password"
+        body = f"Your password has been reset, please follow the following link: {link}"
+        send_email(user.email, subj, body)
+        return ({"message": "Recovery email successfully sent."}, 200)
+
+
+class ResetPasswordResource(Resource):
+    schema = ResetPasswordSchema()
+    
+    def post(self):
+        secret_key = current_app.config["SECRET_KEY"]
+        try:
+            res = self.schema.load(request.get_json())
+        except ValidationError as error:
+            field = list(error.messages.keys())[0]
+            return ({"message": f"{field}: {error.messages[field][0]}"}, 400)
+
+        try:
+            token_decoded = jwt.decode(res["token"], secret_key, algorithms=["HS256"])
+        except jwt.ExpiredSignatureError:
+            msg = "Signature has expired."
+            return ({"message": msg}, 400)
+        except jwt.InvalidTokenError:
+            msg = "Invalid token."
+            return ({"message": msg}, 400)
+        
+        id = token_decoded["reset_password"]
+        password = res["password"]
+        user = User.query.get(id)
+        user.hash_password(password)
+
+        msg = "Password successfully changed."
+        return ({"message": msg}, 200)

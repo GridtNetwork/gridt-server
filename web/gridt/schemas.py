@@ -32,4 +32,3 @@ class RequestPasswordResetSchema(Schema):
 class ResetPasswordSchema(Schema):
     token = fields.Str(required=True)
     password = fields.Str(required=True)
-    password2 = fields.Str(required=True, validate=Equal(password))
