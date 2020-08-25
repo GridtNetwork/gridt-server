@@ -21,6 +21,7 @@ gunicorn = "*"
 pymysql = "*"
 cryptography = "*"
 sqlalchemy-utils = "*"
+sendgrid = "*"
 
 [requires]
 python_version = "3.8"
