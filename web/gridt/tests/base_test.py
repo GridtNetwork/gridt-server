@@ -96,7 +96,7 @@ class BaseTest(LoggedTestCase):
         password = lorem.sentence()
         bio = ""
 
-        if bio:
+        if generate_bio:
             bio = lorem.paragraph()
 
         user = User(username, email, password, role="user")
