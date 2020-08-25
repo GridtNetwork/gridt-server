@@ -16,7 +16,7 @@ from gridt.schemas import (
 
 from gridt.db import db
 import jwt
-from util import send_email
+from util.send_email import send_email
 
 
 class BioResource(Resource):
@@ -66,12 +66,14 @@ class RequestPasswordResetResource(Resource):
             field = list(error.messages.keys())[0]
             return ({"message": f"{field}: {error.messages[field][0]}"}, 400)
         
-        # Currently does not do anything since EMAIL_API_KEY is in environment variables,
-        # not in config.
         if not current_app.config["EMAIL_API_KEY"]:
             return ({"message": "Could not send e-mail: API key not available."}, 500)
 
         user = User.find_by_email(res["email"])
+        if not user:
+            # We don't want malicious users to know whether or not an e-mail is in our database.
+            return ({"message": "Recovery email successfully sent."}, 200)
+        
         token = user.get_password_reset_token()
         link = f"https://app.gridt.org/reset_password?token={token}"
         subj = "Reset your password"

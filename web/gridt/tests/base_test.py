@@ -92,7 +92,7 @@ class BaseTest(LoggedTestCase):
 
     def create_user(self, generate_bio=False):
         username = lorem.sentence()
-        email = lorem.sentence()
+        email = "test@test.com"
         password = lorem.sentence()
         bio = ""
 

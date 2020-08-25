@@ -92,8 +92,6 @@ class UserResourceTest(BaseTest):
             self.assertTrue(user.verify_password("somethingyoullneverguess"))
 
     def test_no_api_key(self):
-        # This test doesn't currently do anything since EMAIL_API_KEY is
-        # currently not in the conf files but taken from environment values
         with self.app_context():
             email = "any@email.com"
             current_app.config["EMAIL_API_KEY"] = None
@@ -122,14 +120,15 @@ class UserResourceTest(BaseTest):
             )
 
             # Test that email will not get sent
-            func.assertNotCalled()
+            func.assert_not_called()
 
             # In order to not give away sensitive information
             # message must be the same as a successful attempt
             self.assertIn("message", resp.get_json())
             self.assertEqual(resp.status_code, 200)
 
-    @patch("util.send_email", return_value=True)
+    @freeze_time("2020-08-25 17:19:00")
+    @patch("gridt.resources.user.send_email", return_value=True)
     def test_send_password_reset_email_correct(self, func):
         # Request reset password, e-mail in database
         with self.app_context():
@@ -147,7 +146,7 @@ class UserResourceTest(BaseTest):
             subj = "Reset your password"
             body = f"Your password has been reset, please follow the following link: {link}"
             # Test that email will get sent
-            func.assertCalledWith(user.email, subj, body)
+            func.assert_called_with(user.email, subj, body)
             self.assertIn("message", resp.get_json())
             self.assertEqual(resp.status_code, 200)
 
@@ -167,7 +166,6 @@ class UserResourceTest(BaseTest):
             self.assertIn("message", resp.get_json())
             self.assertEqual(resp.status_code, 200)
             self.assertTrue(user.verify_password("testpass"))
-
 
     def test_reset_password_token_expired(self):
         with self.app_context():

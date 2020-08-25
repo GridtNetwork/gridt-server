@@ -1,4 +1,4 @@
-import os
+from flask import current_app
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 
@@ -11,7 +11,7 @@ def send_email(email, subject, body):
     )
     
     try:
-        sg = SendGridAPIClient(os.environ.get("EMAIL_API_KEY"))
+        sg = SendGridAPIClient(current_app.config["EMAIL_API_KEY"])
         resp = sg.send(msg)
         return resp.status_code, resp.body, resp.headers
     except Exception as e:
