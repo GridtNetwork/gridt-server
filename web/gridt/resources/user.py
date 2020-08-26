@@ -67,19 +67,19 @@ class RequestPasswordResetResource(Resource):
             return ({"message": f"{field}: {error.messages[field][0]}"}, 400)
         
         if not current_app.config["EMAIL_API_KEY"]:
-            return ({"message": "Could not send e-mail: API key not available."}, 500)
+            return ({"message": "Could not send e-mail; API key not available."}, 500)
 
         user = User.find_by_email(res["email"])
         if not user:
             # We don't want malicious users to know whether or not an e-mail is in our database.
-            return ({"message": "Recovery email successfully sent."}, 200)
+            return ({"message": "Recovery e-mail successfully sent."}, 200)
         
         token = user.get_password_reset_token()
         link = f"https://app.gridt.org/reset_password?token={token}"
         subj = "Reset your password"
         body = f"Your password has been reset, please follow the following link: {link}"
         send_email(user.email, subj, body)
-        return ({"message": "Recovery email successfully sent."}, 200)
+        return ({"message": "Recovery e-mail successfully sent."}, 200)
 
 
 class ResetPasswordResource(Resource):

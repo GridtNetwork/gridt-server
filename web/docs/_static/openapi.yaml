@@ -136,6 +136,73 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/message'
+  /request_password_reset:
+    post:
+      summary: >-
+        Request an e-mail with password reset token to be sent
+        to given user's e-mail address.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                e-mail:
+                  type: string
+                  example: robin@gridt.org
+      responses:
+        '200':
+          description: Recovery e-mail successfully sent.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/message'
+        '400':
+          description: E-mail address is not valid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/message'
+        '500':
+          description: Could not send e-mail; API key not available.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/message'
+  /reset_password:
+    post:
+      summary: >-
+        Given a token from a password recovery e-mail and new password,
+        this will update the user's password in the database.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                  example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MCwiZXhwIjoxNTk4NDI1ODIzLjE3MjE2NTJ9.VicCiBBjPGIzAX7KVvTaWI6dMocsRNSCXYm5FfqnRa0
+                password:
+                  type: string
+                  example: SuperSecretPassword
+      responses:
+        '200':
+          description: Password successfully changed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/message'
+        '400':
+          description: >-
+            Invalid token OR expired signature
+            OR no token given OR no password given.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/message'
   /movements:
     get:
       summary: List of all movements
