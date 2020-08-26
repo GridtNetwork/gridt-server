@@ -49,6 +49,6 @@ class UserTest(BaseTest):
                     ),
                     {
                         "reset_password": user.id,
-                        "exp": 1587334200.0
+                        "exp": 1587255000.0
                     }
                 )

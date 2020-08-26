@@ -53,6 +53,12 @@ class ChangePasswordResource(Resource):
         
         if current_identity.verify_password(res["old_password"]):
             current_identity.hash_password(res["new_password"])
+            
+            link = "https://app.gridt.org/request_password_reset"
+            subj = "Your password has been changed"
+            body = f"Dear user, your password has been changed. Didn't do this? \
+                Secure your account by going to {link}."
+            send_email(current_identity.email, subj, body)
             return ({"message": "Successfully changed password."}, 200)
 
 
@@ -106,6 +112,12 @@ class ResetPasswordResource(Resource):
         password = res["password"]
         user = User.query.get(id)
         user.hash_password(password)
+
+        link = "https://app.gridt.org/request_password_reset"
+        subj = "Your password has been changed"
+        body = f"Dear user, your password has been changed. Didn't do this? \
+            Secure your account by going to {link}."
+        send_email(user.email, subj, body)
 
         msg = "Password successfully changed."
         return ({"message": msg}, 200)

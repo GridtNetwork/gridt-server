@@ -72,8 +72,8 @@ class UserResourceTest(BaseTest):
             self.assertIn("message", resp.get_json())
             self.assertEqual(resp.status_code, 400)
 
-    def test_change_password_with_correct_password(self):
-        # json should contain old_password (self.users[0]["password"]) and new password
+    @patch("gridt.resources.user.send_email", return_value=True)
+    def test_change_password_with_correct_password(self, func):
         with self.app_context():
             user = self.create_user()
 
@@ -86,10 +86,17 @@ class UserResourceTest(BaseTest):
                     "new_password": "somethingyoullneverguess"
                 },
             )
+            
+            subj = "Your password has been changed"
+            link = "https://app.gridt.org/request_password_reset"
+            body = f"Dear user, your password has been changed. Didn't do this? \
+                Secure your account by going to {link}."
 
             self.assertIn("message", resp.get_json())
             self.assertEqual(resp.status_code, 200)
             self.assertTrue(user.verify_password("somethingyoullneverguess"))
+            func.assert_called_with(user.email, subj, body)
+
 
     def test_no_api_key(self):
         with self.app_context():
@@ -145,12 +152,13 @@ class UserResourceTest(BaseTest):
             link = f"https://app.gridt.org/reset_password?token={token}"
             subj = "Reset your password"
             body = f"Your password has been reset, please follow the following link: {link}"
-            # Test that email will get sent
+            
             func.assert_called_with(user.email, subj, body)
             self.assertIn("message", resp.get_json())
             self.assertEqual(resp.status_code, 200)
-
-    def test_reset_password_token_correct(self):
+    
+    @patch("gridt.resources.user.send_email", return_value=True)
+    def test_reset_password_token_correct(self, func):
         with self.app_context():
             user = self.create_user()
             token = user.get_password_reset_token()
@@ -163,9 +171,15 @@ class UserResourceTest(BaseTest):
                 }
             )
 
-            self.assertIn("message", resp.get_json())
-            self.assertEqual(resp.status_code, 200)
-            self.assertTrue(user.verify_password("testpass"))
+        link = "https://app.gridt.org/request_password_reset"
+        subj = "Your password has been changed"
+        body = f"Dear user, your password has been changed. Didn't do this? \
+            Secure your account by going to {link}."
+
+        self.assertIn("message", resp.get_json())
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(user.verify_password("testpass"))
+        func.assert_called_with(user.email, subj, body)
 
     def test_reset_password_token_expired(self):
         with self.app_context():
