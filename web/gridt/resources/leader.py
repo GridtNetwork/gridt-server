@@ -24,7 +24,7 @@ class LeaderResource(Resource):
         leader = get_user(leader_id)
         # This prevents a malicious user from finding user ids.
         # Returning a 404 for a nonexistant user would give them more
-        # infromation than we want to share.
+        # information than we want to share.
         if not leader or leader not in current_identity.leaders(movement):
             return {"message": "User is not following this leader."}, 400
 

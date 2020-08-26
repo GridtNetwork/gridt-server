@@ -147,8 +147,8 @@ class User(db.Model):
 
     def dictify(self):
         return {
-            "username": self.username,
             "id": self.id,
+            "username": self.username,
             "bio": self.bio,
             "avatar": self.get_email_hash(),
         }

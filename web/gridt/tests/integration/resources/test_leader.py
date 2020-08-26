@@ -131,7 +131,6 @@ class LeaderProfileTest(BaseTest):
             resp = self.request_as_user(
                 follower_dict, "GET", f"/movements/{movement.id}/leader/{leader.id}"
             )
-
             expected = leader_dict.copy()
             del expected["password"]
             del expected["email"]
