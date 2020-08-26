@@ -92,17 +92,14 @@ class BaseTest(LoggedTestCase):
 
     def create_user(self, generate_bio=False):
         username = lorem.sentence()
-        # The fact that e-mail is always the same causes errors
-        # but e-mail has to be a valid e-mail for schemas.
-        # TODO: Find suitable fix.
-        email = "test@test.com"
+        email = f"{lorem.sentence().replace(' ', '').replace('.', '')}@test.com"
         password = lorem.sentence()
         bio = ""
 
         if generate_bio:
             bio = lorem.paragraph()
 
-        user = User(username, email, password, role="user")
+        user = User(username, email, password, role="user", bio=bio)
 
         user.save_to_db()
 
