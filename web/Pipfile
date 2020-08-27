@@ -21,6 +21,7 @@ gunicorn = "*"
 pymysql = "*"
 cryptography = "*"
 sqlalchemy-utils = "*"
+prometheus-flask-exporter = "*"
 
 [requires]
 python_version = "3.8"

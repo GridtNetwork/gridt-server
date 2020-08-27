@@ -37,6 +37,8 @@ from gridt.resources.movements import (
     NewSignalResource,
 )
 
+from prometheus_flask_exporter.multiprocess import GunicornPrometheusMetrics
+
 
 def load_config(app, overwrite_conf):
     config_file = os.getenv("FLASK_CONFIGURATION", "conf/default.conf")
@@ -165,6 +167,7 @@ def create_app(overwrite_conf=None):
 
     """
     app = Flask(__name__)
+    metrics = GunicornPrometheusMetrics(app)
 
     load_config(app, overwrite_conf)
     construct_database_url(app)
