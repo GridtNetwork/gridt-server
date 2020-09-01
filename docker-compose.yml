@@ -30,7 +30,7 @@ services:
             - db
     nginx:
         restart: always
-        image: nginx:1.15-alpine
+        image: nginx:alpine
         command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
         networks:
             - nginx_network
@@ -51,6 +51,50 @@ services:
             - ./data/certbot/conf:/etc/letsencrypt
             - ./data/certbot/www:/var/www/certbot
         entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    cadvisor:
+        image: gcr.io/google-containers/cadvisor:latest
+        container_name: cadvisor
+        ports:
+            - 8080:8080
+        volumes:
+            - /:/rootfs:ro
+            - /var/run:/var/run:rw
+            - /sys:/sys:ro
+            - /var/lib/docker/:/var/lib/docker:ro
+        depends_on:
+            - web
+            - nginx
+            - db
+        networks:
+            - nginx_network
+            - db_network
+    prometheus:
+        image: prom/prometheus:v2.2.1
+        volumes:
+            - ./prometheus/config.yml:/etc/prometheus/prometheus.yml
+        ports:
+            - 9090:9090
+        depends_on:
+            - cadvisor
+        networks:
+            - nginx_network
+            - db_network
+    grafana:
+        image: grafana/grafana:latest
+        environment:
+            GF_INSTALL_PLUGINS: briangann-gauge-panel
+        volumes:
+            - ./grafana/config.ini:/etc/grafana/grafana.ini
+            - ./grafana/datasource.yaml:/etc/grafana/provisioning/datasources/default.yaml
+            - ./grafana/dashboard.yaml:/etc/grafana/provisioning/dashboards/default.yaml
+            - ./grafana/dashboards:/var/lib/grafana/dashboards
+        ports:
+            - 3000:3000
+        depends_on:
+            - prometheus
+        networks:
+            - nginx_network
+            - db_network
 networks:
     nginx_network:
         driver: bridge

@@ -16,5 +16,9 @@ ENV PATH="/packages/.venv/bin:${PATH}" FLASK_CONFIGURATION=${FLASK_CONFIGURATION
 WORKDIR /usr/src/gridt-server
 COPY . /usr/src/gridt-server
 
+ENV prometheus_multiproc_dir /tmp
+ENV METRICS_PORT 8080
 EXPOSE 8000
-CMD ["gunicorn", "-w", "2", "-b", ":8000", "wsgi:app"]
+EXPOSE 8080
+
+CMD ["gunicorn", "-c", "config.py", "-w", "2", "-b", ":8000", "wsgi:app"]
