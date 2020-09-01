@@ -33,7 +33,6 @@ class ChangePasswordResource(Resource):
 
     @jwt_required()
     def post(self):
-
         try:
             res = self.schema.load(request.get_json())
         except ValidationError as error:
@@ -52,7 +51,6 @@ class ChangeEmailResource(Resource):
 
     @jwt_required()
     def post(self):
-
         try:
             res = self.schema.load(request.get_json())
         except ValidationError as error:
