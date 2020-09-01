@@ -21,6 +21,8 @@ gunicorn = "*"
 pymysql = "*"
 cryptography = "*"
 sqlalchemy-utils = "*"
+sendgrid = "*"
+prometheus-flask-exporter = "*"
 
 [requires]
 python_version = "3.8"
