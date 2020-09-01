@@ -1,0 +1,26 @@
+scrape_configs:
+  - job_name: 'prometheus'
+    # Override the global default and scrape targets from this job every 5 seconds.
+    scrape_interval: 5s
+    static_configs:
+         - targets: ['localhost:9090']
+  - job_name: cadvisor
+    scrape_interval: 5s
+    static_configs:
+    - targets: ['cadvisor:8080']
+      labels:
+        group:
+          'cadvisor'
+  - job_name: 'flask api'
+    scrape_interval: 5s
+    static_configs:
+    - targets: ['web:8080']
+      labels:
+        group:
+          'flask'
+    #dns_sd_configs:
+    #- names: ['web']
+    #port: 8000
+    #type: A
+    #refresh_interval: 5s
+ 

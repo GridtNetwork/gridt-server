@@ -5,7 +5,7 @@ info:
     Interact with the gridt network via this API. It provides several endpoints
     for creating and subscribing (to) movements and switching leaders.
   contact:
-    url: gridt.org
+    url: 'https://gridt.org'
     name: Robin A. Dorstijn
     email: robin@gridt.org
 paths:
@@ -317,12 +317,6 @@ paths:
       description: 'If the user has any empty leader, find one for him.'
       parameters:
         - $ref: '#/components/parameters/movementId'
-        - name: userId
-          in: path
-          required: true
-          description: Identifier (name or id) of the leader that is to be replaced.
-          schema:
-            $ref: '#/components/schemas/userId'
       responses:
         '201':
           description: 'Succesfully found leaders, returns the new leader'
