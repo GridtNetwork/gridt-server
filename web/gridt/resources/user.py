@@ -8,10 +8,10 @@ from passlib.apps import custom_app_context as pwd_context
 
 from gridt.models.user import User
 from gridt.schemas import (
-    BioSchema, 
+    BioSchema,
     ChangePasswordSchema,
     RequestPasswordResetSchema,
-    ResetPasswordSchema
+    ResetPasswordSchema,
 )
 
 from gridt.db import db
@@ -50,10 +50,10 @@ class ChangePasswordResource(Resource):
 
         if not current_identity.verify_password(res["old_password"]):
             return ({"message": "Failed to identify user with given password."}, 400)
-        
+
         if current_identity.verify_password(res["old_password"]):
             current_identity.hash_password(res["new_password"])
-            
+
             link = "https://app.gridt.org/request_password_reset"
             subj = "Your password has been changed"
             body = f"Dear user, your password has been changed. Didn't do this? \
@@ -64,14 +64,14 @@ class ChangePasswordResource(Resource):
 
 class RequestPasswordResetResource(Resource):
     schema = RequestPasswordResetSchema()
-    
+
     def post(self):
         try:
             res = self.schema.load(request.get_json())
         except ValidationError as error:
             field = list(error.messages.keys())[0]
             return ({"message": f"{field}: {error.messages[field][0]}"}, 400)
-        
+
         if not current_app.config["EMAIL_API_KEY"]:
             return ({"message": "Could not send e-mail; API key not available."}, 500)
 
@@ -79,7 +79,7 @@ class RequestPasswordResetResource(Resource):
         if not user:
             # We don't want malicious users to know whether or not an e-mail is in our database.
             return ({"message": "Recovery e-mail successfully sent."}, 200)
-        
+
         token = user.get_password_reset_token()
         link = f"https://app.gridt.org/reset_password?token={token}"
         subj = "Reset your password"
@@ -90,7 +90,7 @@ class RequestPasswordResetResource(Resource):
 
 class ResetPasswordResource(Resource):
     schema = ResetPasswordSchema()
-    
+
     def post(self):
         secret_key = current_app.config["SECRET_KEY"]
         try:
@@ -107,10 +107,11 @@ class ResetPasswordResource(Resource):
         except jwt.InvalidTokenError:
             msg = "Invalid token."
             return ({"message": msg}, 400)
-        
-        id = token_decoded["reset_password"]
+        token_decoded = jwt.decode(res["token"], secret_key, algorithms=["HS256"])
+
+        user_id = token_decoded["user_id"]
         password = res["password"]
-        user = User.query.get(id)
+        user = User.query.get(user_id)
         user.hash_password(password)
 
         link = "https://app.gridt.org/request_password_reset"

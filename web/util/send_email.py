@@ -2,14 +2,12 @@ from flask import current_app
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 
+
 def send_email(email, subject, body):
     msg = Mail(
-        from_email="info@gridt.org",
-        to_emails=email,
-        subject=subject,
-        html_content=body
+        from_email="info@gridt.org", to_emails=email, subject=subject, html_content=body
     )
-    
+
     try:
         sg = SendGridAPIClient(current_app.config["EMAIL_API_KEY"])
         resp = sg.send(msg)

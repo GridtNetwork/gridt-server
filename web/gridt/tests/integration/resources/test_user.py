@@ -83,10 +83,10 @@ class UserResourceTest(BaseTest):
                 "/change_password",
                 json={
                     "old_password": self.users[0]["password"],
-                    "new_password": "somethingyoullneverguess"
+                    "new_password": "somethingyoullneverguess",
                 },
             )
-            
+
             subj = "Your password has been changed"
             link = "https://app.gridt.org/request_password_reset"
             body = f"Dear user, your password has been changed. Didn't do this? \
@@ -97,34 +97,23 @@ class UserResourceTest(BaseTest):
             self.assertTrue(user.verify_password("somethingyoullneverguess"))
             func.assert_called_with(user.email, subj, body)
 
-
     def test_no_api_key(self):
         with self.app_context():
             email = "any@email.com"
             current_app.config["EMAIL_API_KEY"] = None
 
-            resp = self.client.post(
-                "/request_password_reset",
-                json={
-                    "email": email
-                },
-            )
+            resp = self.client.post("/request_password_reset", json={"email": email},)
 
             self.assertIn("message", resp.get_json())
             self.assertEqual(resp.status_code, 500)
-    
+
     @patch("util.send_email", return_value=True)
     def test_send_password_reset_email_wrong(self, func):
         with self.app_context():
             # Make a request with nonexistent e-mail
             email = "nonexistent@email.com"
-            
-            resp = self.client.post(
-                "/request_password_reset",
-                json={
-                    "email": email
-                },
-            )
+
+            resp = self.client.post("/request_password_reset", json={"email": email},)
 
             # Test that email will not get sent
             func.assert_not_called()
@@ -142,21 +131,18 @@ class UserResourceTest(BaseTest):
             user = self.create_user()
 
             resp = self.client.post(
-                "/request_password_reset",
-                json={
-                    "email": user.email
-                },
+                "/request_password_reset", json={"email": user.email},
             )
 
             token = user.get_password_reset_token()
             link = f"https://app.gridt.org/reset_password?token={token}"
             subj = "Reset your password"
             body = f"Your password has been reset, please follow the following link: {link}"
-            
+
             func.assert_called_with(user.email, subj, body)
             self.assertIn("message", resp.get_json())
             self.assertEqual(resp.status_code, 200)
-    
+
     @patch("gridt.resources.user.send_email", return_value=True)
     def test_reset_password_token_correct(self, func):
         with self.app_context():
@@ -164,11 +150,7 @@ class UserResourceTest(BaseTest):
             token = user.get_password_reset_token()
 
             resp = self.client.post(
-                "/reset_password",
-                json={
-                    "token": token,
-                    "password": "testpass"
-                }
+                "/reset_password", json={"token": token, "password": "testpass"}
             )
 
         link = "https://app.gridt.org/request_password_reset"
@@ -189,30 +171,24 @@ class UserResourceTest(BaseTest):
 
             with freeze_time("2020-04-19 00:10:01"):
                 resp = self.client.post(
-                    "/reset_password",
-                    json={
-                        "token": token,
-                        "password": "testpass"
-                    }
+                    "/reset_password", json={"token": token, "password": "testpass"}
                 )
-            
+
                 self.assertIn("message", resp.get_json())
                 self.assertEqual(resp.status_code, 400)
 
     def test_password_reset_token_tampered(self):
         with self.app_context():
             user = self.create_user()
-            token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9." \
-                "eyJpZCI6MSwiZXhwIjoxNTg3MzM0MjAwfW." \
+            token = (
+                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9."
+                "eyJpZCI6MSwiZXhwIjoxNTg3MzM0MjAwfW."
                 "2qdnq1_YJS9tgKVlIVpBbaAanyxQnCyVmV6s7QcOuBo"
+            )
 
             resp = self.client.post(
-                "/reset_password",
-                json={
-                    "token": token,
-                    "password": "testpass"
-                }
+                "/reset_password", json={"token": token, "password": "testpass"}
             )
-        
+
             self.assertIn("message", resp.get_json())
             self.assertEqual(resp.status_code, 400)

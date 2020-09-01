@@ -28,10 +28,10 @@ from gridt.models.movement import Movement
 from gridt.auth.security import authenticate, identify
 from gridt.resources.register import IdentityResource, RegisterResource
 from gridt.resources.user import (
-    BioResource, 
-    ChangePasswordResource, 
+    BioResource,
+    ChangePasswordResource,
     RequestPasswordResetResource,
-    ResetPasswordResource
+    ResetPasswordResource,
 )
 from gridt.resources.leader import LeaderResource
 from gridt.resources.movements import (

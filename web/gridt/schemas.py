@@ -29,6 +29,7 @@ class ChangePasswordSchema(Schema):
 class RequestPasswordResetSchema(Schema):
     email = fields.Email(required=True)
 
+
 class ResetPasswordSchema(Schema):
     token = fields.Str(required=True)
     password = fields.Str(required=True)

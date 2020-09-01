@@ -39,16 +39,12 @@ class UserTest(BaseTest):
     def test_get_password_reset_token(self):
         with self.app_context():
             user = User("username", "test@test.com", "password")
-            current_app.config["SECRET_KEY"] = "test"
             with freeze_time("2020-04-18 22:10:00"):
                 self.assertEqual(
                     jwt.decode(
                         user.get_password_reset_token(),
-                        "test",
-                        algorithms=["HS256"]
+                        current_app.config["SECRET_KEY"],
+                        algorithms=["HS256"],
                     ),
-                    {
-                        "reset_password": user.id,
-                        "exp": 1587255000.0
-                    }
+                    {"user_id": user.id, "exp": 1587255000.0},
                 )

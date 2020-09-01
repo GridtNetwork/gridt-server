@@ -116,12 +116,9 @@ class User(db.Model):
 
         secret_key = current_app.config["SECRET_KEY"]
 
-        token_dict = {
-            "reset_password": self.id,
-            "exp": exp
-        }
+        token_dict = {"user_id": self.id, "exp": exp}
 
-        token = jwt.encode(token_dict, secret_key, algorithm="HS256").decode('utf-8')
+        token = jwt.encode(token_dict, secret_key, algorithm="HS256").decode("utf-8")
         return token
 
     def verify_password(self, password):
