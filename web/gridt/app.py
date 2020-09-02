@@ -110,9 +110,9 @@ def register_api_endpoints(api):
     api.add_resource(LeaderResource, "/movements/<movement_id>/leader/<leader_id>")
     api.add_resource(NewSignalResource, "/movements/<movement_id>/signal")
     api.add_resource(BioResource, "/bio")
-    api.add_resource(ChangePasswordResource, "/change_password")
-    api.add_resource(RequestPasswordResetResource, "/request_password_reset")
-    api.add_resource(ResetPasswordResource, "/reset_password")
+    api.add_resource(ChangePasswordResource, "/user/change_password")
+    api.add_resource(RequestPasswordResetResource, "/user/reset_password/request")
+    api.add_resource(ResetPasswordResource, "/user/reset_password/confirm")
 
 
 def add_cli_commands(app, db):

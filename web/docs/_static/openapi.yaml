@@ -118,7 +118,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/message'
-  /change_password:
+  /user/change_password:
     post:
       summary: Change the current user's password.
       responses:
@@ -136,7 +136,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/message'
-  /request_password_reset:
+  /user/reset_password/request:
     post:
       summary: >-
         Request an e-mail with password reset token to be sent
@@ -164,13 +164,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/message'
-        '500':
-          description: Could not send e-mail; API key not available.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/message'
-  /reset_password:
+  /user/reset_password/confirm:
     post:
       summary: >-
         Given a token from a password recovery e-mail and new password,

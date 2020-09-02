@@ -54,7 +54,7 @@ class ChangePasswordResource(Resource):
         if current_identity.verify_password(res["old_password"]):
             current_identity.hash_password(res["new_password"])
 
-            link = "https://app.gridt.org/request_password_reset"
+            link = "https://app.gridt.org/user/reset_password/request"
             subj = "Your password has been changed"
             body = f"Dear user, your password has been changed. Didn't do this? \
                 Secure your account by going to {link}."
@@ -81,7 +81,7 @@ class RequestPasswordResetResource(Resource):
             return ({"message": "Recovery e-mail successfully sent."}, 200)
 
         token = user.get_password_reset_token()
-        link = f"https://app.gridt.org/reset_password?token={token}"
+        link = f"https://app.gridt.org/user/reset_password/confirm?token={token}"
         subj = "Reset your password"
         body = f"Your password has been reset, please follow the following link: {link}"
         send_email(user.email, subj, body)
@@ -105,7 +105,7 @@ class ResetPasswordResource(Resource):
         user = User.query.get(user_id)
         user.hash_password(password)
 
-        link = "https://app.gridt.org/request_password_reset"
+        link = "https://app.gridt.org/user/reset_password/request"
         subj = "Your password has been changed"
         body = f"Dear user, your password has been changed. Didn't do this? \
             Secure your account by going to {link}."

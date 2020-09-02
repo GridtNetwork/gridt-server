@@ -42,8 +42,6 @@ class ResetPasswordSchema(Schema):
         try:
             token_decoded = jwt.decode(value, secret_key, algorithms=["HS256"])
         except jwt.ExpiredSignatureError:
-            msg = "Signature has expired."
-            raise ValidationError(msg)
+            raise ValidationError("Signature has expired.")
         except jwt.InvalidTokenError:
-            msg = "Invalid token."
-            raise ValidationError(msg)
+            raise ValidationError("Invalid token.")

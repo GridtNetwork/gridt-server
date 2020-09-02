@@ -39,7 +39,7 @@ class UserResourceTest(BaseTest):
             user = self.create_user()
 
             resp = self.request_as_user(
-                self.users[0], "POST", "/change_password", json={}
+                self.users[0], "POST", "/user/change_password", json={}
             )
 
             self.assertIn("message", resp.get_json())
@@ -48,7 +48,7 @@ class UserResourceTest(BaseTest):
             resp = self.request_as_user(
                 self.users[0],
                 "POST",
-                "/change_password",
+                "/user/change_password",
                 json={"old_password": self.users[0]["password"]},
             )
 
@@ -62,7 +62,7 @@ class UserResourceTest(BaseTest):
             resp = self.request_as_user(
                 self.users[0],
                 "POST",
-                "/change_password",
+                "/user/change_password",
                 json={
                     "old_password": "gibberish",
                     "new_password": "somethingyoullneverguess",
@@ -80,7 +80,7 @@ class UserResourceTest(BaseTest):
             resp = self.request_as_user(
                 self.users[0],
                 "POST",
-                "/change_password",
+                "/user/change_password",
                 json={
                     "old_password": self.users[0]["password"],
                     "new_password": "somethingyoullneverguess",
@@ -88,7 +88,7 @@ class UserResourceTest(BaseTest):
             )
 
             subj = "Your password has been changed"
-            link = "https://app.gridt.org/request_password_reset"
+            link = "https://app.gridt.org/user/reset_password/request"
             body = f"Dear user, your password has been changed. Didn't do this? \
                 Secure your account by going to {link}."
 
@@ -102,7 +102,7 @@ class UserResourceTest(BaseTest):
             email = "any@email.com"
             current_app.config["EMAIL_API_KEY"] = None
 
-            resp = self.client.post("/request_password_reset", json={"email": email},)
+            resp = self.client.post("/user/reset_password/request", json={"email": email},)
 
             self.assertIn("message", resp.get_json())
             self.assertEqual(resp.status_code, 500)
@@ -113,7 +113,7 @@ class UserResourceTest(BaseTest):
             # Make a request with nonexistent e-mail
             email = "nonexistent@email.com"
 
-            resp = self.client.post("/request_password_reset", json={"email": email},)
+            resp = self.client.post("/user/reset_password/request", json={"email": email},)
 
             # Test that email will not get sent
             func.assert_not_called()
@@ -131,11 +131,11 @@ class UserResourceTest(BaseTest):
             user = self.create_user()
 
             resp = self.client.post(
-                "/request_password_reset", json={"email": user.email},
+                "/user/reset_password/request", json={"email": user.email},
             )
 
             token = user.get_password_reset_token()
-            link = f"https://app.gridt.org/reset_password?token={token}"
+            link = f"https://app.gridt.org/user/reset_password/confirm?token={token}"
             subj = "Reset your password"
             body = f"Your password has been reset, please follow the following link: {link}"
 
@@ -150,10 +150,10 @@ class UserResourceTest(BaseTest):
             token = user.get_password_reset_token()
 
             resp = self.client.post(
-                "/reset_password", json={"token": token, "password": "testpass"}
+                "/user/reset_password/confirm", json={"token": token, "password": "testpass"}
             )
 
-        link = "https://app.gridt.org/request_password_reset"
+        link = "https://app.gridt.org/user/reset_password/request"
         subj = "Your password has been changed"
         body = f"Dear user, your password has been changed. Didn't do this? \
             Secure your account by going to {link}."
@@ -171,7 +171,7 @@ class UserResourceTest(BaseTest):
 
             with freeze_time("2020-04-19 00:10:01"):
                 resp = self.client.post(
-                    "/reset_password", json={"token": token, "password": "testpass"}
+                    "/user/reset_password/confirm", json={"token": token, "password": "testpass"}
                 )
 
                 self.assertIn("message", resp.get_json())
@@ -187,7 +187,7 @@ class UserResourceTest(BaseTest):
             )
 
             resp = self.client.post(
-                "/reset_password", json={"token": token, "password": "testpass"}
+                "/user/reset_password/confirm", json={"token": token, "password": "testpass"}
             )
 
             self.assertIn("message", resp.get_json())
