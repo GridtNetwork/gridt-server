@@ -72,7 +72,7 @@ class UserResourceTest(BaseTest):
             self.assertIn("message", resp.get_json())
             self.assertEqual(resp.status_code, 400)
 
-    @patch("gridt.resources.user.send_email", return_value=True)
+    @patch("util.email_templates.send_email", return_value=True)
     def test_change_password_with_correct_password(self, func):
         with self.app_context():
             user = self.create_user()
@@ -107,7 +107,7 @@ class UserResourceTest(BaseTest):
             self.assertIn("message", resp.get_json())
             self.assertEqual(resp.status_code, 500)
 
-    @patch("util.send_email", return_value=True)
+    @patch("util.email_templates.send_email", return_value=True)
     def test_send_password_reset_email_wrong(self, func):
         with self.app_context():
             # Make a request with nonexistent e-mail
@@ -124,7 +124,7 @@ class UserResourceTest(BaseTest):
             self.assertEqual(resp.status_code, 200)
 
     @freeze_time("2020-08-25 17:19:00")
-    @patch("gridt.resources.user.send_email", return_value=True)
+    @patch("util.email_templates.send_email", return_value=True)
     def test_send_password_reset_email_correct(self, func):
         # Request reset password, e-mail in database
         with self.app_context():
@@ -145,7 +145,7 @@ class UserResourceTest(BaseTest):
             self.assertIn("message", resp.get_json())
             self.assertEqual(resp.status_code, 200)
 
-    @patch("gridt.resources.user.send_email", return_value=True)
+    @patch("util.email_templates.send_email", return_value=True)
     def test_reset_password_token_correct(self, func):
         with self.app_context():
             user = self.create_user()

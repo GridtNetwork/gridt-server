@@ -16,7 +16,10 @@ from gridt.schemas import (
 
 from gridt.db import db
 import jwt
-from util.send_email import send_email
+from util.email_templates import (
+    send_password_reset_email,
+    send_password_change_notification,
+)
 
 
 class BioResource(Resource):
@@ -54,11 +57,7 @@ class ChangePasswordResource(Resource):
         if current_identity.verify_password(res["old_password"]):
             current_identity.hash_password(res["new_password"])
 
-            template_id = "d-2fedf57063ea4c3e923d6c6c2b96ac6b"
-            template_data = {
-                "link": "https://app.gridt.org/user/reset_password/request",
-            }
-            send_email(current_identity.email, template_id, template_data)
+            send_password_change_notification(current_identity.email)
             return ({"message": "Successfully changed password."}, 200)
 
 
@@ -81,12 +80,7 @@ class RequestPasswordResetResource(Resource):
             return ({"message": "Recovery e-mail successfully sent."}, 200)
 
         token = user.get_password_reset_token()
-
-        template_id = "d-e0c069f6bbfa424c840baf6baf403f37"
-        template_data = {
-            "link": f"https://app.gridt.org/user/reset_password/confirm?token={token}"
-        }
-        send_email(user.email, template_id, template_data)
+        send_password_reset_email(user.email, token)
         return ({"message": "Recovery e-mail successfully sent."}, 200)
 
 
@@ -108,9 +102,5 @@ class ResetPasswordResource(Resource):
         user = User.find_by_id(user_id)
         user.hash_password(password)
 
-        template_id = "d-2fedf57063ea4c3e923d6c6c2b96ac6b"
-        template_data = {
-            "link": "https://app.gridt.org/user/reset_password/request",
-        }
-        send_email(user.email, template_id, template_data)
+        send_password_change_notification(user.email)
         return ({"message": "Successfully changed password."}, 200)
