@@ -118,7 +118,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/message'
-  /change_password:
+  /user/change_password:
     post:
       summary: Change the current user's password.
       requestBody:
@@ -149,7 +149,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/message'
-  /change_email:
+  /user/change_email:
     post:
       summary: Change the current user's email.
       requestBody:

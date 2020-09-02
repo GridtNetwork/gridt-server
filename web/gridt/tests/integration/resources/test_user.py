@@ -33,7 +33,7 @@ class UserResourceTest(BaseTest):
             user = self.create_user()
 
             resp = self.request_as_user(
-                self.users[0], "POST", "/change_password", json={}
+                self.users[0], "POST", "/user/change_password", json={}
             )
 
             self.assertIn("message", resp.get_json())
@@ -42,7 +42,7 @@ class UserResourceTest(BaseTest):
             resp = self.request_as_user(
                 self.users[0],
                 "POST",
-                "/change_password",
+                "/user/change_password",
                 json={"old_password": self.users[0]["password"]},
             )
 
@@ -56,7 +56,7 @@ class UserResourceTest(BaseTest):
             resp = self.request_as_user(
                 self.users[0],
                 "POST",
-                "/change_password",
+                "/user/change_password",
                 json={
                     "old_password": "gibberish",
                     "new_password": "somethingyoullneverguess",
@@ -73,7 +73,7 @@ class UserResourceTest(BaseTest):
             resp = self.request_as_user(
                 self.users[0],
                 "POST",
-                "/change_password",
+                "/user/change_password",
                 json={
                     "old_password": self.users[0]["password"],
                     "new_password": "somethingyoullneverguess"
@@ -89,7 +89,7 @@ class UserResourceTest(BaseTest):
             user = self.create_user()
 
             resp = self.request_as_user(
-                self.users[0], "POST", "/change_email", json={}
+                self.users[0], "POST", "/user/change_email", json={}
             )
 
             self.assertIn("message", resp.get_json())
@@ -98,7 +98,7 @@ class UserResourceTest(BaseTest):
             resp = self.request_as_user(
                 self.users[0],
                 "POST",
-                "/change_email",
+                "/user/change_email",
                 json={"password": self.users[0]["password"]},
             )
 
@@ -112,7 +112,7 @@ class UserResourceTest(BaseTest):
             resp = self.request_as_user(
                 self.users[0], 
                 "POST", 
-                "/change_email", 
+                "/user/change_email", 
                 json={
                     "password": "gibberish",
                     "new_email": "example@test.com",
@@ -129,7 +129,7 @@ class UserResourceTest(BaseTest):
             resp = self.request_as_user(
                 self.users[0], 
                 "POST", 
-                "/change_email", 
+                "/user/change_email", 
                 json={
                     "password": self.users[0]["password"],
                     "new_email": "example@test.com",
@@ -147,7 +147,7 @@ class UserResourceTest(BaseTest):
             resp = self.request_as_user(
                 self.users[0],
                 "POST",
-                "/change_email",
+                "/user/change_email",
                 json={
                     "password": self.users[0]["password"],
                     "new_email": "bademail"
