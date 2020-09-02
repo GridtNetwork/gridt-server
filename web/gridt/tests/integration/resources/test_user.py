@@ -86,16 +86,16 @@ class UserResourceTest(BaseTest):
                     "new_password": "somethingyoullneverguess",
                 },
             )
-
-            subj = "Your password has been changed"
-            link = "https://app.gridt.org/user/reset_password/request"
-            body = f"Dear user, your password has been changed. Didn't do this? \
-                Secure your account by going to {link}."
+            
+            template_id = "d-2fedf57063ea4c3e923d6c6c2b96ac6b"
+            template_data = {
+                "link": "https://app.gridt.org/user/reset_password/request"
+            }
 
             self.assertIn("message", resp.get_json())
             self.assertEqual(resp.status_code, 200)
             self.assertTrue(user.verify_password("somethingyoullneverguess"))
-            func.assert_called_with(user.email, subj, body)
+            func.assert_called_with(user.email, template_id, template_data)
 
     def test_no_api_key(self):
         with self.app_context():
@@ -135,11 +135,13 @@ class UserResourceTest(BaseTest):
             )
 
             token = user.get_password_reset_token()
-            link = f"https://app.gridt.org/user/reset_password/confirm?token={token}"
-            subj = "Reset your password"
-            body = f"Your password has been reset, please follow the following link: {link}"
 
-            func.assert_called_with(user.email, subj, body)
+            template_id = "d-e0c069f6bbfa424c840baf6baf403f37"
+            template_data = {
+                "link": f"https://app.gridt.org/user/reset_password/confirm?token={token}"
+            }
+
+            func.assert_called_with(user.email, template_id, template_data)
             self.assertIn("message", resp.get_json())
             self.assertEqual(resp.status_code, 200)
 
@@ -153,15 +155,15 @@ class UserResourceTest(BaseTest):
                 "/user/reset_password/confirm", json={"token": token, "password": "testpass"}
             )
 
-        link = "https://app.gridt.org/user/reset_password/request"
-        subj = "Your password has been changed"
-        body = f"Dear user, your password has been changed. Didn't do this? \
-            Secure your account by going to {link}."
+        template_id = "d-2fedf57063ea4c3e923d6c6c2b96ac6b"
+        template_data = {
+            "link": "https://app.gridt.org/user/reset_password/request"
+        }
 
         self.assertIn("message", resp.get_json())
         self.assertEqual(resp.status_code, 200)
         self.assertTrue(user.verify_password("testpass"))
-        func.assert_called_with(user.email, subj, body)
+        func.assert_called_with(user.email, template_id, template_data)
 
     def test_reset_password_token_expired(self):
         with self.app_context():

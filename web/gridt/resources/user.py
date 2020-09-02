@@ -54,11 +54,11 @@ class ChangePasswordResource(Resource):
         if current_identity.verify_password(res["old_password"]):
             current_identity.hash_password(res["new_password"])
 
-            link = "https://app.gridt.org/user/reset_password/request"
-            subj = "Your password has been changed"
-            body = f"Dear user, your password has been changed. Didn't do this? \
-                Secure your account by going to {link}."
-            send_email(current_identity.email, subj, body)
+            template_id = "d-2fedf57063ea4c3e923d6c6c2b96ac6b"
+            template_data = {
+                "link": "https://app.gridt.org/user/reset_password/request",
+            }
+            send_email(current_identity.email, template_id, template_data)
             return ({"message": "Successfully changed password."}, 200)
 
 
@@ -81,10 +81,12 @@ class RequestPasswordResetResource(Resource):
             return ({"message": "Recovery e-mail successfully sent."}, 200)
 
         token = user.get_password_reset_token()
-        link = f"https://app.gridt.org/user/reset_password/confirm?token={token}"
-        subj = "Reset your password"
-        body = f"Your password has been reset, please follow the following link: {link}"
-        send_email(user.email, subj, body)
+
+        template_id = "d-e0c069f6bbfa424c840baf6baf403f37"
+        template_data = {
+            "link": f"https://app.gridt.org/user/reset_password/confirm?token={token}"
+        }
+        send_email(user.email, template_id, template_data)
         return ({"message": "Recovery e-mail successfully sent."}, 200)
 
 
@@ -102,14 +104,13 @@ class ResetPasswordResource(Resource):
         token_decoded = jwt.decode(res["token"], secret_key, algorithms=["HS256"])
         user_id = token_decoded["user_id"]
         password = res["password"]
-        user = User.query.get(user_id)
+
+        user = User.find_by_id(user_id)
         user.hash_password(password)
 
-        link = "https://app.gridt.org/user/reset_password/request"
-        subj = "Your password has been changed"
-        body = f"Dear user, your password has been changed. Didn't do this? \
-            Secure your account by going to {link}."
-        send_email(user.email, subj, body)
-
-        msg = "Password successfully changed."
-        return ({"message": msg}, 200)
+        template_id = "d-2fedf57063ea4c3e923d6c6c2b96ac6b"
+        template_data = {
+            "link": "https://app.gridt.org/user/reset_password/request",
+        }
+        send_email(user.email, template_id, template_data)
+        return ({"message": "Successfully changed password."}, 200)
