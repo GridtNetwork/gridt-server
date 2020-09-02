@@ -99,16 +99,7 @@ class ResetPasswordResource(Resource):
             field = list(error.messages.keys())[0]
             return ({"message": f"{field}: {error.messages[field][0]}"}, 400)
 
-        try:
-            token_decoded = jwt.decode(res["token"], secret_key, algorithms=["HS256"])
-        except jwt.ExpiredSignatureError:
-            msg = "Signature has expired."
-            return ({"message": msg}, 400)
-        except jwt.InvalidTokenError:
-            msg = "Invalid token."
-            return ({"message": msg}, 400)
         token_decoded = jwt.decode(res["token"], secret_key, algorithms=["HS256"])
-
         user_id = token_decoded["user_id"]
         password = res["password"]
         user = User.query.get(user_id)

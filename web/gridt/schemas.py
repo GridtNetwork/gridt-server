@@ -1,5 +1,7 @@
-from marshmallow import Schema, fields, validates_schema, ValidationError
+from marshmallow import Schema, fields, validates, validates_schema, ValidationError
 from marshmallow.validate import Length, OneOf, Equal
+from flask import current_app
+import jwt
 
 
 class BioSchema(Schema):
@@ -33,3 +35,15 @@ class RequestPasswordResetSchema(Schema):
 class ResetPasswordSchema(Schema):
     token = fields.Str(required=True)
     password = fields.Str(required=True)
+
+    @validates("token")
+    def validate_token(self, value):
+        secret_key = current_app.config["SECRET_KEY"]
+        try:
+            token_decoded = jwt.decode(value, secret_key, algorithms=["HS256"])
+        except jwt.ExpiredSignatureError:
+            msg = "Signature has expired."
+            raise ValidationError(msg)
+        except jwt.InvalidTokenError:
+            msg = "Invalid token."
+            raise ValidationError(msg)
