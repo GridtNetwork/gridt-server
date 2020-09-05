@@ -55,7 +55,7 @@ class ChangePasswordResource(Resource):
             return ({"message": "Failed to identify user with given password."}, 400)
 
         if current_identity.verify_password(res["old_password"]):
-            current_identity.hash_password(res["new_password"])
+            current_identity.hash_and_store_password(res["new_password"])
 
             send_password_change_notification(current_identity.email)
             return ({"message": "Successfully changed password."}, 200)
@@ -100,7 +100,7 @@ class ResetPasswordResource(Resource):
         password = res["password"]
 
         user = User.find_by_id(user_id)
-        user.hash_password(password)
+        user.hash_and_store_password(password)
 
         send_password_change_notification(user.email)
         return ({"message": "Successfully changed password."}, 200)

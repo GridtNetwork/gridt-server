@@ -68,7 +68,7 @@ class User(db.Model):
     def __init__(self, username, email, password, role="user", bio=""):
         self.username = username
         self.email = email
-        self.hash_password(password)
+        self.hash_and_store_password(password)
         self.role = role
         self.bio = bio
 
@@ -87,7 +87,7 @@ class User(db.Model):
     def find_by_id(cls, id):
         return cls.query.get(id)
 
-    def hash_password(self, password):
+    def hash_and_store_password(self, password):
         """
         Hash password and set it as the password_hash.
         :param str password: Password that is to be hashed.

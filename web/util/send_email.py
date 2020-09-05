@@ -11,10 +11,6 @@ def send_email(to_emails, template_id, template_data):
     msg.template_id = template_id
     msg.template_data = template_data
 
-    try:
-        sg = SendGridAPIClient(current_app.config["EMAIL_API_KEY"])
-        resp = sg.send(msg)
-        return resp.status_code, resp.body, resp.headers
-    except Exception as e:
-        if e.message:
-            return e.message
+    sg = SendGridAPIClient(current_app.config["EMAIL_API_KEY"])
+    resp = sg.send(msg)
+    return resp.status_code, resp.body, resp.headers
