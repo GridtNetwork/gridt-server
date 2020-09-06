@@ -52,8 +52,8 @@ class MovementsResource(Resource):
 class SubscriptionsResource(Resource):
     @jwt_required()
     def get(self):
-        movements = set(current_identity.movements)
-        movement_dicts = [movement.dictify(current_identity) for movement in movements]
+        current_movements = set(current_identity.current_movements)
+        movement_dicts = [movement.dictify(current_identity) for movement in current_movements]
         return movement_dicts, 200
 
 
