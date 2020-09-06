@@ -15,6 +15,7 @@ class IdentityResource(Resource):
             {
                 "id": current_identity.id,
                 "username": current_identity.username,
+                "email": current_identity.email,
                 "bio": current_identity.bio,
                 "avatar": current_identity.get_email_hash(),
             },
