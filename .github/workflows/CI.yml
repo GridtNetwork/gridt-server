@@ -26,8 +26,8 @@ jobs:
         pip install pipenv
         cd web
         pipenv install --dev
-        export prometheus_multiproc_dir=/tmp
     - name: Test with unittest
       run: |
         cd web
+        export prometheus_multiproc_dir=/tmp
         pipenv run python -m unittest
