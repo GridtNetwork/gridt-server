@@ -28,4 +28,5 @@ jobs:
         pipenv install --dev
     - name: Test with unittest
       run: |
+        cd web
         pipenv run python -m unittest
