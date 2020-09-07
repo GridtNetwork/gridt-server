@@ -505,3 +505,22 @@ class SubscriptionsResourceTest(BaseTest):
             data = json.loads(resp.data)
             self.maxDiff = None
             self.assertEqual(data, expected)
+
+    def test_unsubscribe_get_subscriptions(self):
+        with self.app_context():
+            self.create_movement()
+            self.create_user_in_movement(self.movements[0])
+
+            resp_delete = self.request_as_user(
+                self.users[0], "DELETE", "/movements/1/subscriber"
+            )
+
+            self.assertEqual(resp_delete.status_code, 200)
+
+            resp = self.request_as_user(
+                self.users[0], "GET", "/movements/subscriptions"
+            )
+            data = json.loads(resp.data)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertEqual(data, [])
