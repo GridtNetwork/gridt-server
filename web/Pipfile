@@ -23,6 +23,7 @@ cryptography = "*"
 sqlalchemy-utils = "*"
 sendgrid = "*"
 prometheus-flask-exporter = "*"
+sendgrid = "*"
 
 [requires]
 python_version = "3.8"

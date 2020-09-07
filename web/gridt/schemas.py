@@ -45,3 +45,8 @@ class ResetPasswordSchema(Schema):
             raise ValidationError("Signature has expired.")
         except jwt.InvalidTokenError:
             raise ValidationError("Invalid token.")
+
+            
+class ChangeEmailSchema(Schema):
+    password = fields.Str(required=True)
+    new_email = fields.Email(required=True)

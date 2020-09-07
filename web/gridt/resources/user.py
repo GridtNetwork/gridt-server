@@ -9,6 +9,7 @@ from passlib.apps import custom_app_context as pwd_context
 from gridt.models.user import User
 from gridt.schemas import (
     BioSchema,
+    ChangeEmailSchema
     ChangePasswordSchema,
     RequestPasswordResetSchema,
     ResetPasswordSchema,
@@ -61,16 +62,34 @@ class ChangePasswordResource(Resource):
             return ({"message": "Successfully changed password."}, 200)
 
 
-class RequestPasswordResetResource(Resource):
-    schema = RequestPasswordResetSchema()
+class ChangeEmailResource(Resource):
+    schema = ChangeEmailSchema()
 
+    @jwt_required()
     def post(self):
         try:
             res = self.schema.load(request.get_json())
         except ValidationError as error:
             field = list(error.messages.keys())[0]
             return ({"message": f"{field}: {error.messages[field][0]}"}, 400)
+        
+        if not current_identity.verify_password(res["password"]):
+            return ({"message": "Failed to identify user with given password."}, 400)
 
+        if current_identity.verify_password(res["password"]):
+            current_identity.email = res["new_email"]
+            return ({"message": "Successfully changed email."}, 200)
+
+
+class RequestPasswordResetResource(Resource):
+    schema = RequestPasswordResetSchema()
+    
+    def post(self):
+        try:
+            res = self.schema.load(request.get_json())
+        except ValidationError as error:
+            field = list(error.messages.keys())[0]
+            return ({"message": f"{field}: {error.messages[field][0]}"}, 400)
         if not current_app.config["EMAIL_API_KEY"]:
             return ({"message": "Could not send e-mail; API key not available."}, 500)
 

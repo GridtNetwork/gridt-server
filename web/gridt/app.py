@@ -29,6 +29,7 @@ from gridt.auth.security import authenticate, identify
 from gridt.resources.register import IdentityResource, RegisterResource
 from gridt.resources.user import (
     BioResource,
+    ChangeEmailResource
     ChangePasswordResource,
     RequestPasswordResetResource,
     ResetPasswordResource,
@@ -113,6 +114,7 @@ def register_api_endpoints(api):
     api.add_resource(ChangePasswordResource, "/user/change_password")
     api.add_resource(RequestPasswordResetResource, "/user/reset_password/request")
     api.add_resource(ResetPasswordResource, "/user/reset_password/confirm")
+    api.add_resource(ChangeEmailResource, "/user/change_email")
 
 
 def add_cli_commands(app, db):

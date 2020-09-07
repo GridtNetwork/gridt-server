@@ -1,6 +1,6 @@
 info:
   title: The Gridt Network API
-  version: "0.0.5"
+  version: "0.0.6"
   description: >-
     Interact with the gridt network via this API. It provides several endpoints
     for creating and subscribing (to) movements and switching leaders.
@@ -121,6 +121,19 @@ paths:
   /user/change_password:
     post:
       summary: Change the current user's password.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                old_password:
+                  type: string
+                  example: SuperSecretPassword
+                new_password:
+                  type: string
+                  example: NewSuperSecretPassword
       responses:
         '200':
           description: Successfully changed current user's password.
@@ -193,6 +206,7 @@ paths:
           description: >-
             Invalid token OR expired signature
             OR no token given OR no password given.
+
           content:
             application/json:
               schema:
