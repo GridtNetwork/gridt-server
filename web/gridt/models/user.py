@@ -6,6 +6,9 @@ from flask import current_app
 from passlib.apps import custom_app_context as pwd_context
 import hashlib
 
+import datetime
+import jwt
+
 from gridt.db import db
 
 from gridt.models.movement_user_association import MovementUserAssociation
@@ -65,7 +68,7 @@ class User(db.Model):
     def __init__(self, username, email, password, role="user", bio=""):
         self.username = username
         self.email = email
-        self.hash_password(password)
+        self.hash_and_store_password(password)
         self.role = role
         self.bio = bio
 
@@ -84,7 +87,7 @@ class User(db.Model):
     def find_by_id(cls, id):
         return cls.query.get(id)
 
-    def hash_password(self, password):
+    def hash_and_store_password(self, password):
         """
         Hash password and set it as the password_hash.
         :param str password: Password that is to be hashed.
@@ -99,6 +102,24 @@ class User(db.Model):
         h.update(bytes(self.email, "utf-8"))
         email_hash = h.hexdigest()
         return email_hash
+
+    def get_password_reset_token(self):
+        """
+        Make a dictionary containing the e-mail for password reset
+        + an expiration timestamp such that the token is valid for 2 hours
+        and encodes it into a JWT.
+        """
+        now = datetime.datetime.now()
+        valid = datetime.timedelta(hours=2)
+        exp = now + valid
+        exp = exp.timestamp()
+
+        secret_key = current_app.config["SECRET_KEY"]
+
+        token_dict = {"user_id": self.id, "exp": exp}
+
+        token = jwt.encode(token_dict, secret_key, algorithm="HS256").decode("utf-8")
+        return token
 
     def verify_password(self, password):
         """
@@ -123,8 +144,8 @@ class User(db.Model):
 
     def dictify(self):
         return {
-            "username": self.username,
             "id": self.id,
+            "username": self.username,
             "bio": self.bio,
             "avatar": self.get_email_hash(),
         }

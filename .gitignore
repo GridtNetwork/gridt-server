@@ -131,3 +131,4 @@ gridt.db
 .vscode/*
 data/certbot/*
 data/app/*
+sendgrid.env
