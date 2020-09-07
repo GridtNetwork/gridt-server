@@ -24,3 +24,7 @@ class MovementSchema(Schema):
 class ChangePasswordSchema(Schema):
     old_password = fields.Str(required=True)
     new_password = fields.Str(required=True)
+
+class ChangeEmailSchema(Schema):
+    password = fields.Str(required=True)
+    new_email = fields.Email(required=True)

@@ -1,6 +1,6 @@
 info:
   title: The Gridt Network API
-  version: "0.0.5"
+  version: "0.0.6"
   description: >-
     Interact with the gridt network via this API. It provides several endpoints
     for creating and subscribing (to) movements and switching leaders.
@@ -118,9 +118,22 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/message'
-  /change_password:
+  /user/change_password:
     post:
       summary: Change the current user's password.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                old_password:
+                  type: string
+                  example: SuperSecretPassword
+                new_password:
+                  type: string
+                  example: NewSuperSecretPassword
       responses:
         '200':
           description: Successfully changed current user's password.
@@ -132,6 +145,38 @@ paths:
           description: >-
             No old password given OR no new password given
             OR wrong old password given.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/message'
+  /user/change_email:
+    post:
+      summary: Change the current user's email.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+                  example: SuperSecretPassword
+                new_email:
+                  type: string
+                  example: robin@gridt.org
+      responses: 
+        '200':
+          description: Succesfully changed current user's email.
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/message'
+        '400':
+          description: >-
+            No password or new email given
+            OR wrong password given
+            OR email invalid
           content:
             application/json:
               schema:
