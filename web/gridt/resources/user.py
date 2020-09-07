@@ -9,7 +9,7 @@ from passlib.apps import custom_app_context as pwd_context
 from gridt.models.user import User
 from gridt.schemas import (
     BioSchema,
-    ChangeEmailSchema
+    ChangeEmailSchema,
     ChangePasswordSchema,
     RequestPasswordResetSchema,
     ResetPasswordSchema,
@@ -72,7 +72,7 @@ class ChangeEmailResource(Resource):
         except ValidationError as error:
             field = list(error.messages.keys())[0]
             return ({"message": f"{field}: {error.messages[field][0]}"}, 400)
-        
+
         if not current_identity.verify_password(res["password"]):
             return ({"message": "Failed to identify user with given password."}, 400)
 
@@ -83,7 +83,7 @@ class ChangeEmailResource(Resource):
 
 class RequestPasswordResetResource(Resource):
     schema = RequestPasswordResetSchema()
-    
+
     def post(self):
         try:
             res = self.schema.load(request.get_json())

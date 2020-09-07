@@ -29,7 +29,7 @@ from gridt.auth.security import authenticate, identify
 from gridt.resources.register import IdentityResource, RegisterResource
 from gridt.resources.user import (
     BioResource,
-    ChangeEmailResource
+    ChangeEmailResource,
     ChangePasswordResource,
     RequestPasswordResetResource,
     ResetPasswordResource,
