@@ -45,6 +45,7 @@ class MovementsResource(Resource):
             description=res.get("description"),
         )
         movement.save_to_db()
+        movement.add_user(current_identity)
 
         return {"message": "Successfully created movement."}, 201
 
@@ -53,7 +54,9 @@ class SubscriptionsResource(Resource):
     @jwt_required()
     def get(self):
         current_movements = set(current_identity.current_movements)
-        movement_dicts = [movement.dictify(current_identity) for movement in current_movements]
+        movement_dicts = [
+            movement.dictify(current_identity) for movement in current_movements
+        ]
         return movement_dicts, 200
 
 

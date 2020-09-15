@@ -200,12 +200,9 @@ class MovementsTest(BaseTest):
             )
             self.assertEqual(resp.status_code, 400)
 
-    def test_post_sucessful(self):
+    def test_post_successful(self):
         with self.app_context():
-            user = User("test1", "test@test.com", "pass")
-            user.save_to_db()
-
-            token = self.obtain_token("test@test.com", "pass")
+            user = self.create_user()
 
             movement_dict = {
                 "name": "movement",
@@ -213,10 +210,8 @@ class MovementsTest(BaseTest):
                 "interval": "daily",
             }
 
-            resp = self.client.post(
-                "/movements",
-                headers={"Authorization": f"JWT {token}"},
-                json=movement_dict,
+            resp = self.request_as_user(
+                self.users[0], "POST", "/movements", json=movement_dict,
             )
 
             self.assertEqual(
@@ -228,6 +223,8 @@ class MovementsTest(BaseTest):
             self.assertIsNotNone(movement)
             self.assertEqual(movement.interval, "daily")
             self.assertEqual(movement.short_description, "Hi, hello this is a test")
+            self.assertEqual(len(movement.current_users), 1)
+            self.assertEqual(movement.current_users[0], user)
 
     def test_single_movement_by_name(self):
         with self.app_context():
