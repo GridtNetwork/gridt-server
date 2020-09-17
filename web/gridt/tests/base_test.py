@@ -116,7 +116,7 @@ class BaseTest(LoggedTestCase):
         return user
 
     def create_movement(self):
-        name = lorem.sentence().split()[0]
+        name = lorem.sentence()[:20]
         movement = Movement(
             name,
             random.choice(["daily", "twice daily", "weekly"]),
