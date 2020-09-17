@@ -105,9 +105,11 @@ class User(db.Model):
 
     def get_password_reset_token(self):
         """
-        Make a dictionary containing the e-mail for password reset
+        Make a dictionary containing the id for password reset
         + an expiration timestamp such that the token is valid for 2 hours
         and encodes it into a JWT.
+
+        :param str token: the JWT that is used to verify the password reset.
         """
         now = datetime.datetime.now()
         valid = datetime.timedelta(hours=2)
@@ -120,6 +122,27 @@ class User(db.Model):
 
         token = jwt.encode(token_dict, secret_key, algorithm="HS256").decode("utf-8")
         return token
+    
+    def get_email_change_token(self, new_email):
+        """
+        Make a dictionary containing the user's id, new email 
+        + an expiration timestamp such that the token is valid for 2 hours
+        and encodes it into a JWT.
+
+        :param str token: the JWT that is used to verify the e-mail change.
+        """
+        now = datetime.datetime.now()
+        valid = datetime.timedelta(hours=2)
+        exp = now + valid
+        exp = exp.timestamp()
+
+        secret_key = current_app.config["SECRET_KEY"]
+
+        token_dict = {"user_id": self.id, "new_email": new_email, "exp": exp}
+
+        token = jwt.encode(token_dict, secret_key, algorithm="HS256").decode("utf-8")
+        return token
+
 
     def verify_password(self, password):
         """

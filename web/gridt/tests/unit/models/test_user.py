@@ -48,3 +48,17 @@ class UserTest(BaseTest):
                     ),
                     {"user_id": user.id, "exp": 1587255000.0},
                 )
+
+    def test_get_email_reset_token(self):
+        with self.app_context():
+            user = self.create_user()
+            new_email = "new@email.com"
+            with freeze_time("2020-04-18 22:10:00"):
+                self.assertEqual(
+                    jwt.decode(
+                        user.get_email_change_token(new_email),
+                        current_app.config["SECRET_KEY"],
+                        algorithms=["HS256"],
+                    ),
+                    {"user_id": user.id, "new_email": new_email, "exp": 1587255000.0}
+                )
