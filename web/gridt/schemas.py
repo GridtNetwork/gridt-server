@@ -4,6 +4,7 @@ from flask import current_app
 import jwt
 
 from gridt.models.movement import Movement
+from gridt.models.user import User
 
 
 class BioSchema(Schema):
@@ -12,9 +13,22 @@ class BioSchema(Schema):
 
 class NewUserSchema(Schema):
     username = fields.Str(required=True, validate=Length(max=32))
-    email = fields.Str(required=True, validate=Length(max=40))
+    email = fields.Email(required=True, validate=Length(max=40))
     password = fields.Str(required=True, validate=Length(max=32))
 
+    @validates("username")
+    def validate_username(self, value):
+        if User.find_by_name(value):
+            raise ValidationError("Could not create user, because username is already in use.")
+    
+    @validates("email")
+    def validate_email(self, value):
+        if User.find_by_email(value):
+            # Cannot give malicious users information on the
+            # e-mail addresses in our database.
+            # Otherwise we should find a way to block malicious 
+            # attempts at creating accounts.
+            raise ValidationError("Could not create user.")
 
 class MovementSchema(Schema):
     name = fields.Str(required=True, validate=Length(min=4, max=50))

@@ -5,6 +5,55 @@ from gridt.schemas import MovementSchema, NewUserSchema
 
 
 class SchemasTest(BaseTest):
+    def test_register_schema_proper(self):
+        with self.app_context():
+            proper_new_user = {
+                "username": "New user"
+                "email": "test@test.com"
+                "password": "SuperSecretPassword"
+            }
+
+            # Make sure no error is thrown with this info
+            schema = NewUserSchema()
+            res = schema.load(proper_new_user)
+            self.assertEqual(res, proper_new_user)
+
+    def test_register_schema_missing(self):
+        with self.app_context():
+            bad_user = {}
+
+            schema = NewUserSchema()
+            with self.assertRaises(ValidationError) as error:
+                res = schema.load(bad_user)
+            self.assertEqual(
+                error.exception.messages,
+                {
+                    "username": ["Missing data for required field."],
+                    "email": ["Missing data for required field."],
+                    "password": ["Missing data for required field."],
+                },
+            )
+    
+    def test_register_schema_existing(self):
+        with self.app_context():
+            user = self.create_user()
+            bad_user = {
+                "username": self.users[0]["username"],
+                "email": self.users[0]["email"],
+                "password": "SuperSecretPassword"
+            }
+
+            schema = NewUserSchema()
+            with self.assertRaises(ValidationError) as error:
+                res = schema.load(bad_user)
+            self.assertEqual(
+                error.exception.messages,
+                {
+                    "username": ["Could not create user, because username is already in use."],
+                    "email": ["Could not create user."],
+                },
+            )
+
     def test_movement_schema_long(self):
         with self.app_context():
             proper_movement = {
