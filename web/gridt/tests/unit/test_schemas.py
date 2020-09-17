@@ -8,9 +8,9 @@ class SchemasTest(BaseTest):
     def test_register_schema_proper(self):
         with self.app_context():
             proper_new_user = {
-                "username": "New user"
-                "email": "test@test.com"
-                "password": "SuperSecretPassword"
+                "username": "New user",
+                "email": "test@test.com",
+                "password": "SuperSecretPassword",
             }
 
             # Make sure no error is thrown with this info
