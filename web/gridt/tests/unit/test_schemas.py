@@ -30,18 +30,26 @@ class SchemasTest(BaseTest):
             # Make sure no error is thrown with this info
             schema = MovementSchema()
             res = schema.load(proper_movement)
-            self.assertEqual(res["name"], "flossing")
+            self.assertEqual(res, proper_movement)
 
-    def test_movement_schema_bad_interval(self):
+    def test_movement_schema_missing_data(self):
+        """
+        Check that a movement following a bad schema will give an error
+        if one of the required fields is missing.
+        """
         with self.app_context():
-            bad_movement = {"name": "flossing", "interval": "daily"}
+            bad_movement = {}
 
             schema = MovementSchema()
             with self.assertRaises(ValidationError) as error:
                 schema.load(bad_movement)
             self.assertEqual(
                 error.exception.messages,
-                {"short_description": ["Missing data for required field."],},
+                {
+                    "name": ["Missing data for required field."],
+                    "short_description": ["Missing data for required field."],
+                    "interval": ["Missing data for required field."],
+                },
             )
 
     def test_movement_schema_lengths(self):
