@@ -21,7 +21,7 @@ def send_email_change_email(email, username, token):
     template_id = current_app.config["EMAIL_CHANGE_TEMPLATE"]
     template_data = {
         "username": username,
-        "link": f"https://app.gridt.org/user/change_password/confirm?token={token}"
+        "link": f"https://app.gridt.org/user/change_email/confirm?token={token}"
     }
 
     send_email(email, template_id, template_data)
