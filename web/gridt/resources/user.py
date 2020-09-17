@@ -10,6 +10,7 @@ from gridt.models.user import User
 from gridt.schemas import (
     BioSchema,
     ChangeEmailSchema,
+    RequestEmailChangeSchema,
     ChangePasswordSchema,
     RequestPasswordResetSchema,
     ResetPasswordSchema,
@@ -20,6 +21,8 @@ import jwt
 from util.email_templates import (
     send_password_reset_email,
     send_password_change_notification,
+    send_email_change_email,
+    send_email_change_notification,
 )
 
 
@@ -62,8 +65,8 @@ class ChangePasswordResource(Resource):
             return ({"message": "Successfully changed password."}, 200)
 
 
-class ChangeEmailResource(Resource):
-    schema = ChangeEmailSchema()
+class RequestEmailChangeResource(Resource):
+    schema = RequestEmailChangeSchema()
 
     @jwt_required()
     def post(self):
@@ -75,10 +78,39 @@ class ChangeEmailResource(Resource):
 
         if not current_identity.verify_password(res["password"]):
             return ({"message": "Failed to identify user with given password."}, 400)
+        
+        new_email = res["new_email"]
+        if User.find_by_email(new_email):
+            # We cannot give a malicious user information about the e-mails in
+            # our database.
+            return ({"message": "Successfully sent verification e-mail. Check your inbox."}, 200)
 
         if current_identity.verify_password(res["password"]):
-            current_identity.email = res["new_email"]
-            return ({"message": "Successfully changed email."}, 200)
+            token = current_identity.get_email_change_token(new_email)
+            send_email_change_email(new_email, current_identity.username, token)
+            return ({"message": "Successfully sent verification e-mail. Check your inbox."}, 200)
+
+
+class ChangeEmailResource(Resource):
+    schema = ChangeEmailSchema()
+
+    def post(self):
+        try:
+            res = self.schema.load(request.get_json())
+        except ValidationError as error:
+            field = list(error.messages.keys())[0]
+            return ({"message": f"{field}: {error.messages[field][0]}"}, 400)
+
+        secret_key = current_app.config["SECRET_KEY"]
+        token_decoded = jwt.decode(res["token"], secret_key, algorithms=["HS256"])
+        user_id = token_decoded["user_id"]
+        new_email = token_decoded["new_email"]
+
+        user = User.find_by_id(user_id)
+        user.email = new_email
+
+        send_email_change_notification(user.email, user.username)
+        return ({"message": "Successfully changed e-mail."}, 200)
 
 
 class RequestPasswordResetResource(Resource):
