@@ -60,5 +60,5 @@ class UserTest(BaseTest):
                         current_app.config["SECRET_KEY"],
                         algorithms=["HS256"],
                     ),
-                    {"user_id": user.id, "new_email": new_email, "exp": 1587255000.0}
+                    {"user_id": user.id, "new_email": new_email, "exp": 1587255000.0},
                 )

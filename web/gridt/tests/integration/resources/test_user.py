@@ -86,7 +86,7 @@ class UserResourceTest(BaseTest):
                     "new_password": "somethingyoullneverguess",
                 },
             )
-            
+
             template_id = current_app.config["PASSWORD_CHANGE_NOTIFICATION_TEMPLATE"]
             template_data = {
                 "link": "https://app.gridt.org/user/reset_password/request"
@@ -102,7 +102,9 @@ class UserResourceTest(BaseTest):
             email = "any@email.com"
             current_app.config["EMAIL_API_KEY"] = None
 
-            resp = self.client.post("/user/reset_password/request", json={"email": email},)
+            resp = self.client.post(
+                "/user/reset_password/request", json={"email": email},
+            )
 
             self.assertIn("message", resp.get_json())
             self.assertEqual(resp.status_code, 500)
@@ -113,7 +115,9 @@ class UserResourceTest(BaseTest):
             # Make a request with nonexistent e-mail
             email = "nonexistent@email.com"
 
-            resp = self.client.post("/user/reset_password/request", json={"email": email},)
+            resp = self.client.post(
+                "/user/reset_password/request", json={"email": email},
+            )
 
             # Test that email will not get sent
             func.assert_not_called()
@@ -152,7 +156,8 @@ class UserResourceTest(BaseTest):
             token = user.get_password_reset_token()
 
             resp = self.client.post(
-                "/user/reset_password/confirm", json={"token": token, "password": "testpass"}
+                "/user/reset_password/confirm",
+                json={"token": token, "password": "testpass"},
             )
 
             template_id = current_app.config["PASSWORD_CHANGE_NOTIFICATION_TEMPLATE"]
@@ -173,12 +178,13 @@ class UserResourceTest(BaseTest):
 
             with freeze_time("2020-04-19 00:10:01"):
                 resp = self.client.post(
-                    "/user/reset_password/confirm", json={"token": token, "password": "testpass"}
+                    "/user/reset_password/confirm",
+                    json={"token": token, "password": "testpass"},
                 )
 
                 self.assertIn("message", resp.get_json())
                 self.assertEqual(resp.status_code, 400)
-            
+
     def test_reset_password_token_expired(self):
         with self.app_context():
             user = self.create_user()
@@ -187,7 +193,8 @@ class UserResourceTest(BaseTest):
 
             with freeze_time("2020-04-19 00:10:01"):
                 resp = self.client.post(
-                    "/user/reset_password/confirm", json={"token": token, "password": "testpass"}
+                    "/user/reset_password/confirm",
+                    json={"token": token, "password": "testpass"},
                 )
 
                 self.assertIn("message", resp.get_json())
@@ -203,7 +210,8 @@ class UserResourceTest(BaseTest):
             )
 
             resp = self.client.post(
-                "/user/reset_password/confirm", json={"token": token, "password": "testpass"}
+                "/user/reset_password/confirm",
+                json={"token": token, "password": "testpass"},
             )
 
             self.assertIn("message", resp.get_json())
@@ -214,13 +222,10 @@ class UserResourceTest(BaseTest):
             user = self.create_user()
 
             resp = self.request_as_user(
-                self.users[0], 
-                "POST", 
-                "/user/change_email/request", 
-                json={
-                    "password": "gibberish",
-                    "new_email": "example@test.com",
-                }
+                self.users[0],
+                "POST",
+                "/user/change_email/request",
+                json={"password": "gibberish", "new_email": "example@test.com",},
             )
 
             self.assertIn("message", resp.get_json())
@@ -233,16 +238,13 @@ class UserResourceTest(BaseTest):
             resp = self.request_as_user(
                 self.users[0],
                 "POST",
-                "/user/change_email/request", 
-                json={
-                    "password": self.users[0]["password"],
-                    "new_email": "bademail"
-                }
+                "/user/change_email/request",
+                json={"password": self.users[0]["password"], "new_email": "bademail"},
             )
 
             self.assertIn("message", resp.get_json())
             self.assertEqual(resp.status_code, 400)
-    
+
     @patch("util.email_templates.send_email", return_value=True)
     def test_request_email_change_existing_email(self, func):
         with self.app_context():
@@ -255,14 +257,14 @@ class UserResourceTest(BaseTest):
                 "/user/change_email/request",
                 json={
                     "password": self.users[0]["password"],
-                    "new_email": self.users[1]["email"]
-                }
+                    "new_email": self.users[1]["email"],
+                },
             )
 
             self.assertIn("message", resp.get_json())
             self.assertEqual(resp.status_code, 200)
             func.assert_not_called()
-    
+
     @patch("util.email_templates.send_email", return_value=True)
     def test_request_email_change_correct(self, func):
         with self.app_context():
@@ -272,10 +274,10 @@ class UserResourceTest(BaseTest):
                 resp = self.request_as_user(
                     self.users[0],
                     "POST",
-                    "/user/change_email/request", 
+                    "/user/change_email/request",
                     json={
                         "password": self.users[0]["password"],
-                        "new_email": new_email
+                        "new_email": new_email,
                     },
                 )
 
@@ -284,7 +286,7 @@ class UserResourceTest(BaseTest):
                 template_id = current_app.config["EMAIL_CHANGE_TEMPLATE"]
                 template_data = {
                     "username": user.username,
-                    "link": f"https://app.gridt.org/user/change_email/confirm?token={token}"
+                    "link": f"https://app.gridt.org/user/change_email/confirm?token={token}",
                 }
 
                 func.assert_called_with(new_email, template_id, template_data)
@@ -298,14 +300,10 @@ class UserResourceTest(BaseTest):
             new_email = "new@email.com"
             token = user.get_email_change_token(new_email)
 
-            resp = self.client.post(
-                "/user/change_email/confirm", json={"token": token}
-            )
+            resp = self.client.post("/user/change_email/confirm", json={"token": token})
 
             template_id = current_app.config["EMAIL_CHANGE_NOTIFICATION_TEMPLATE"]
-            template_data = {
-                "username": user.username
-            }
+            template_data = {"username": user.username}
 
             self.assertIn("message", resp.get_json())
             self.assertEqual(resp.status_code, 200)
@@ -336,9 +334,7 @@ class UserResourceTest(BaseTest):
                 "2qdnq1_YJS9tgKVlIVpBbaAanyxQnCyVmV6s7QcOuBo"
             )
 
-            resp = self.client.post(
-                "/user/change_email/confirm", json={"token": token}
-            )
+            resp = self.client.post("/user/change_email/confirm", json={"token": token})
 
             self.assertIn("message", resp.get_json())
             self.assertEqual(resp.status_code, 400)

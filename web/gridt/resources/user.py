@@ -78,17 +78,23 @@ class RequestEmailChangeResource(Resource):
 
         if not current_identity.verify_password(res["password"]):
             return ({"message": "Failed to identify user with given password."}, 400)
-        
+
         new_email = res["new_email"]
         if User.find_by_email(new_email):
             # We cannot give a malicious user information about the e-mails in
             # our database.
-            return ({"message": "Successfully sent verification e-mail. Check your inbox."}, 200)
+            return (
+                {"message": "Successfully sent verification e-mail. Check your inbox."},
+                200,
+            )
 
         if current_identity.verify_password(res["password"]):
             token = current_identity.get_email_change_token(new_email)
             send_email_change_email(new_email, current_identity.username, token)
-            return ({"message": "Successfully sent verification e-mail. Check your inbox."}, 200)
+            return (
+                {"message": "Successfully sent verification e-mail. Check your inbox."},
+                200,
+            )
 
 
 class ChangeEmailResource(Resource):
