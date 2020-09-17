@@ -3,6 +3,8 @@ from marshmallow.validate import Length, OneOf, Equal
 from flask import current_app
 import jwt
 
+from gridt.models.movement import Movement
+
 
 class BioSchema(Schema):
     bio = fields.Str(required=True)
@@ -21,6 +23,11 @@ class MovementSchema(Schema):
     interval = fields.Str(
         required=True, validate=OneOf(["daily", "twice daily", "weekly"])
     )
+
+    @validates("name")
+    def validate_name(self, value):
+        if Movement.find_by_name(value):
+            raise ValidationError("Could not create movement, because movement name is already in use.")
 
 
 class ChangePasswordSchema(Schema):
