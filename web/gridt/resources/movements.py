@@ -29,15 +29,6 @@ class MovementsResource(Resource):
             field = list(error.messages.keys())[0]
             return {"message": f"{field}: {error.messages[field][0]}"}, 400
 
-        existing_movement = Movement.find_by_name(res["name"])
-        if existing_movement:
-            return (
-                {
-                    "message": "Could not create movement, because movement name is already in use."
-                },
-                400,
-            )
-
         movement = Movement(
             res["name"],
             res["interval"],
