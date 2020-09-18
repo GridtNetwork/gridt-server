@@ -1,7 +1,11 @@
 from marshmallow import ValidationError
 
 from gridt.tests.base_test import BaseTest
-from gridt.schemas import MovementSchema, NewUserSchema
+from gridt.schemas import (
+    MovementSchema, 
+    NewUserSchema,
+    RequestEmailChangeSchema,
+)
 
 
 class SchemasTest(BaseTest):
@@ -59,3 +63,22 @@ class SchemasTest(BaseTest):
                 "name": ["Length must be between 4 and 50."],
             },
         )
+
+    def test_request_email_change_schema_invalid(self):
+        with self.app_context():
+            user = self.create_user()
+            bad_request = {
+                "password": "bad_password",
+                "new_email": "bad_email",
+            }
+            schema = RequestEmailChangeSchema()
+            with self.assertRaises(ValidationError) as error:
+                schema.load(bad_request)
+
+            self.assertEqual(
+                error.exception.messages,
+                {
+                    "password": ["Failed to identify user with given password."],
+                    "new_email": ["Not a valid e-mail address."],
+                },
+            )

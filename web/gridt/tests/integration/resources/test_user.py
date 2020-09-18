@@ -217,34 +217,6 @@ class UserResourceTest(BaseTest):
             self.assertIn("message", resp.get_json())
             self.assertEqual(resp.status_code, 400)
 
-    def test_request_email_change_wrong_password(self):
-        with self.app_context():
-            user = self.create_user()
-
-            resp = self.request_as_user(
-                self.users[0],
-                "POST",
-                "/user/change_email/request",
-                json={"password": "gibberish", "new_email": "example@test.com",},
-            )
-
-            self.assertIn("message", resp.get_json())
-            self.assertEqual(resp.status_code, 400)
-
-    def test_request_email_change_invalid_email(self):
-        with self.app_context():
-            user = self.create_user()
-
-            resp = self.request_as_user(
-                self.users[0],
-                "POST",
-                "/user/change_email/request",
-                json={"password": self.users[0]["password"], "new_email": "bademail"},
-            )
-
-            self.assertIn("message", resp.get_json())
-            self.assertEqual(resp.status_code, 400)
-
     @patch("util.email_templates.send_email", return_value=True)
     def test_request_email_change_existing_email(self, func):
         with self.app_context():

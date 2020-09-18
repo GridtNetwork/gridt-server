@@ -1,7 +1,10 @@
 from marshmallow import Schema, fields, validates, validates_schema, ValidationError
 from marshmallow.validate import Length, OneOf, Equal
 from flask import current_app
+from flask_jwt import current_identity
 import jwt
+
+from gridt.models.user import User
 
 
 class BioSchema(Schema):
@@ -50,6 +53,11 @@ class ResetPasswordSchema(Schema):
 class RequestEmailChangeSchema(Schema):
     password = fields.Str(required=True)
     new_email = fields.Email(required=True)
+
+    @validates("password")
+    def validate_password(self, value):
+        if not current_identity.verify_password(value):
+            raise ValidationError("Failed to identify user with given password.")
 
 
 class ChangeEmailSchema(Schema):
