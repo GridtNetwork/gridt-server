@@ -213,9 +213,9 @@ paths:
   /user/change_email/request:
     post:
       summary: >-
-        Given the current identity's password and a new e-mail,
-        an e-mail change token is generated and sent to the new e-mail
-        address for verification.
+        Given the password of the user that is currently logged in and a new e-mail,
+        an e-mail change token is generated and sent to the new e-mail address 
+        for verification.
       requestBody:
         required: true
         content:
