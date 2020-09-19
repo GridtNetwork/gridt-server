@@ -245,7 +245,7 @@ class UserResourceTest(BaseTest):
                 self.assertIn("message", resp.get_json())
                 self.assertEqual(resp.status_code, 200)
 
-    def test_request_email_change_bad_password(self, func):
+    def test_request_email_change_bad_password(self):
         with self.app_context():
             user = self.create_user()
             new_email = "new@email.com"
@@ -297,7 +297,7 @@ class UserResourceTest(BaseTest):
             self.assertEqual(user.email, "new@email.com")
             func.assert_called_with(user.email, template_id, template_data)
 
-    def test_change_email_bad_schema(self, func):
+    def test_change_email_bad_schema(self):
         with self.app_context():
             user = self.create_user()
             new_email = "new@email.com"

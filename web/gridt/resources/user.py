@@ -70,7 +70,7 @@ class RequestEmailChangeResource(Resource):
 
     @jwt_required()
     def post(self):
-        schema.context = {"user": current_identity}
+        self.schema.context = {"user": current_identity}
         try:
             res = self.schema.load(request.get_json())
         except ValidationError as error:
