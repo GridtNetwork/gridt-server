@@ -2,10 +2,14 @@ from marshmallow import ValidationError
 
 from gridt.tests.base_test import BaseTest
 from gridt.schemas import (
-    MovementSchema, 
+    MovementSchema,
     NewUserSchema,
     RequestEmailChangeSchema,
+    ChangeEmailSchema,
 )
+
+from freezegun import freeze_time
+from gridt.models.user import User
 
 
 class SchemasTest(BaseTest):
@@ -72,6 +76,7 @@ class SchemasTest(BaseTest):
                 "new_email": "bad_email",
             }
             schema = RequestEmailChangeSchema()
+            schema.context = {"user": user}
             with self.assertRaises(ValidationError) as error:
                 schema.load(bad_request)
 
@@ -79,6 +84,63 @@ class SchemasTest(BaseTest):
                 error.exception.messages,
                 {
                     "password": ["Failed to identify user with given password."],
-                    "new_email": ["Not a valid e-mail address."],
+                    "new_email": ["Not a valid email address."],
                 },
             )
+
+    def test_request_email_change_schema_correct(self):
+        with self.app_context():
+            user = self.create_user()
+            proper_request = {
+                "password": self.users[0]["password"],
+                "new_email": "proper@email.com",
+            }
+            schema = RequestEmailChangeSchema()
+            schema.context = {"user": user}
+
+            # Make sure no error is thrown with this info
+            res = schema.load(proper_request)
+            self.assertEqual(res, proper_request)
+
+    def test_change_email_schema_token_expired(self):
+        with self.app_context():
+            user = self.create_user()
+            new_email = "new@email.com"
+            with freeze_time("2020-04-18 22:10:00"):
+                token = user.get_email_change_token(new_email)
+            with freeze_time("2020-04-19 00:10:01"):
+                bad_request = {"token": token}
+
+                schema = ChangeEmailSchema()
+                with self.assertRaises(ValidationError) as error:
+                    schema.load(bad_request)
+
+                self.assertEqual(
+                    error.exception.messages, {"token": ["Signature has expired."]}
+                )
+
+    def test_change_email_schema_token_invalid(self):
+        with self.app_context():
+            bad_request = {
+                "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9."
+                "eyJpZCI6MSwiZXhwIjoxNTg3MzM0MjAwfW."
+                "2qdnq1_YJS9tgKVlIVpBbaAanyxQnCyVmV6s7QcOuBo",
+            }
+
+            schema = ChangeEmailSchema()
+            with self.assertRaises(ValidationError) as error:
+                schema.load(bad_request)
+
+            self.assertEqual(error.exception.messages, {"token": ["Invalid token."]})
+
+    def test_change_email_schema_correct(self):
+        with self.app_context():
+            user = self.create_user()
+            new_email = "new@email.com"
+            token = user.get_email_change_token(new_email)
+            proper_request = {"token": token}
+
+            # Make sure no error is thrown with this info
+            schema = ChangeEmailSchema()
+            res = schema.load(proper_request)
+            self.assertEqual(res, proper_request)

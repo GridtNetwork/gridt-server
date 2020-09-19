@@ -218,26 +218,6 @@ class UserResourceTest(BaseTest):
             self.assertEqual(resp.status_code, 400)
 
     @patch("util.email_templates.send_email", return_value=True)
-    def test_request_email_change_existing_email(self, func):
-        with self.app_context():
-            user1 = self.create_user()
-            user2 = self.create_user()
-
-            resp = self.request_as_user(
-                self.users[0],
-                "POST",
-                "/user/change_email/request",
-                json={
-                    "password": self.users[0]["password"],
-                    "new_email": self.users[1]["email"],
-                },
-            )
-
-            self.assertIn("message", resp.get_json())
-            self.assertEqual(resp.status_code, 200)
-            func.assert_not_called()
-
-    @patch("util.email_templates.send_email", return_value=True)
     def test_request_email_change_correct(self, func):
         with self.app_context():
             user = self.create_user()
@@ -265,8 +245,43 @@ class UserResourceTest(BaseTest):
                 self.assertIn("message", resp.get_json())
                 self.assertEqual(resp.status_code, 200)
 
+    def test_request_email_change_bad_password(self, func):
+        with self.app_context():
+            user = self.create_user()
+            new_email = "new@email.com"
+
+            resp = self.request_as_user(
+                self.users[0],
+                "POST",
+                "/user/change_email/request",
+                json={"password": "gibberish", "new_email": new_email,},
+            )
+
+            self.assertIn("message", resp.get_json())
+            self.assertEqual(resp.status_code, 400)
+
     @patch("util.email_templates.send_email", return_value=True)
-    def test_change_email_token_correct(self, func):
+    def test_request_email_change_existing_email(self, func):
+        with self.app_context():
+            user1 = self.create_user()
+            user2 = self.create_user()
+
+            resp = self.request_as_user(
+                self.users[0],
+                "POST",
+                "/user/change_email/request",
+                json={
+                    "password": self.users[0]["password"],
+                    "new_email": self.users[1]["email"],
+                },
+            )
+
+            self.assertIn("message", resp.get_json())
+            self.assertEqual(resp.status_code, 200)
+            func.assert_not_called()
+
+    @patch("util.email_templates.send_email", return_value=True)
+    def test_change_email_proper_schema(self, func):
         with self.app_context():
             user = self.create_user()
             new_email = "new@email.com"
@@ -282,31 +297,12 @@ class UserResourceTest(BaseTest):
             self.assertEqual(user.email, "new@email.com")
             func.assert_called_with(user.email, template_id, template_data)
 
-    def test_change_email_token_expired(self):
+    def test_change_email_bad_schema(self, func):
         with self.app_context():
             user = self.create_user()
             new_email = "new@email.com"
-            with freeze_time("2020-04-18 22:10:00"):
-                token = user.get_email_change_token(new_email)
 
-            with freeze_time("2020-04-19 00:10:01"):
-                resp = self.client.post(
-                    "/user/change_email/confirm", json={"token": token}
-                )
-
-                self.assertIn("message", resp.get_json())
-                self.assertEqual(resp.status_code, 400)
-
-    def test_change_email_token_tampered(self):
-        with self.app_context():
-            user = self.create_user()
-            token = (
-                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9."
-                "eyJpZCI6MSwiZXhwIjoxNTg3MzM0MjAwfW."
-                "2qdnq1_YJS9tgKVlIVpBbaAanyxQnCyVmV6s7QcOuBo"
-            )
-
-            resp = self.client.post("/user/change_email/confirm", json={"token": token})
+            resp = self.client.post("/user/change_email/confirm", json={})
 
             self.assertIn("message", resp.get_json())
             self.assertEqual(resp.status_code, 400)
