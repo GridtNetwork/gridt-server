@@ -44,10 +44,11 @@ class SchemasTest(BaseTest):
         schema = MovementSchema()
         with self.assertRaises(ValidationError) as error:
             schema.load(bad_movement)
-        self.assertEqual(
-            error.exception.messages,
-            {"short_description": ["Missing data for required field."],},
-        )
+
+            self.assertEqual(
+                error.exception.messages,
+                {"short_description": ["Missing data for required field."],},
+            )
 
     def test_movement_schema_lengths(self):
         bad_movement = {
@@ -60,13 +61,13 @@ class SchemasTest(BaseTest):
         with self.assertRaises(ValidationError) as error:
             schema.load(bad_movement)
 
-        self.assertEqual(
-            error.exception.messages,
-            {
-                "short_description": ["Length must be between 10 and 100."],
-                "name": ["Length must be between 4 and 50."],
-            },
-        )
+            self.assertEqual(
+                error.exception.messages,
+                {
+                    "short_description": ["Length must be between 10 and 100."],
+                    "name": ["Length must be between 4 and 50."],
+                },
+            )
 
     def test_request_email_change_schema_invalid(self):
         with self.app_context():
@@ -80,13 +81,13 @@ class SchemasTest(BaseTest):
             with self.assertRaises(ValidationError) as error:
                 schema.load(bad_request)
 
-            self.assertEqual(
-                error.exception.messages,
-                {
-                    "password": ["Failed to identify user with given password."],
-                    "new_email": ["Not a valid email address."],
-                },
-            )
+                self.assertEqual(
+                    error.exception.messages,
+                    {
+                        "password": ["Failed to identify user with given password."],
+                        "new_email": ["Not a valid email address."],
+                    },
+                )
 
     def test_request_email_change_schema_correct(self):
         with self.app_context():
@@ -115,9 +116,9 @@ class SchemasTest(BaseTest):
                 with self.assertRaises(ValidationError) as error:
                     schema.load(bad_request)
 
-                self.assertEqual(
-                    error.exception.messages, {"token": ["Signature has expired."]}
-                )
+                    self.assertEqual(
+                        error.exception.messages, {"token": ["Signature has expired."]}
+                    )
 
     def test_change_email_schema_token_invalid(self):
         with self.app_context():
@@ -131,7 +132,9 @@ class SchemasTest(BaseTest):
             with self.assertRaises(ValidationError) as error:
                 schema.load(bad_request)
 
-            self.assertEqual(error.exception.messages, {"token": ["Invalid token."]})
+                self.assertEqual(
+                    error.exception.messages, {"token": ["Invalid token."]}
+                )
 
     def test_change_email_schema_correct(self):
         with self.app_context():

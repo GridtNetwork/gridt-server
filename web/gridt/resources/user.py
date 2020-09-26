@@ -74,6 +74,8 @@ class RequestEmailChangeResource(Resource):
         try:
             res = self.schema.load(request.get_json())
         except ValidationError as error:
+            if not error.messages:
+                return ({"message": "Error."}, 400)
             field = list(error.messages.keys())[0]
             return ({"message": f"{field}: {error.messages[field][0]}"}, 400)
 
@@ -101,6 +103,8 @@ class ChangeEmailResource(Resource):
         try:
             res = self.schema.load(request.get_json())
         except ValidationError as error:
+            if not error.messages:
+                return ({"message": "Error."}, 400)
             field = list(error.messages.keys())[0]
             return ({"message": f"{field}: {error.messages[field][0]}"}, 400)
 

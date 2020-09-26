@@ -3,8 +3,6 @@ from marshmallow.validate import Length, OneOf, Equal
 from flask import current_app
 import jwt
 
-from gridt.models.user import User
-
 
 class BioSchema(Schema):
     bio = fields.Str(required=True)

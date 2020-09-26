@@ -6,6 +6,8 @@ from flask import current_app
 from freezegun import freeze_time
 import datetime
 
+from marshmallow import Schema, ValidationError
+
 from gridt.tests.base_test import BaseTest
 from gridt.models.user import User
 
@@ -245,21 +247,6 @@ class UserResourceTest(BaseTest):
                 self.assertIn("message", resp.get_json())
                 self.assertEqual(resp.status_code, 200)
 
-    def test_request_email_change_bad_password(self):
-        with self.app_context():
-            user = self.create_user()
-            new_email = "new@email.com"
-
-            resp = self.request_as_user(
-                self.users[0],
-                "POST",
-                "/user/change_email/request",
-                json={"password": "gibberish", "new_email": new_email,},
-            )
-
-            self.assertIn("message", resp.get_json())
-            self.assertEqual(resp.status_code, 400)
-
     @patch("util.email_templates.send_email", return_value=True)
     def test_request_email_change_existing_email(self, func):
         with self.app_context():
@@ -280,6 +267,21 @@ class UserResourceTest(BaseTest):
             self.assertEqual(resp.status_code, 200)
             func.assert_not_called()
 
+    @patch(
+        "marshmallow.Schema.load", side_effect=ValidationError({"message": "Error."})
+    )
+    def test_request_email_change_bad_schema(self, func):
+        with self.app_context():
+            user = self.create_user()
+            new_email = "new@email.com"
+
+            resp = self.request_as_user(
+                self.users[0], "POST", "/user/change_email/request", json={},
+            )
+
+            func.assert_called_with({})
+            self.assertEqual(resp.status_code, 400)
+
     @patch("util.email_templates.send_email", return_value=True)
     def test_change_email_proper_schema(self, func):
         with self.app_context():
@@ -297,12 +299,17 @@ class UserResourceTest(BaseTest):
             self.assertEqual(user.email, "new@email.com")
             func.assert_called_with(user.email, template_id, template_data)
 
-    def test_change_email_bad_schema(self):
+    @patch(
+        "marshmallow.Schema.load",
+        return_value=True,
+        side_effect=ValidationError({"message": "Error."}),
+    )
+    def test_change_email_bad_schema(self, func):
         with self.app_context():
             user = self.create_user()
             new_email = "new@email.com"
 
             resp = self.client.post("/user/change_email/confirm", json={})
 
-            self.assertIn("message", resp.get_json())
+            func.assert_called_with({})
             self.assertEqual(resp.status_code, 400)

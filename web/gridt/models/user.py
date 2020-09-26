@@ -109,7 +109,7 @@ class User(db.Model):
         + an expiration timestamp such that the token is valid for 2 hours
         and encodes it into a JWT.
 
-        :param str token: the JWT that is used to verify the password reset.
+        :rtype str: the JWT that is used to verify the password reset.
         """
         now = datetime.datetime.now()
         valid = datetime.timedelta(hours=2)
@@ -129,7 +129,8 @@ class User(db.Model):
         + an expiration timestamp such that the token is valid for 2 hours
         and encodes it into a JWT.
 
-        :param str token: the JWT that is used to verify the e-mail change.
+        :param str new_email: The new e-mail that needs to be verified.
+        :rtype str: the JWT that is used to verify the e-mail change.
         """
         now = datetime.datetime.now()
         valid = datetime.timedelta(hours=2)
