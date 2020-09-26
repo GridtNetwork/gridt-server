@@ -57,8 +57,8 @@ class SchemasTest(BaseTest):
             self.assertEqual(
                 error.exception.messages,
                 {
-                    "username": ["Could not create user, because username is already in use."],
-                    "email": ["Could not create user."],
+                    "username": ["Could not create user, username or e-mail already in use."],
+                    "email": ["Could not create user, username or e-mail already in use."],
                 },
             )
 

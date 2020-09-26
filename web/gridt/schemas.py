@@ -19,7 +19,7 @@ class NewUserSchema(Schema):
     @validates("username")
     def validate_username(self, value):
         if User.find_by_name(value):
-            raise ValidationError("Could not create user, because username is already in use.")
+            raise ValidationError("Could not create user, username or e-mail already in use.")
     
     @validates("email")
     def validate_email(self, value):
@@ -28,7 +28,7 @@ class NewUserSchema(Schema):
             # e-mail addresses in our database.
             # Otherwise we should find a way to block malicious 
             # attempts at creating accounts.
-            raise ValidationError("Could not create user.")
+            raise ValidationError("Could not create user, username or e-mail already in use.")
 
 class MovementSchema(Schema):
     name = fields.Str(required=True, validate=Length(min=4, max=50))
