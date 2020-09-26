@@ -46,7 +46,26 @@ class ResetPasswordSchema(Schema):
         except jwt.InvalidTokenError:
             raise ValidationError("Invalid token.")
 
-            
-class ChangeEmailSchema(Schema):
+
+class RequestEmailChangeSchema(Schema):
     password = fields.Str(required=True)
     new_email = fields.Email(required=True)
+
+    @validates("password")
+    def validate_password(self, value):
+        if not self.context["user"].verify_password(value):
+            raise ValidationError("Failed to identify user with given password.")
+
+
+class ChangeEmailSchema(Schema):
+    token = fields.Str(required=True)
+
+    @validates("token")
+    def validate_token(self, value):
+        secret_key = current_app.config["SECRET_KEY"]
+        try:
+            token_decoded = jwt.decode(value, secret_key, algorithms=["HS256"])
+        except jwt.ExpiredSignatureError:
+            raise ValidationError("Signature has expired.")
+        except jwt.InvalidTokenError:
+            raise ValidationError("Invalid token.")

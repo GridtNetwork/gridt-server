@@ -1,6 +1,6 @@
 info:
   title: The Gridt Network API
-  version: "0.0.6"
+  version: "0.0.7"
   description: >-
     Interact with the gridt network via this API. It provides several endpoints
     for creating and subscribing (to) movements and switching leaders.
@@ -206,7 +206,67 @@ paths:
           description: >-
             Invalid token OR expired signature
             OR no token given OR no password given.
-
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/message'
+  /user/change_email/request:
+    post:
+      summary: >-
+        Given the password of the user that is currently logged in and a new e-mail,
+        an e-mail change token is generated and sent to the new e-mail address 
+        for verification.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+                  example: SuperSecretPassword
+                new_email:
+                  type: string
+                  example: new@email.com
+      responses:
+        '200':
+          description: E-mail with e-mail change token successfully sent to new e-mail.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/message'
+        '400':
+          description: >-
+            Could not identify user with this password. OR: not a valid e-mail.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/message'
+  /user/change_email/confirm:
+    post:
+      summary: >-
+        Given an e-mail change token, this will change the e-mail belonging to the user id
+        in the JWT to the new e-mail as provided in the JWT.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                  example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MCwiZXhwIjoxNTk4NDI1ODIzLjE3MjE2NTJ9.VicCiBBjPGIzAX7KVvTaWI6dMocsRNSCXYm5FfqnRa0
+      responses:
+        '200':
+          description: Successfully changed user's e-mail address.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/message'
+        '400':
+          description: Expired token OR tampered token.
           content:
             application/json:
               schema:
