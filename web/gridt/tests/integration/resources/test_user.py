@@ -36,46 +36,8 @@ class UserResourceTest(BaseTest):
 
             self.assertEqual(resp.get_json(), {"message": "Bad request."})
 
-    def test_change_password_with_no_password(self):
-        with self.app_context():
-            user = self.create_user()
-
-            resp = self.request_as_user(
-                self.users[0], "POST", "/user/change_password", json={}
-            )
-
-            self.assertIn("message", resp.get_json())
-            self.assertEqual(resp.status_code, 400)
-
-            resp = self.request_as_user(
-                self.users[0],
-                "POST",
-                "/user/change_password",
-                json={"old_password": self.users[0]["password"]},
-            )
-
-            self.assertIn("message", resp.get_json())
-            self.assertEqual(resp.status_code, 400)
-
-    def test_change_password_with_wrong_password(self):
-        with self.app_context():
-            user = self.create_user()
-
-            resp = self.request_as_user(
-                self.users[0],
-                "POST",
-                "/user/change_password",
-                json={
-                    "old_password": "gibberish",
-                    "new_password": "somethingyoullneverguess",
-                },
-            )
-
-            self.assertIn("message", resp.get_json())
-            self.assertEqual(resp.status_code, 400)
-
     @patch("util.email_templates.send_email", return_value=True)
-    def test_change_password_with_correct_password(self, func):
+    def test_change_password_successfully(self, func):
         with self.app_context():
             user = self.create_user()
 
@@ -98,6 +60,20 @@ class UserResourceTest(BaseTest):
             self.assertEqual(resp.status_code, 200)
             self.assertTrue(user.verify_password("somethingyoullneverguess"))
             func.assert_called_with(user.email, template_id, template_data)
+
+    @patch(
+        "marshmallow.Schema.load", side_effect=ValidationError({"message": "Error."})
+    )
+    def test_change_password_bad_schema(self, func):
+        with self.app_context():
+            user = self.create_user()
+
+            resp = self.request_as_user(
+                self.users[0], "POST", "/user/change_password", json={},
+            )
+
+            func.assert_called_with({})
+            self.assertEqual(resp.status_code, 400)
 
     def test_no_api_key(self):
         with self.app_context():
@@ -152,7 +128,7 @@ class UserResourceTest(BaseTest):
             self.assertEqual(resp.status_code, 200)
 
     @patch("util.email_templates.send_email", return_value=True)
-    def test_reset_password_token_correct(self, func):
+    def test_reset_password_correctly(self, func):
         with self.app_context():
             user = self.create_user()
             token = user.get_password_reset_token()
@@ -172,51 +148,16 @@ class UserResourceTest(BaseTest):
             self.assertTrue(user.verify_password("testpass"))
             func.assert_called_with(user.email, template_id, template_data)
 
-    def test_reset_password_token_expired(self):
+    @patch(
+        "marshmallow.Schema.load", side_effect=ValidationError({"message": "Error."})
+    )
+    def test_reset_password_bad_schema(self, func):
         with self.app_context():
             user = self.create_user()
-            with freeze_time("2020-04-18 22:10:00"):
-                token = user.get_password_reset_token()
 
-            with freeze_time("2020-04-19 00:10:01"):
-                resp = self.client.post(
-                    "/user/reset_password/confirm",
-                    json={"token": token, "password": "testpass"},
-                )
+            resp = self.client.post("/user/reset_password/confirm", json={})
 
-                self.assertIn("message", resp.get_json())
-                self.assertEqual(resp.status_code, 400)
-
-    def test_reset_password_token_expired(self):
-        with self.app_context():
-            user = self.create_user()
-            with freeze_time("2020-04-18 22:10:00"):
-                token = user.get_password_reset_token()
-
-            with freeze_time("2020-04-19 00:10:01"):
-                resp = self.client.post(
-                    "/user/reset_password/confirm",
-                    json={"token": token, "password": "testpass"},
-                )
-
-                self.assertIn("message", resp.get_json())
-                self.assertEqual(resp.status_code, 400)
-
-    def test_password_reset_token_tampered(self):
-        with self.app_context():
-            user = self.create_user()
-            token = (
-                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9."
-                "eyJpZCI6MSwiZXhwIjoxNTg3MzM0MjAwfW."
-                "2qdnq1_YJS9tgKVlIVpBbaAanyxQnCyVmV6s7QcOuBo"
-            )
-
-            resp = self.client.post(
-                "/user/reset_password/confirm",
-                json={"token": token, "password": "testpass"},
-            )
-
-            self.assertIn("message", resp.get_json())
+            func.assert_called_with({})
             self.assertEqual(resp.status_code, 400)
 
     @patch("util.email_templates.send_email", return_value=True)

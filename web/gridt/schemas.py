@@ -19,16 +19,17 @@ class NewUserSchema(Schema):
     @validates("username")
     def validate_username(self, value):
         if User.find_by_name(value):
-            raise ValidationError("Could not create user, username or e-mail already in use.")
-    
+            raise ValidationError(
+                "Could not create user, username or e-mail already in use."
+            )
+
     @validates("email")
     def validate_email(self, value):
         if User.find_by_email(value):
-            # Cannot give malicious users information on the
-            # e-mail addresses in our database.
-            # Otherwise we should find a way to block malicious 
-            # attempts at creating accounts.
-            raise ValidationError("Could not create user, username or e-mail already in use.")
+            raise ValidationError(
+                "Could not create user, username or e-mail already in use."
+            )
+
 
 class MovementSchema(Schema):
     name = fields.Str(required=True, validate=Length(min=4, max=50))
@@ -41,12 +42,19 @@ class MovementSchema(Schema):
     @validates("name")
     def validate_name(self, value):
         if Movement.find_by_name(value):
-            raise ValidationError("Could not create movement, because movement name is already in use.")
+            raise ValidationError(
+                "Could not create movement, because movement name is already in use."
+            )
 
 
 class ChangePasswordSchema(Schema):
     old_password = fields.Str(required=True)
     new_password = fields.Str(required=True)
+
+    @validates("old_password")
+    def validate_old_password(self, value):
+        if not self.context["user"].verify_password(value):
+            raise ValidationError("Failed to identify user with given password.")
 
 
 class RequestPasswordResetSchema(Schema):

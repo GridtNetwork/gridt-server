@@ -49,20 +49,16 @@ class ChangePasswordResource(Resource):
 
     @jwt_required()
     def post(self):
+        self.schema.context = {"user": current_identity}
         try:
             res = self.schema.load(request.get_json())
         except ValidationError as error:
             field = list(error.messages.keys())[0]
             return ({"message": f"{field}: {error.messages[field][0]}"}, 400)
 
-        if not current_identity.verify_password(res["old_password"]):
-            return ({"message": "Failed to identify user with given password."}, 400)
-
-        if current_identity.verify_password(res["old_password"]):
-            current_identity.hash_and_store_password(res["new_password"])
-
-            send_password_change_notification(current_identity.email)
-            return ({"message": "Successfully changed password."}, 200)
+        current_identity.hash_and_store_password(res["new_password"])
+        send_password_change_notification(current_identity.email)
+        return ({"message": "Successfully changed password."}, 200)
 
 
 class RequestEmailChangeResource(Resource):
@@ -78,6 +74,8 @@ class RequestEmailChangeResource(Resource):
                 return ({"message": "Error."}, 400)
             field = list(error.messages.keys())[0]
             return ({"message": f"{field}: {error.messages[field][0]}"}, 400)
+        if not current_app.config["EMAIL_API_KEY"]:
+            return ({"message": "Could not send e-mail; API key not available."}, 500)
 
         new_email = res["new_email"]
         if User.find_by_email(new_email):

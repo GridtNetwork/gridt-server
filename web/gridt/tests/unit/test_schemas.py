@@ -6,6 +6,9 @@ from gridt.schemas import (
     NewUserSchema,
     RequestEmailChangeSchema,
     ChangeEmailSchema,
+    ChangePasswordSchema,
+    RequestPasswordResetSchema,
+    ResetPasswordSchema,
 )
 
 from freezegun import freeze_time
@@ -41,14 +44,14 @@ class SchemasTest(BaseTest):
                     "password": ["Missing data for required field."],
                 },
             )
-    
+
     def test_register_schema_existing(self):
         with self.app_context():
             user = self.create_user()
             bad_user = {
                 "username": self.users[0]["username"],
                 "email": self.users[0]["email"],
-                "password": "SuperSecretPassword"
+                "password": "SuperSecretPassword",
             }
 
             schema = NewUserSchema()
@@ -57,8 +60,12 @@ class SchemasTest(BaseTest):
             self.assertEqual(
                 error.exception.messages,
                 {
-                    "username": ["Could not create user, username or e-mail already in use."],
-                    "email": ["Could not create user, username or e-mail already in use."],
+                    "username": [
+                        "Could not create user, username or e-mail already in use."
+                    ],
+                    "email": [
+                        "Could not create user, username or e-mail already in use."
+                    ],
                 },
             )
 
@@ -132,7 +139,7 @@ class SchemasTest(BaseTest):
     def test_movement_schema_existing(self):
         with self.app_context():
             movement = self.create_movement()
-        
+
             bad_movement = {
                 "name": self.movements[0].name,
                 "short_description": "This is a new movement",
@@ -142,11 +149,13 @@ class SchemasTest(BaseTest):
             schema = MovementSchema()
             with self.assertRaises(ValidationError) as error:
                 schema.load(bad_movement)
-            
+
             self.assertEqual(
                 error.exception.messages,
                 {
-                    "name": ["Could not create movement, because movement name is already in use."],
+                    "name": [
+                        "Could not create movement, because movement name is already in use."
+                    ],
                 },
             )
 
@@ -228,3 +237,51 @@ class SchemasTest(BaseTest):
             schema = ChangeEmailSchema()
             res = schema.load(proper_request)
             self.assertEqual(res, proper_request)
+
+    def test_change_password_schema(self):
+        with self.app_context():
+            user = self.create_user()
+            proper_request = {
+                "old_password": self.users[0]["password"],
+                "new_password": "newpass",
+            }
+
+            # Make sure no error is thrown with this info
+            schema = ChangePasswordSchema()
+            schema.context = {"user": user}
+            res = schema.load(proper_request)
+            self.assertEqual(res, proper_request)
+
+    def test_change_password_schema_missing(self):
+        with self.app_context():
+            user = self.create_user()
+            bad_request = {}
+
+            schema = ChangePasswordSchema()
+            schema.context = {"user": user}
+            with self.assertRaises(ValidationError) as error:
+                schema.load(bad_request)
+                self.assertEqual(
+                    error.exception.messages,
+                    {
+                        "old_password": ["Missing data for required field."],
+                        "new_password": ["Missing data for required field."],
+                    },
+                )
+
+    def test_change_password_schema_wrong_password(self):
+        with self.app_context():
+            user = self.create_user()
+            bad_request = {
+                "old_password": "gibberish",
+                "new_password": "newpass",
+            }
+
+            schema = ChangePasswordSchema()
+            schema.context = {"user": user}
+            with self.assertRaises(ValidationError) as error:
+                schema.load(bad_request)
+                self.assertEqual(
+                    error.exception.messages,
+                    {"old_password": ["Failed to identify user with given password."],},
+                )
