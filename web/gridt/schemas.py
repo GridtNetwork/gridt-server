@@ -3,6 +3,9 @@ from marshmallow.validate import Length, OneOf, Equal
 from flask import current_app
 import jwt
 
+from gridt.models.movement import Movement
+from gridt.models.user import User
+
 
 class BioSchema(Schema):
     bio = fields.Str(required=True)
@@ -10,8 +13,22 @@ class BioSchema(Schema):
 
 class NewUserSchema(Schema):
     username = fields.Str(required=True, validate=Length(max=32))
-    email = fields.Str(required=True, validate=Length(max=40))
+    email = fields.Email(required=True, validate=Length(max=40))
     password = fields.Str(required=True, validate=Length(max=32))
+
+    @validates("username")
+    def validate_username(self, value):
+        if User.find_by_name(value):
+            raise ValidationError(
+                "Could not create user, username or e-mail already in use."
+            )
+
+    @validates("email")
+    def validate_email(self, value):
+        if User.find_by_email(value):
+            raise ValidationError(
+                "Could not create user, username or e-mail already in use."
+            )
 
 
 class MovementSchema(Schema):
@@ -22,10 +39,22 @@ class MovementSchema(Schema):
         required=True, validate=OneOf(["daily", "twice daily", "weekly"])
     )
 
+    @validates("name")
+    def validate_name(self, value):
+        if Movement.find_by_name(value):
+            raise ValidationError(
+                "Could not create movement, because movement name is already in use."
+            )
+
 
 class ChangePasswordSchema(Schema):
     old_password = fields.Str(required=True)
     new_password = fields.Str(required=True)
+
+    @validates("old_password")
+    def validate_old_password(self, value):
+        if not self.context["user"].verify_password(value):
+            raise ValidationError("Failed to identify user with given password.")
 
 
 class RequestPasswordResetSchema(Schema):

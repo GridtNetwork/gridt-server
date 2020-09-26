@@ -2,6 +2,7 @@ import json
 import lorem
 from unittest.mock import patch
 from datetime import datetime
+from marshmallow import Schema, ValidationError
 
 from gridt.tests.base_test import BaseTest
 from gridt.db import db
@@ -98,108 +99,6 @@ class MovementsTest(BaseTest):
 
             self.assertEqual(json.loads(resp.data), expected)
 
-    def test_post_name_exists(self):
-        with self.app_context():
-            movement = Movement("move", "daily")
-            movement.save_to_db()
-            user = User("test1", "test@test.com", "pass")
-            user.save_to_db()
-
-            token = self.obtain_token("test@test.com", "pass")
-
-            movement_dict = {
-                "name": "move",
-                "short_description": "Hi, hello this is a test",
-                "interval": "weekly",
-            }
-            resp = self.client.post(
-                "/movements",
-                headers={"Authorization": f"JWT {token}"},
-                json=movement_dict,
-            )
-
-            self.assertEqual(
-                json.loads(resp.data),
-                {
-                    "message": "Could not create movement, because movement name is already in use."
-                },
-            )
-            self.assertEqual(resp.status_code, 400)
-
-    def test_interval_empty(self):
-        with self.app_context():
-            user = User("test1", "test1@test.com", "pass")
-            user.save_to_db()
-
-            token = self.obtain_token("test1@test.com", "pass")
-
-            movement_dict = {
-                "name": "movement",
-                "short_description": "Hi, this is a test",
-                "interval": "",
-            }
-
-            resp = self.client.post(
-                "/movements",
-                headers={"Authorization": f"JWT {token}"},
-                json=movement_dict,
-            )
-
-            self.assertEqual(
-                json.loads(resp.data),
-                {"message": "interval: Must be one of: daily, twice daily, weekly."},
-            )
-            self.assertEqual(resp.status_code, 400)
-
-    def test_invalid_movement(self):
-        with self.app_context():
-            user = User("test1", "test@test.com", "pass")
-            user.save_to_db()
-
-            token = self.obtain_token("test@test.com", "pass")
-
-            movement_dict = {
-                "name": "movement",
-                "short_description": "Hi, this is a test",
-            }
-
-            resp = self.client.post(
-                "/movements",
-                headers={"Authorization": f"JWT {token}"},
-                json=movement_dict,
-            )
-
-            self.assertEqual(
-                json.loads(resp.data),
-                {"message": "interval: Missing data for required field."},
-            )
-            self.assertEqual(resp.status_code, 400)
-
-    def test_name_empty(self):
-        with self.app_context():
-            user = User("test1", "test@test.com", "pass")
-            user.save_to_db()
-
-            token = self.obtain_token("test@test.com", "pass")
-
-            movement_dict = {
-                "name": "",
-                "short_description": "Hi, hello this is a test",
-                "interval": "daily",
-            }
-
-            resp = self.client.post(
-                "/movements",
-                headers={"Authorization": f"JWT {token}"},
-                json=movement_dict,
-            )
-
-            self.assertEqual(
-                json.loads(resp.data),
-                {"message": "name: Length must be between 4 and 50."},
-            )
-            self.assertEqual(resp.status_code, 400)
-
     def test_post_successful(self):
         with self.app_context():
             user = self.create_user()
@@ -225,6 +124,18 @@ class MovementsTest(BaseTest):
             self.assertEqual(movement.short_description, "Hi, hello this is a test")
             self.assertEqual(len(movement.current_users), 1)
             self.assertEqual(movement.current_users[0], user)
+
+    @patch("marshmallow.Schema.load", side_effect=ValidationError({"message": "Error."}))
+    def test_post_unsuccessful(self, func):
+        with self.app_context():
+            user = self.create_user()
+
+            resp = self.request_as_user(
+                self.users[0], "POST", "/movements", json={},
+            )
+
+            func.assert_called_with({})
+            self.assertEqual(resp.status_code, 400)
 
     def test_single_movement_by_name(self):
         with self.app_context():

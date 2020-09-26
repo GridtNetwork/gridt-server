@@ -91,9 +91,9 @@ class BaseTest(LoggedTestCase):
         return token
 
     def create_user(self, generate_bio=False):
-        username = lorem.sentence()
-        email = f"{lorem.sentence().replace(' ', '').replace('.', '')}@test.com"
-        password = lorem.sentence()
+        username = lorem.sentence()[:20]
+        email = f"{lorem.sentence().replace(' ', '').replace('.', '')[:20]}@test.com"
+        password = lorem.sentence()[:20]
         bio = ""
 
         if generate_bio:
@@ -116,7 +116,7 @@ class BaseTest(LoggedTestCase):
         return user
 
     def create_movement(self):
-        name = lorem.sentence().split()[0]
+        name = lorem.sentence()[:20]
         movement = Movement(
             name,
             random.choice(["daily", "twice daily", "weekly"]),
