@@ -14,25 +14,23 @@ class SwapTest(BaseTest):
     def test_swap_leader_correctly(self):
         with self.app_context():
             movement = self.create_movement()
-            user1 = self.create_user_in_movement(movement)
-            user2 = self.create_user_in_movement(movement)
-            user3 = self.create_user_in_movement(movement)
-            user4 = self.create_user_in_movement(movement)
-            user5 = self.create_user_in_movement(movement)
+            # Create six users, the first five of which
+            # all follow each other. The sixth has no followers.
+            for user in range(5):
+                self.create_user_in_movement(movement)
             user6 = self.create_user_in_movement(movement)
 
             signal = self.signal_as_user(self.users[0], self.movements[0])
-            
+
             expected = user6.dictify()
             expected["last_signal"] = None
 
+            # Test that the fifth user can be replaced
+            # with the sixth user.
             resp = self.request_as_user(
-                self.users[0],
-                "POST",
-                f"/movements/{movement.id}/leader/5",
-                json={}
+                self.users[0], "POST", f"/movements/{movement.id}/leader/5", json={}
             )
-            
+
             self.assertEqual(resp.status_code, 200)
             self.assertEqual(resp.get_json(), expected)
 
@@ -46,26 +44,20 @@ class SwapTest(BaseTest):
             time_stamp = signal.time_stamp
 
             resp = self.request_as_user(
-                self.users[0],
-                "POST",
-                f"/movements/{movement.id}/leader/2",
-                json={}
+                self.users[0], "POST", f"/movements/{movement.id}/leader/2", json={}
             )
-            
+
             self.assertEqual(resp.status_code, 400)
             self.assertEqual(
-                resp.get_json(), {"message": "Could not find leader to replace the current one."}
+                resp.get_json(),
+                {"message": "Could not find leader to replace the current one."},
             )
 
     def test_swap_leader_movement_nonexistant(self):
         with self.app_context():
             user = self.create_user()
-            
-            resp = self.request_as_user(
-                self.users[0],
-                "POST",
-                "/movements/1/leader/2"
-            )
+
+            resp = self.request_as_user(self.users[0], "POST", "/movements/1/leader/2")
 
             self.assertEqual(resp.status_code, 404)
             self.assertEqual(
@@ -77,11 +69,7 @@ class SwapTest(BaseTest):
             movement = self.create_movement()
             user = self.create_user()
 
-            resp = self.request_as_user(
-                self.users[0],
-                "POST",
-                "/movements/1/leader/2"
-            )
+            resp = self.request_as_user(self.users[0], "POST", "/movements/1/leader/2")
 
             self.assertEqual(resp.status_code, 400)
             self.assertEqual(
@@ -95,11 +83,7 @@ class SwapTest(BaseTest):
             user1 = self.create_user_in_movement(movement)
             user2 = self.create_user()
 
-            resp = self.request_as_user(
-                self.users[0],
-                "POST",
-                "/movements/1/leader/2"
-            )
+            resp = self.request_as_user(self.users[0], "POST", "/movements/1/leader/2")
 
             self.assertEqual(resp.status_code, 400)
             self.assertEqual(

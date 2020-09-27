@@ -34,18 +34,16 @@ class MovementsTest(BaseTest):
 
             movement3.add_user(user1)
             movement3.add_user(user2)
-            signal3 = self.signal_as_user(self.users[0], movement3, message="test message")
+            signal3 = self.signal_as_user(
+                self.users[0], movement3, message="test message"
+            )
 
             # To prevent sqlalchemy.orm.exc.DetachedInstanceError
             stamp2 = str(signal2.time_stamp.astimezone())
             stamp3 = str(signal3.time_stamp.astimezone())
 
             # Check that the response matches expectation
-            resp = self.request_as_user(
-                self.users[1],
-                "GET",
-                "/movements",
-            )
+            resp = self.request_as_user(self.users[1], "GET", "/movements",)
 
             expected = [
                 {
@@ -232,15 +230,9 @@ class MovementsTest(BaseTest):
             movement = self.create_movement()
 
             resp1 = self.request_as_user(
-                self.users[0],
-                "GET"
-                f"/movements/{movement.name}"
+                self.users[0], "GET", f"/movements/{movement.name}",
             )
-            resp2 = self.request_as_user(
-                self.users[0],
-                "GET",
-                "/movements/1"
-            )
+            resp2 = self.request_as_user(self.users[0], "GET", "/movements/1",)
             expected = {
                 "id": 1,
                 "name": movement.name,
@@ -258,16 +250,8 @@ class MovementsTest(BaseTest):
         with self.app_context():
             user = self.create_user()
 
-            resp1 = self.request_as_user(
-                self.users[0],
-                "GET",
-                "/movements/Flossing",
-            )
-            resp2 = self.request_as_user(
-                self.users[0],
-                "GET",
-                "/movements/1",
-            )
+            resp1 = self.request_as_user(self.users[0], "GET", "/movements/Flossing",)
+            resp2 = self.request_as_user(self.users[0], "GET", "/movements/1",)
 
             self.assertEqual(resp1.status_code, 404)
             self.assertEqual(resp2.status_code, 404)
@@ -287,9 +271,7 @@ class SubscribeTest(BaseTest):
             user = self.create_user()
 
             resp = self.request_as_user(
-                self.users[0],
-                "PUT",
-                "/movements/1/subscriber",
+                self.users[0], "PUT", "/movements/1/subscriber",
             )
 
         # Using self.client will call db.session.commit(), this will close the
@@ -309,9 +291,7 @@ class SubscribeTest(BaseTest):
 
             # Do it twice, should not change anything.
             resp = self.request_as_user(
-                self.users[0],
-                "PUT",
-                "/movements/1/subscriber",
+                self.users[0], "PUT", "/movements/1/subscriber",
             )
             self.assertEqual(resp.status_code, 200)
             self.assertEqual(
@@ -327,9 +307,7 @@ class SubscribeTest(BaseTest):
             user = self.create_user()
 
             resp = self.request_as_user(
-                self.users[0],
-                "PUT",
-                "/movements/Flossing/subscriber",
+                self.users[0], "PUT", "/movements/Flossing/subscriber",
             )
             self.assertEqual(resp.status_code, 404)
             self.assertEqual(
@@ -380,9 +358,7 @@ class SubscribeTest(BaseTest):
             user = self.create_user()
 
             resp = self.request_as_user(
-                self.users[0],
-                "DELETE",
-                "/movements/Flossing/subscriber",
+                self.users[0], "DELETE", "/movements/Flossing/subscriber",
             )
             self.assertEqual(resp.status_code, 404)
             self.assertEqual(
@@ -395,12 +371,10 @@ class NewSignalTest(BaseTest):
     def test_create_new_signal(self, func):
         with self.app_context():
             movement = self.create_movement()
-            user = self.create_user_in_movement()
+            user = self.create_user_in_movement(movement)
 
             resp = self.request_as_user(
-                self.users[0],
-                "POST",
-                f"/movements/{movement.name}/signal",
+                self.users[0], "POST", f"/movements/{movement.name}/signal",
             )
 
             self.assertEqual(
@@ -418,11 +392,9 @@ class NewSignalTest(BaseTest):
     def test_movement_nonexistant(self):
         with self.app_context():
             user = self.create_user()
-            
+
             resp = self.request_as_user(
-                self.users[0],
-                "POST",
-                "/movements/Flossing/signal",
+                self.users[0], "POST", "/movements/Flossing/signal",
             )
 
             self.assertEqual(resp.status_code, 404)
@@ -435,11 +407,7 @@ class NewSignalTest(BaseTest):
             movement = self.create_movement()
             user = self.create_user()
 
-            resp = self.request_as_user(
-                self.users[0],
-                "POST",
-                "/movements/Flossing/signal",
-            )
+            resp = self.request_as_user(self.users[0], "POST", "/movements/1/signal",)
 
             self.assertEqual(resp.status_code, 400)
             self.assertEqual(
