@@ -52,9 +52,7 @@ class SwapTest(BaseTest):
                 json={}
             )
             
-            # As it stands, a failed leader search will yield a 200.
-            # Should it be that way? I would personally expect a 400.
-            self.assertEqual(resp.status_code, 200)
+            self.assertEqual(resp.status_code, 400)
             self.assertEqual(
                 resp.get_json(), {"message": "Could not find leader to replace the current one."}
             )
