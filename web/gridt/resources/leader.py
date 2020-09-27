@@ -53,7 +53,7 @@ class LeaderResource(Resource):
         new_leader = movement.swap_leader(current_identity, leader)
 
         if not new_leader:
-            return {"message": "Could not find leader to replace the current one."}
+            return {"message": "Could not find leader to replace the current one."}, 400
 
         time_stamp = None
         if Signal.find_last(new_leader, movement):

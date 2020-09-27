@@ -10,75 +10,74 @@ from gridt.models import User, Movement, Signal, MovementUserAssociation
 
 class MovementsTest(BaseTest):
     def test_get_movements(self):
+        """
+        movement1:
+            user1 (signal1, signal2) <-> user2
+        movement2:
+            user1
+        movement3:
+            user1 <-> user2
+            (signal3)
+        """
         with self.app_context():
-            # Create fake data
-            user = User("test1", "test1@test.com", "pass")
-            user2 = User("test2", "test2@test.com", "pass")
-            movement1 = Movement("test1", "twice daily", "Hello")
-            movement2 = Movement("test2", "daily", "Hello")
-            movement3 = Movement("test3", "weekly", "Testing")
-            db.session.add_all([user, user2, movement1, movement2, movement3])
-            db.session.commit()
+            movement1 = self.create_movement()
+            movement2 = self.create_movement()
+            movement3 = self.create_movement()
+            user1 = self.create_user_in_movement(movement1)
 
-            movement1.add_user(user)
-            signal = Signal(user, movement1)
-            signal2 = Signal(user, movement1)
-            db.session.add_all([signal, signal2])
-            db.session.commit()
+            signal1 = self.signal_as_user(self.users[0], self.movements[0])
+            signal2 = self.signal_as_user(self.users[0], self.movements[0])
 
-            movement1.add_user(user2)
-            movement2.add_user(user)
+            user2 = self.create_user_in_movement(movement1)
 
-            movement3.add_user(user)
+            movement2.add_user(user1)
+
+            movement3.add_user(user1)
             movement3.add_user(user2)
-            signal3 = Signal(user, movement3, "test message")
-            db.session.add(signal3)
-            db.session.commit()
+            signal3 = self.signal_as_user(
+                self.users[0], movement3, message="test message"
+            )
 
             # To prevent sqlalchemy.orm.exc.DetachedInstanceError
             stamp2 = str(signal2.time_stamp.astimezone())
             stamp3 = str(signal3.time_stamp.astimezone())
 
-            token = self.obtain_token("test2@test.com", "pass")
-
             # Check that the response matches expectation
-            resp = self.client.get(
-                "/movements", headers={"Authorization": f"JWT {token}"}
-            )
+            resp = self.request_as_user(self.users[1], "GET", "/movements",)
 
             expected = [
                 {
                     "id": 1,
-                    "description": "",
-                    "interval": "twice daily",
+                    "description": movement1.description,
+                    "interval": movement1.interval,
+                    "name": movement1.name,
+                    "short_description": movement1.short_description,
+                    "subscribed": True,
                     "last_signal_sent": None,
                     "leaders": [
                         {
                             "id": 1,
                             "last_signal": {"time_stamp": stamp2},
-                            "username": "test1",
+                            "username": self.users[0]["username"],
                             "bio": "",
-                            "avatar": user.get_email_hash(),
+                            "avatar": self.users[0]["avatar"],
                         }
                     ],
-                    "name": "test1",
-                    "short_description": "Hello",
-                    "subscribed": True,
                 },
                 {
                     "id": 2,
-                    "description": "",
-                    "interval": "daily",
-                    "name": "test2",
-                    "short_description": "Hello",
+                    "description": movement2.description,
+                    "interval": movement2.interval,
+                    "name": movement2.name,
+                    "short_description": movement2.short_description,
                     "subscribed": False,
                 },
                 {
                     "id": 3,
-                    "description": "",
-                    "interval": "weekly",
-                    "name": "test3",
-                    "short_description": "Testing",
+                    "description": movement3.description,
+                    "interval": movement3.interval,
+                    "name": movement3.name,
+                    "short_description": movement3.short_description,
                     "subscribed": True,
                     "last_signal_sent": None,
                     "leaders": [
@@ -88,15 +87,14 @@ class MovementsTest(BaseTest):
                                 "time_stamp": stamp3,
                                 "message": "test message",
                             },
-                            "username": "test1",
+                            "username": self.users[0]["username"],
                             "bio": "",
-                            "avatar": user.get_email_hash(),
+                            "avatar": self.users[0]["avatar"],
                         }
                     ],
                 },
             ]
-
-            self.assertEqual(json.loads(resp.data), expected)
+            self.assertEqual(resp.get_json(), expected)
 
     def test_post_name_exists(self):
         with self.app_context():
@@ -228,25 +226,19 @@ class MovementsTest(BaseTest):
 
     def test_single_movement_by_name(self):
         with self.app_context():
-            user = User("test1", "test@test.com", "pass")
-            user.save_to_db()
-            movement = Movement("Flossing", "daily", "Hello")
-            movement.save_to_db()
+            user = self.create_user()
+            movement = self.create_movement()
 
-            token = self.obtain_token("test@test.com", "pass")
-
-            resp1 = self.client.get(
-                "/movements/Flossing", headers={"Authorization": f"JWT {token}"}
+            resp1 = self.request_as_user(
+                self.users[0], "GET", f"/movements/{movement.name}",
             )
-            resp2 = self.client.get(
-                "/movements/1", headers={"Authorization": f"JWT {token}"}
-            )
+            resp2 = self.request_as_user(self.users[0], "GET", "/movements/1",)
             expected = {
                 "id": 1,
-                "name": "Flossing",
-                "short_description": "Hello",
-                "description": "",
-                "interval": "daily",
+                "name": movement.name,
+                "short_description": movement.short_description,
+                "description": movement.description,
+                "interval": movement.interval,
                 "subscribed": False,
             }
             self.assertEqual(json.loads(resp1.data), expected)
@@ -256,17 +248,10 @@ class MovementsTest(BaseTest):
 
     def test_single_movement_non_existing(self):
         with self.app_context():
-            user = User("test1", "test@test.com", "pass")
-            user.save_to_db()
+            user = self.create_user()
 
-            token = self.obtain_token("test@test.com", "pass")
-
-            resp1 = self.client.get(
-                "/movements/Flossing", headers={"Authorization": f"JWT {token}"}
-            )
-            resp2 = self.client.get(
-                "/movements/1", headers={"Authorization": f"JWT {token}"}
-            )
+            resp1 = self.request_as_user(self.users[0], "GET", "/movements/Flossing",)
+            resp2 = self.request_as_user(self.users[0], "GET", "/movements/1",)
 
             self.assertEqual(resp1.status_code, 404)
             self.assertEqual(resp2.status_code, 404)
@@ -282,16 +267,11 @@ class MovementsTest(BaseTest):
 class SubscribeTest(BaseTest):
     def test_subscribe(self):
         with self.app_context():
-            user = User("test1", "test@test.com", "pass")
-            user.save_to_db()
-            movement = Movement("Flossing", "daily", "Hello")
-            movement.save_to_db()
+            movement = self.create_movement()
+            user = self.create_user()
 
-            token = self.obtain_token("test@test.com", "pass")
-
-            resp = self.client.put(
-                "/movements/Flossing/subscriber",
-                headers={"Authorization": f"JWT {token}"},
+            resp = self.request_as_user(
+                self.users[0], "PUT", "/movements/1/subscriber",
             )
 
         # Using self.client will call db.session.commit(), this will close the
@@ -302,7 +282,7 @@ class SubscribeTest(BaseTest):
             movement = Movement.find_by_id(1)
             self.assertEqual(resp.status_code, 200)
             self.assertEqual(
-                json.loads(resp.data),
+                resp.get_json(),
                 {"message": "Successfully subscribed to this movement."},
             )
 
@@ -310,13 +290,12 @@ class SubscribeTest(BaseTest):
             self.assertTrue(movement in user.current_movements)
 
             # Do it twice, should not change anything.
-            resp = self.client.put(
-                "/movements/Flossing/subscriber",
-                headers={"Authorization": f"JWT {token}"},
+            resp = self.request_as_user(
+                self.users[0], "PUT", "/movements/1/subscriber",
             )
             self.assertEqual(resp.status_code, 200)
             self.assertEqual(
-                json.loads(resp.data),
+                resp.get_json(),
                 {"message": "Successfully subscribed to this movement."},
             )
 
@@ -325,18 +304,14 @@ class SubscribeTest(BaseTest):
 
     def test_subscribe_non_existing(self):
         with self.app_context():
-            user = User("test1", "test@test.com", "pass")
-            user.save_to_db()
+            user = self.create_user()
 
-            token = self.obtain_token("test@test.com", "pass")
-
-            resp = self.client.put(
-                "/movements/Flossing/subscriber",
-                headers={"Authorization": f"JWT {token}"},
+            resp = self.request_as_user(
+                self.users[0], "PUT", "/movements/Flossing/subscriber",
             )
             self.assertEqual(resp.status_code, 404)
             self.assertEqual(
-                json.loads(resp.data), {"message": "This movement does not exist."}
+                resp.get_json(), {"message": "This movement does not exist."}
             )
 
     def test_unsubscribe(self):
@@ -350,7 +325,7 @@ class SubscribeTest(BaseTest):
 
             self.assertEqual(resp.status_code, 200)
             self.assertEqual(
-                json.loads(resp.data),
+                resp.get_json(),
                 {"message": "Successfully unsubscribed from this movement."},
             )
 
@@ -371,7 +346,7 @@ class SubscribeTest(BaseTest):
 
             self.assertEqual(resp.status_code, 200)
             self.assertEqual(
-                json.loads(resp.data),
+                resp.get_json(),
                 {"message": "Successfully unsubscribed from this movement."},
             )
 
@@ -380,18 +355,14 @@ class SubscribeTest(BaseTest):
 
     def test_unsubscribe_non_existing(self):
         with self.app_context():
-            user = User("test1", "test@test.com", "pass")
-            user.save_to_db()
+            user = self.create_user()
 
-            token = self.obtain_token("test@test.com", "pass")
-
-            resp = self.client.delete(
-                "/movements/Flossing/subscriber",
-                headers={"Authorization": f"JWT {token}"},
+            resp = self.request_as_user(
+                self.users[0], "DELETE", "/movements/Flossing/subscriber",
             )
             self.assertEqual(resp.status_code, 404)
             self.assertEqual(
-                json.loads(resp.data), {"message": "This movement does not exist."}
+                resp.get_json(), {"message": "This movement does not exist."}
             )
 
 
@@ -399,21 +370,15 @@ class NewSignalTest(BaseTest):
     @patch("gridt.models.signal.Signal._get_now", return_value=datetime(1996, 3, 15))
     def test_create_new_signal(self, func):
         with self.app_context():
-            movement = Movement("Flossing", "daily", "Hi")
-            movement.save_to_db()
-            user = User("test1", "test@test.com", "pass")
-            user.save_to_db()
+            movement = self.create_movement()
+            user = self.create_user_in_movement(movement)
 
-            movement.add_user(user)
-
-            token = self.obtain_token("test@test.com", "pass")
-
-            resp = self.client.post(
-                "/movements/Flossing/signal", headers={"Authorization": f"JWT {token}"}
+            resp = self.request_as_user(
+                self.users[0], "POST", f"/movements/{movement.name}/signal",
             )
 
             self.assertEqual(
-                json.loads(resp.data), {"message": "Successfully created signal."}
+                resp.get_json(), {"message": "Successfully created signal."}
             )
             self.assertEqual(resp.status_code, 201)
 
@@ -426,36 +391,27 @@ class NewSignalTest(BaseTest):
 
     def test_movement_nonexistant(self):
         with self.app_context():
-            user = User("test1", "test@test.com", "pass")
-            user.save_to_db()
+            user = self.create_user()
 
-            token = self.obtain_token("test@test.com", "pass")
-
-            resp = self.client.post(
-                "/movements/Flossing/signal", headers={"Authorization": f"JWT {token}"}
+            resp = self.request_as_user(
+                self.users[0], "POST", "/movements/Flossing/signal",
             )
 
             self.assertEqual(resp.status_code, 404)
             self.assertEqual(
-                json.loads(resp.data), {"message": "This movement does not exist."}
+                resp.get_json(), {"message": "This movement does not exist."}
             )
 
     def test_movement_not_subscribed(self):
         with self.app_context():
-            movement = Movement("Flossing", "daily")
-            movement.save_to_db()
-            user = User("test1", "test@test.com", "pass")
-            user.save_to_db()
+            movement = self.create_movement()
+            user = self.create_user()
 
-            token = self.obtain_token("test@test.com", "pass")
-
-            resp = self.client.post(
-                "/movements/Flossing/signal", headers={"Authorization": f"JWT {token}"}
-            )
+            resp = self.request_as_user(self.users[0], "POST", "/movements/1/signal",)
 
             self.assertEqual(resp.status_code, 400)
             self.assertEqual(
-                json.loads(resp.data),
+                resp.get_json(),
                 {"message": "User is not subscribed to this movement."},
             )
 

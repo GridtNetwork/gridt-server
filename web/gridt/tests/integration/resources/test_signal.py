@@ -17,36 +17,32 @@ class SignalTest(BaseTest):
     def test_send_signal(self, get_now_mock):
         with self.app_context():
             # Create fake data
-            user1 = User("test1", "test1@test.com", "pass")
-            user2 = User("test2", "test2@test.com", "pass")
-            movement1 = Movement("test movement 1", "twice daily", "Hello")
-            db.session.add_all([user1, user2, movement1])
-            db.session.commit()
+            movement = self.create_movement()
+            user1 = self.create_user_in_movement(movement)
+            user2 = self.create_user_in_movement(movement)
 
-            movement1.add_user(user1)
-            movement1.add_user(user2)
-            signal = Signal(user1, movement1)
-            db.session.add_all([signal])
-            db.session.commit()
+            signal = self.signal_as_user(self.users[0], movement)
 
-            token1 = self.obtain_token("test1@test.com", "pass")
-            token2 = self.obtain_token("test2@test.com", "pass")
-
-            resp1 = self.client.get(
-                "/movements/1", headers={"Authorization": f"JWT {token2}"}
+            resp1 = self.request_as_user(
+                self.users[1],
+                "GET",
+                "/movements/1",
             )
 
             expected1 = {"time_stamp": str(NOW.astimezone())}
             self.assertEqual(resp1.get_json()["leaders"][0]["last_signal"], expected1)
 
-            self.client.post(
+            self.request_as_user(
+                self.users[0],
+                "POST",
                 "/movements/1/signal",
                 json={"message": "Hello"},
-                headers={"Authorization": f"JWT {token1}"},
             )
 
-            resp2 = self.client.get(
-                "/movements/1", headers={"Authorization": f"JWT {token2}"}
+            resp2 = self.request_as_user(
+                self.users[1],
+                "GET",
+                "/movements/1",
             )
 
             expected2 = {"time_stamp": str(LATER.astimezone()), "message": "Hello"}

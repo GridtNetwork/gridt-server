@@ -11,45 +11,53 @@ from gridt.tests.base_test import BaseTest
 
 
 class SwapTest(BaseTest):
-    def test_swap_leader(self):
+    def test_swap_leader_correctly(self):
         with self.app_context():
-            movement = Movement("Flossing", "daily", "Hi")
+            movement = self.create_movement()
+            # Create six users, the first five of which
+            # all follow each other. The sixth has no followers.
+            for user in range(5):
+                self.create_user_in_movement(movement)
+            user6 = self.create_user_in_movement(movement)
 
-            user1 = User("test1", "test1@test.com", "pass")
-            user2 = User("test2", "test2@test.com", "pass")
-            user3 = User("test3", "test3@test.com", "pass")
-            user4 = User("test4", "test4@test.com", "pass")
-            user5 = User("test5", "test5@test.com", "pass")
+            signal = self.signal_as_user(self.users[0], self.movements[0])
 
-            signal = Signal(user3, movement)
+            expected = user6.dictify()
+            expected["last_signal"] = None
+
+            # Test that the fifth user can be replaced
+            # with the sixth user.
+            resp = self.request_as_user(
+                self.users[0], "POST", f"/movements/{movement.id}/leader/5", json={}
+            )
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertEqual(resp.get_json(), expected)
+
+    def test_swap_leader_no_available_leader(self):
+        with self.app_context():
+            movement = self.create_movement()
+            user1 = self.create_user_in_movement(movement)
+            self.create_user_in_movement(movement)
+
+            signal = self.signal_as_user(self.users[0], self.movements[0])
             time_stamp = signal.time_stamp
 
-            db.session.add_all([user1, user2, user2, user2, user2, signal, movement])
+            resp = self.request_as_user(
+                self.users[0], "POST", f"/movements/{movement.id}/leader/2", json={}
+            )
 
-            movement.add_user(user1)
-            movement.add_user(user2)
-            movement.add_user(user3)
-            movement.add_user(user4)
-            movement.add_user(user5)
-
-            token = self.obtain_token("test1@test.com", "pass")
-
-            resp = self.client.post(
-                "/movements/Flossing/leader/5",
-                headers={"Authorization": f"JWT {token}"},
+            self.assertEqual(resp.status_code, 400)
+            self.assertEqual(
+                resp.get_json(),
+                {"message": "Could not find leader to replace the current one."},
             )
 
     def test_swap_leader_movement_nonexistant(self):
         with self.app_context():
-            user1 = User("test", "test1@test.com", "pass")
-            user1.save_to_db()
+            user = self.create_user()
 
-            token = self.obtain_token("test1@test.com", "pass")
-
-            resp = self.client.post(
-                "/movements/Flossing/leader/2",
-                headers={"Authorization": f"JWT {token}"},
-            )
+            resp = self.request_as_user(self.users[0], "POST", "/movements/1/leader/2")
 
             self.assertEqual(resp.status_code, 404)
             self.assertEqual(
@@ -58,17 +66,10 @@ class SwapTest(BaseTest):
 
     def test_swap_leader_movement_not_subscribed(self):
         with self.app_context():
-            movement = Movement("Flossing", "daily", "Hi")
-            movement.save_to_db()
-            user1 = User("test1", "test1@test.com", "pass")
-            user1.save_to_db()
+            movement = self.create_movement()
+            user = self.create_user()
 
-            token = self.obtain_token("test1@test.com", "pass")
-
-            resp = self.client.post(
-                "/movements/Flossing/leader/1",
-                headers={"Authorization": f"JWT {token}"},
-            )
+            resp = self.request_as_user(self.users[0], "POST", "/movements/1/leader/2")
 
             self.assertEqual(resp.status_code, 400)
             self.assertEqual(
@@ -78,20 +79,11 @@ class SwapTest(BaseTest):
 
     def test_swap_leader_not_leader(self):
         with self.app_context():
-            movement = Movement("Flossing", "daily", "Hi")
-            movement.save_to_db()
-            user1 = User("test1", "test1@test.com", "pass")
-            user1.save_to_db()
-            user2 = User("test2", "test2@test.com", "pass")
-            user2.save_to_db()
-            movement.add_user(user1)
+            movement = self.create_movement()
+            user1 = self.create_user_in_movement(movement)
+            user2 = self.create_user()
 
-            token = self.obtain_token("test1@test.com", "pass")
-
-            resp = self.client.post(
-                "/movements/Flossing/leader/2",
-                headers={"Authorization": f"JWT {token}"},
-            )
+            resp = self.request_as_user(self.users[0], "POST", "/movements/1/leader/2")
 
             self.assertEqual(resp.status_code, 400)
             self.assertEqual(
