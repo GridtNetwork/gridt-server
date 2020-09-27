@@ -10,75 +10,76 @@ from gridt.models import User, Movement, Signal, MovementUserAssociation
 
 class MovementsTest(BaseTest):
     def test_get_movements(self):
+        """
+        movement1:
+            user1 (signal1, signal2) <-> user2
+        movement2:
+            user1
+        movement3:
+            user1 <-> user2
+            (signal3)
+        """
         with self.app_context():
-            # Create fake data
-            user = User("test1", "test1@test.com", "pass")
-            user2 = User("test2", "test2@test.com", "pass")
-            movement1 = Movement("test1", "twice daily", "Hello")
-            movement2 = Movement("test2", "daily", "Hello")
-            movement3 = Movement("test3", "weekly", "Testing")
-            db.session.add_all([user, user2, movement1, movement2, movement3])
-            db.session.commit()
+            movement1 = self.create_movement()
+            movement2 = self.create_movement()
+            movement3 = self.create_movement()
+            user1 = self.create_user_in_movement(movement1)
 
-            movement1.add_user(user)
-            signal = Signal(user, movement1)
-            signal2 = Signal(user, movement1)
-            db.session.add_all([signal, signal2])
-            db.session.commit()
+            signal1 = self.signal_as_user(self.users[0], self.movements[0])
+            signal2 = self.signal_as_user(self.users[0], self.movements[0])
 
-            movement1.add_user(user2)
-            movement2.add_user(user)
+            user2 = self.create_user_in_movement(movement1)
 
-            movement3.add_user(user)
+            movement2.add_user(user1)
+
+            movement3.add_user(user1)
             movement3.add_user(user2)
-            signal3 = Signal(user, movement3, "test message")
-            db.session.add(signal3)
-            db.session.commit()
+            signal3 = self.signal_as_user(self.users[0], movement3, message="test message")
 
             # To prevent sqlalchemy.orm.exc.DetachedInstanceError
             stamp2 = str(signal2.time_stamp.astimezone())
             stamp3 = str(signal3.time_stamp.astimezone())
 
-            token = self.obtain_token("test2@test.com", "pass")
-
             # Check that the response matches expectation
-            resp = self.client.get(
-                "/movements", headers={"Authorization": f"JWT {token}"}
+            resp = self.request_as_user(
+                self.users[1],
+                "GET",
+                "/movements",
             )
 
             expected = [
                 {
                     "id": 1,
-                    "description": "",
-                    "interval": "twice daily",
+                    "description": movement1.description,
+                    "interval": movement1.interval,
+                    "name": movement1.name,
+                    "short_description": movement1.short_description,
+                    "subscribed": True,
                     "last_signal_sent": None,
                     "leaders": [
                         {
                             "id": 1,
                             "last_signal": {"time_stamp": stamp2},
-                            "username": "test1",
+                            "username": self.users[0]["username"],
                             "bio": "",
-                            "avatar": user.get_email_hash(),
+                            "avatar": self.users[0]["avatar"],
                         }
                     ],
-                    "name": "test1",
-                    "short_description": "Hello",
-                    "subscribed": True,
                 },
                 {
                     "id": 2,
-                    "description": "",
-                    "interval": "daily",
-                    "name": "test2",
-                    "short_description": "Hello",
+                    "description": movement2.description,
+                    "interval": movement2.interval,
+                    "name": movement2.name,
+                    "short_description": movement2.short_description,
                     "subscribed": False,
                 },
                 {
                     "id": 3,
-                    "description": "",
-                    "interval": "weekly",
-                    "name": "test3",
-                    "short_description": "Testing",
+                    "description": movement3.description,
+                    "interval": movement3.interval,
+                    "name": movement3.name,
+                    "short_description": movement3.short_description,
                     "subscribed": True,
                     "last_signal_sent": None,
                     "leaders": [
@@ -88,15 +89,15 @@ class MovementsTest(BaseTest):
                                 "time_stamp": stamp3,
                                 "message": "test message",
                             },
-                            "username": "test1",
+                            "username": self.users[0]["username"],
                             "bio": "",
-                            "avatar": user.get_email_hash(),
+                            "avatar": self.users[0]["avatar"],
                         }
                     ],
                 },
             ]
-
-            self.assertEqual(json.loads(resp.data), expected)
+            
+            self.assertEqual(resp.get_json(), expected)
 
     def test_post_name_exists(self):
         with self.app_context():
