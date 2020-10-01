@@ -1,6 +1,6 @@
 from flask import request
 from flask_restful import Resource, abort
-from flask_jwt import jwt_required, current_identity
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from marshmallow import ValidationError
 
@@ -13,9 +13,9 @@ from .helpers import get_movement, get_user
 
 
 class LeaderResource(Resource):
-    @jwt_required()
+    @jwt_required
     def get(self, movement_id, leader_id):
-        print("Received request")
+        current_identity = User.query.get(get_jwt_identity())
         movement = get_movement(movement_id)
 
         if not current_identity in movement.current_users:
@@ -35,8 +35,9 @@ class LeaderResource(Resource):
         ]
         return leader_dict
 
-    @jwt_required()
+    @jwt_required
     def post(self, movement_id, leader_id):
+        current_identity = User.query.get(get_jwt_identity())
         movement = get_movement(movement_id)
 
         if not current_identity in movement.current_users:

@@ -1,6 +1,6 @@
 from flask import request
 from flask_restful import Resource
-from flask_jwt import jwt_required, current_identity
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from gridt.models.user import User
 from gridt.schemas import NewUserSchema
@@ -9,8 +9,9 @@ from marshmallow import ValidationError
 
 
 class IdentityResource(Resource):
-    @jwt_required()
+    @jwt_required
     def get(self):
+        current_identity = User.query.get(get_jwt_identity())
         return (
             {
                 "id": current_identity.id,

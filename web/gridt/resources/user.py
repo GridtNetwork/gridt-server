@@ -1,6 +1,6 @@
 from flask import request, current_app
 from flask_restful import Resource
-from flask_jwt import jwt_required, current_identity
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from marshmallow import ValidationError
 
@@ -27,14 +27,16 @@ from util.email_templates import (
 
 
 class BioResource(Resource):
-    @jwt_required()
+    schema = BioSchema()
+
+    @jwt_required
     def put(self):
-        schema = BioSchema()
+        current_identity = User.query.get(get_jwt_identity())
 
         data = request.get_json()
         bio = None
         try:
-            bio = schema.load(data)["bio"]
+            bio = self.schema.load(data)["bio"]
         except ValidationError as error:
             return {"message": "Bad request."}, 400
 
@@ -47,8 +49,10 @@ class BioResource(Resource):
 class ChangePasswordResource(Resource):
     schema = ChangePasswordSchema()
 
-    @jwt_required()
+    @jwt_required
     def post(self):
+        current_identity = User.query.get(get_jwt_identity())
+
         try:
             res = self.schema.load(request.get_json())
         except ValidationError as error:
@@ -68,16 +72,18 @@ class ChangePasswordResource(Resource):
 class RequestEmailChangeResource(Resource):
     schema = RequestEmailChangeSchema()
 
-    @jwt_required()
+    @jwt_required
     def post(self):
+        current_identity = User.query.get(get_jwt_identity())
+
         self.schema.context = {"user": current_identity}
         try:
             res = self.schema.load(request.get_json())
         except ValidationError as error:
             if not error.messages:
-                return ({"message": "Error."}, 400)
+                return {"message": "Error."}, 400
             field = list(error.messages.keys())[0]
-            return ({"message": f"{field}: {error.messages[field][0]}"}, 400)
+            return {"message": f"{field}: {error.messages[field][0]}"}, 400
 
         new_email = res["new_email"]
         if User.find_by_email(new_email):
