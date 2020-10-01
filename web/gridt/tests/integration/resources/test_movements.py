@@ -120,9 +120,7 @@ class MovementsTest(BaseTest):
 
             self.assertEqual(
                 json.loads(resp.data),
-                {
-                    "message": "Could not create movement, because movement name is already in use."
-                },
+                {"message": "name: Movement name already in use."},
             )
             self.assertEqual(resp.status_code, 400)
 

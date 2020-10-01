@@ -25,7 +25,7 @@ class MovementTest(BaseTest):
 
     def test_swap_leader(self):
         """
-        1 <-> 2  
+        1 <-> 2
         4 5
         """
         with self.app_context():
@@ -57,17 +57,17 @@ class MovementTest(BaseTest):
     def test_swap_leader_complicated(self):
         """
         Movement 1
-            
+
               3 -> 1 <-> 2
                    |
                    v
                    4
-            
+
         ------------------------------------------------------
         Movement 2
-        
+
             1 <-> 5
-            
+
         """
         with self.app_context():
             user1 = User("user1", "test1@test.com", "password")
@@ -164,12 +164,12 @@ class MovementTest(BaseTest):
     def test_find_leaders(self):
         """
         Movement 1
-            
+
           1 -> 5   2   4
-        
+
         -------------------
         Movement 2
-        
+
           1 -> 5   3
         """
         with self.app_context():

@@ -18,11 +18,11 @@ class Movement(db.Model):
         flossing = Movement('flossing', 'daily')
         robin = User.find_by_id(1)
         pieter = User.find_by_id(2)
-        jorn = User.find_by_id(3) 
+        jorn = User.find_by_id(3)
         flossing.users = [robin, pieter, jorn]
         flossing.save_to_db()
 
-    :Note: changes are only saved to the database when :func:`Movement.save_to_db` 
+    :Note: changes are only saved to the database when :func:`Movement.save_to_db`
     is called.
 
     :param str name: Name of the movement
@@ -30,8 +30,8 @@ class Movement(db.Model):
     :param str short_description: Give a short description for your movement.
     :attribute str description: More elaborate description of your movement.
     :attribute users: All user that have been subscribed to this movement.
-    :attribute user_associations: All instances of 
-    :class:`models.movement_user_association.MovementUserAssociation` with that 
+    :attribute user_associations: All instances of
+    :class:`models.movement_user_association.MovementUserAssociation` with that
     link to this movement.
     """
 
@@ -112,7 +112,7 @@ class Movement(db.Model):
         Private function to look for ids of leaders that this user could use.
 
         :param gridt.models.user.User user: User that needs new leaders.
-        :param list exclude: List of users (can be a user model or an id) to 
+        :param list exclude: List of users (can be a user model or an id) to
         exclude from search.
         :returns: A list of ids of users, or None if the user is not in this movement.
         """
@@ -210,7 +210,7 @@ class Movement(db.Model):
         """
         Add a new user to self.users and give it appropriate leaders.
 
-        :param gridt.models.user.User user: the user that is to be 
+        :param gridt.models.user.User user: the user that is to be
         subscribed to this movement
         """
         while len(user.leaders(self)) < 4:

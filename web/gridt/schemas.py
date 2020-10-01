@@ -1,7 +1,17 @@
-from marshmallow import Schema, fields, validates, validates_schema, ValidationError
+from marshmallow import (
+    Schema,
+    fields,
+    validates,
+    validates_schema,
+    ValidationError,
+    post_load,
+)
 from marshmallow.validate import Length, OneOf, Equal
 from flask import current_app
 import jwt
+
+from gridt.models import Movement
+from gridt.resources.helpers import get_movement, get_user
 
 
 class LoginSchema(Schema):
@@ -26,6 +36,12 @@ class MovementSchema(Schema):
     interval = fields.Str(
         required=True, validate=OneOf(["daily", "twice daily", "weekly"])
     )
+
+    @validates("name")
+    def unique_name(self, value):
+        existing_movement = Movement.find_by_name(value)
+        if existing_movement:
+            raise ValidationError("Movement name already in use.")
 
 
 class ChangePasswordSchema(Schema):
@@ -74,3 +90,46 @@ class ChangeEmailSchema(Schema):
             raise ValidationError("Signature has expired.")
         except jwt.InvalidTokenError:
             raise ValidationError("Invalid token.")
+
+
+class IdField(fields.Field):
+    def _deserialize(self, value, attr, data, **kwargs):
+        if isinstance(value, str) or isinstance(value, int):
+            return value
+        else:
+            raise ValidationError("Id should be string or integer.")
+
+
+class LeaderSchema(Schema):
+    movement_id = IdField(required=True)
+    leader_id = IdField(required=True)
+    _leader = None
+    _movement = None
+
+    @validates_schema
+    def validate(self, data, **kwargs):
+        # Separate functions instead of directly validating as one relies
+        # on the other and order needs to be preserved.
+        self.ensure_subscribed(data["movement_id"])
+        self.ensure_following(data["leader_id"])
+
+    def ensure_subscribed(self, movement_id):
+        movement = get_movement(movement_id)
+
+        if self.context["user"] not in movement.current_users:
+            raise ValidationError("User is not subscribed to this movement.")
+
+        self._movement = movement
+
+    def ensure_following(self, value):
+        leader = get_user(value)
+        # This prevents a malicious user from finding user ids.
+        # Returning a 404 for a nonexistant user would give them more
+        # information than we want to share.
+        if not leader or leader not in self.context["user"].leaders(self._movement):
+            raise ValidationError("User is not following this leader.")
+        self._leader = leader
+
+    @post_load
+    def return_queries(self, data, *args, **kwargs):
+        return {"movement": self._movement, "leader": self._leader}

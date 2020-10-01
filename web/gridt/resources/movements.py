@@ -9,7 +9,7 @@ from gridt.models.movement import Movement
 from gridt.models.user import User
 from gridt.models.signal import Signal
 
-from .helpers import get_user, get_movement
+from .helpers import get_user, get_movement, schema_loader
 
 
 class MovementsResource(Resource):
@@ -26,27 +26,13 @@ class MovementsResource(Resource):
     @jwt_required
     def post(self):
         current_identity = User.query.get(get_jwt_identity())
-
-        try:
-            res = self.schema.load(request.get_json())
-        except ValidationError as error:
-            field = list(error.messages.keys())[0]
-            return {"message": f"{field}: {error.messages[field][0]}"}, 400
-
-        existing_movement = Movement.find_by_name(res["name"])
-        if existing_movement:
-            return (
-                {
-                    "message": "Could not create movement, because movement name is already in use."
-                },
-                400,
-            )
+        data = schema_loader(self.schema, request.get_json())
 
         movement = Movement(
-            res["name"],
-            res["interval"],
-            short_description=res["short_description"],
-            description=res.get("description"),
+            data["name"],
+            data["interval"],
+            short_description=data["short_description"],
+            description=data.get("description"),
         )
         movement.save_to_db()
         movement.add_user(current_identity)

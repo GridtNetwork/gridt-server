@@ -25,6 +25,8 @@ from util.email_templates import (
     send_email_change_notification,
 )
 
+from .helpers import schema_loader
+
 
 class BioResource(Resource):
     schema = BioSchema()
@@ -77,15 +79,9 @@ class RequestEmailChangeResource(Resource):
         current_identity = User.query.get(get_jwt_identity())
 
         self.schema.context = {"user": current_identity}
-        try:
-            res = self.schema.load(request.get_json())
-        except ValidationError as error:
-            if not error.messages:
-                return {"message": "Error."}, 400
-            field = list(error.messages.keys())[0]
-            return {"message": f"{field}: {error.messages[field][0]}"}, 400
+        data = schema_loader(self.schema, request.get_json())
 
-        new_email = res["new_email"]
+        new_email = data["new_email"]
         if User.find_by_email(new_email):
             # We cannot give a malicious user information about the e-mails in
             # our database.
@@ -106,16 +102,10 @@ class ChangeEmailResource(Resource):
     schema = ChangeEmailSchema()
 
     def post(self):
-        try:
-            res = self.schema.load(request.get_json())
-        except ValidationError as error:
-            if not error.messages:
-                return ({"message": "Error."}, 400)
-            field = list(error.messages.keys())[0]
-            return ({"message": f"{field}: {error.messages[field][0]}"}, 400)
+        data = schema_loader(self.schema, request.get_json())
 
         secret_key = current_app.config["SECRET_KEY"]
-        token_decoded = jwt.decode(res["token"], secret_key, algorithms=["HS256"])
+        token_decoded = jwt.decode(data["token"], secret_key, algorithms=["HS256"])
         user_id = token_decoded["user_id"]
         new_email = token_decoded["new_email"]
 
@@ -130,15 +120,12 @@ class RequestPasswordResetResource(Resource):
     schema = RequestPasswordResetSchema()
 
     def post(self):
-        try:
-            res = self.schema.load(request.get_json())
-        except ValidationError as error:
-            field = list(error.messages.keys())[0]
-            return ({"message": f"{field}: {error.messages[field][0]}"}, 400)
+        data = schema_loader(self.schema, request.get_json())
+
         if not current_app.config["EMAIL_API_KEY"]:
             return ({"message": "Could not send e-mail; API key not available."}, 500)
 
-        user = User.find_by_email(res["email"])
+        user = User.find_by_email(data["email"])
         if not user:
             # We don't want malicious users to know whether or not an e-mail is in our database.
             return ({"message": "Recovery e-mail successfully sent."}, 200)
@@ -153,15 +140,11 @@ class ResetPasswordResource(Resource):
 
     def post(self):
         secret_key = current_app.config["SECRET_KEY"]
-        try:
-            res = self.schema.load(request.get_json())
-        except ValidationError as error:
-            field = list(error.messages.keys())[0]
-            return ({"message": f"{field}: {error.messages[field][0]}"}, 400)
+        data = schema_loader(self.schema, request.get_json())
 
-        token_decoded = jwt.decode(res["token"], secret_key, algorithms=["HS256"])
+        token_decoded = jwt.decode(data["token"], secret_key, algorithms=["HS256"])
         user_id = token_decoded["user_id"]
-        password = res["password"]
+        password = data["password"]
 
         user = User.find_by_id(user_id)
         user.hash_and_store_password(password)

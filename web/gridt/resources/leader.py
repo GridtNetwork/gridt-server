@@ -4,29 +4,27 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from marshmallow import ValidationError
 
-from gridt.schemas import MovementSchema
+from gridt.schemas import LeaderSchema
 from gridt.models.movement import Movement
 from gridt.models.user import User
 from gridt.models.signal import Signal
 
-from .helpers import get_movement, get_user
+from .helpers import schema_loader, get_movement, get_user
 
 
 class LeaderResource(Resource):
+    schema = LeaderSchema()
+
     @jwt_required
     def get(self, movement_id, leader_id):
         current_identity = User.query.get(get_jwt_identity())
-        movement = get_movement(movement_id)
 
-        if not current_identity in movement.current_users:
-            return {"message": "User is not subscribed to this movement."}, 400
-
-        leader = get_user(leader_id)
-        # This prevents a malicious user from finding user ids.
-        # Returning a 404 for a nonexistant user would give them more
-        # information than we want to share.
-        if not leader or leader not in current_identity.leaders(movement):
-            return {"message": "User is not following this leader."}, 400
+        self.schema.context["user"] = current_identity
+        data = schema_loader(
+            self.schema, {"movement_id": movement_id, "leader_id": leader_id}
+        )
+        movement = data["movement"]
+        leader = data["leader"]
 
         leader_dict = leader.dictify()
         leader_dict["message_history"] = [
@@ -40,19 +38,14 @@ class LeaderResource(Resource):
         current_identity = User.query.get(get_jwt_identity())
         movement = get_movement(movement_id)
 
-        if not current_identity in movement.current_users:
-            return {"message": "User is not subscribed to this movement."}, 400
-
-        leader = get_user(leader_id)
-
-        # This prevents a malicious user from finding user ids.
-        # Returning a 404 for a nonexistant user would give them more
-        # infromation than we want to share.
-        if not leader or leader not in current_identity.leaders(movement):
-            return {"message": "User is not following this leader."}, 400
+        self.schema.context["user"] = current_identity
+        data = schema_loader(
+            self.schema, {"movement_id": movement_id, "leader_id": leader_id}
+        )
+        movement = data["movement"]
+        leader = data["leader"]
 
         new_leader = movement.swap_leader(current_identity, leader)
-
         if not new_leader:
             return {"message": "Could not find leader to replace the current one."}
 
