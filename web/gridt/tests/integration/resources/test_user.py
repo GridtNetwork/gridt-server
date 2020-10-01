@@ -268,7 +268,8 @@ class UserResourceTest(BaseTest):
             func.assert_not_called()
 
     @patch(
-        "marshmallow.Schema.load", side_effect=ValidationError({"message": "Error."})
+        "gridt.resources.user.RequestEmailChangeResource.schema.load",
+        side_effect=ValidationError({"message": "Error."}),
     )
     def test_request_email_change_bad_schema(self, func):
         with self.app_context():

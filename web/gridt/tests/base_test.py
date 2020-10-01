@@ -85,8 +85,7 @@ class BaseTest(LoggedTestCase):
             json={"username": email, "password": password},
             headers={"Content-Type": "application/json"},
         )
-        data = resp.data.decode("utf-8")
-        token = json.loads(data)["access_token"]
+        token = resp.get_json()["access_token"]
 
         return token
 

@@ -5,9 +5,9 @@ from gridt.db import db
 
 class MovementUserAssociation(db.Model):
     """
-    Association class that lies at the foundation of the network. 
-    Think of this class as the arrows that connect followers with leaders Association class that lies at the foundation of the network. 
-    Think of this class as the arrows that connect followers with leaders 
+    Association class that lies at the foundation of the network.
+    Think of this class as the arrows that connect followers with leaders Association class that lies at the foundation of the network.
+    Think of this class as the arrows that connect followers with leaders
     within their respective circle of the movement.
     within their respective circle of the movement.
 

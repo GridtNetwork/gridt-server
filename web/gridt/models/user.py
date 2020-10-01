@@ -125,7 +125,7 @@ class User(db.Model):
 
     def get_email_change_token(self, new_email):
         """
-        Make a dictionary containing the user's id, new email 
+        Make a dictionary containing the user's id, new email
         + an expiration timestamp such that the token is valid for 2 hours
         and encodes it into a JWT.
 

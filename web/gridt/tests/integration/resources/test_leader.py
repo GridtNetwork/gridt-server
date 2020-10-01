@@ -73,7 +73,7 @@ class SwapTest(BaseTest):
             self.assertEqual(resp.status_code, 400)
             self.assertEqual(
                 resp.get_json(),
-                {"message": "User is not subscribed to this movement."},
+                {"message": "_schema: User is not subscribed to this movement."},
             )
 
     def test_swap_leader_not_leader(self):
@@ -95,7 +95,8 @@ class SwapTest(BaseTest):
 
             self.assertEqual(resp.status_code, 400)
             self.assertEqual(
-                resp.get_json(), {"message": "User is not following this leader."}
+                resp.get_json(),
+                {"message": "_schema: User is not following this leader."},
             )
 
 
