@@ -4,6 +4,11 @@ from flask import current_app
 import jwt
 
 
+class LoginSchema(Schema):
+    username = fields.Str(required=True)
+    password = fields.Str(required=True)
+
+
 class BioSchema(Schema):
     bio = fields.Str(required=True)
 

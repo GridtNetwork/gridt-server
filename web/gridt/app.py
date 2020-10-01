@@ -18,14 +18,13 @@ from sqlalchemy_utils import database_exists, create_database
 from flask import Flask, jsonify
 from flask.cli import FlaskGroup
 from flask_sqlalchemy import SQLAlchemy
-from flask_jwt import JWT, jwt_required, current_identity
+from flask_jwt_extended import JWTManager
 from flask_restful import Api
 
 from gridt.db import db
 
 from gridt.models.movement import Movement
 
-from gridt.auth.security import authenticate, identify
 from gridt.resources.register import IdentityResource, RegisterResource
 from gridt.resources.user import (
     BioResource,
@@ -43,6 +42,7 @@ from gridt.resources.movements import (
     SubscribeResource,
     NewSignalResource,
 )
+from gridt.resources.login import LoginResource
 
 from prometheus_flask_exporter.multiprocess import GunicornPrometheusMetrics
 
@@ -103,8 +103,9 @@ def register_api_endpoints(api):
     """
     Connect all resources with an appropriate url.
     """
-    api.add_resource(IdentityResource, "/identity")
+    api.add_resource(LoginResource, "/auth")
     api.add_resource(RegisterResource, "/register")
+    api.add_resource(IdentityResource, "/identity")
     api.add_resource(MovementsResource, "/movements")
     api.add_resource(SingleMovementResource, "/movements/<identifier>")
     api.add_resource(SubscriptionsResource, "/movements/subscriptions")
@@ -205,7 +206,10 @@ def create_app(overwrite_conf=None):
     api = Api(app)
     register_api_endpoints(api)
 
-    JWT(app, authenticate, identify)
+    jwt = JWTManager(app)
+
+    # For backwards compatibility with flask-jwt
+    app.config["JWT_HEADER_TYPE"] = "JWT"
 
     add_cli_commands(app, db)
 

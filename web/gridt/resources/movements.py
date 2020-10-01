@@ -1,6 +1,6 @@
 from flask import request
 from flask_restful import Resource, abort
-from flask_jwt import jwt_required, current_identity
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from marshmallow import ValidationError
 
@@ -15,14 +15,18 @@ from .helpers import get_user, get_movement
 class MovementsResource(Resource):
     schema = MovementSchema()
 
-    @jwt_required()
+    @jwt_required
     def get(self):
+        current_identity = User.query.get(get_jwt_identity())
+
         movements = Movement.query.all()
         movement_dicts = [movement.dictify(current_identity) for movement in movements]
         return movement_dicts, 200
 
-    @jwt_required()
+    @jwt_required
     def post(self):
+        current_identity = User.query.get(get_jwt_identity())
+
         try:
             res = self.schema.load(request.get_json())
         except ValidationError as error:
@@ -51,8 +55,10 @@ class MovementsResource(Resource):
 
 
 class SubscriptionsResource(Resource):
-    @jwt_required()
+    @jwt_required
     def get(self):
+        current_identity = User.query.get(get_jwt_identity())
+
         current_movements = set(current_identity.current_movements)
         movement_dicts = [
             movement.dictify(current_identity) for movement in current_movements
@@ -61,22 +67,28 @@ class SubscriptionsResource(Resource):
 
 
 class SingleMovementResource(Resource):
-    @jwt_required()
+    @jwt_required
     def get(self, identifier):
+        current_identity = User.query.get(get_jwt_identity())
+
         movement = get_movement(identifier)
         return movement.dictify(current_identity), 200
 
 
 class SubscribeResource(Resource):
-    @jwt_required()
+    @jwt_required
     def put(self, movement_id):
+        current_identity = User.query.get(get_jwt_identity())
+
         movement = get_movement(movement_id)
         if not current_identity in movement.current_users:
             movement.add_user(current_identity)
         return {"message": "Successfully subscribed to this movement."}, 200
 
-    @jwt_required()
+    @jwt_required
     def delete(self, movement_id):
+        current_identity = User.query.get(get_jwt_identity())
+
         movement = get_movement(movement_id)
         if current_identity in movement.current_users:
             movement.remove_user(current_identity)
@@ -84,8 +96,10 @@ class SubscribeResource(Resource):
 
 
 class NewSignalResource(Resource):
-    @jwt_required()
+    @jwt_required
     def post(self, movement_id):
+        current_identity = User.query.get(get_jwt_identity())
+
         movement = get_movement(movement_id)
         if current_identity not in movement.current_users:
             return {"message": "User is not subscribed to this movement."}, 400
