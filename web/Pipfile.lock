@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "8c6ef6064ef2f812a73a2060b94f7cbd42de51e81265d25904ab34f71547abf8"
+            "sha256": "22fa90bce73dbf404d06813eb49de4485ce88c68aaa8bd4f7744fbddb2439eb7"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -165,13 +165,13 @@
             "index": "pypi",
             "version": "==2.4.4"
         },
-        "freezegun": {
+        "gridtlib": {
             "hashes": [
-                "sha256:02b35de52f4699a78f6ac4518e4cd3390dddc43b0aeb978335a8f270a2d9668b",
-                "sha256:1cf08e441f913ff5e59b19cc065a8faa9dd1ddc442eaf0375294f344581a0643"
+                "sha256:78db77a06e0dc61ee90f22f41c315149e71bb284ad4bc3e2cbc5dee6e9359936",
+                "sha256:8bd423d977fd9f988d41482f495b85a6a0fa4b30fa5a44550816367d3a8b0e9b"
             ],
             "index": "pypi",
-            "version": "==1.0.0"
+            "version": "==0.0.1"
         },
         "gunicorn": {
             "hashes": [
@@ -319,13 +319,6 @@
                 "sha256:ef9d7589ef3c200abe66653d3f1ab1033c3c419ae9b9bdb1240a85b024efc88b"
             ],
             "version": "==2.4.7"
-        },
-        "python-dateutil": {
-            "hashes": [
-                "sha256:73ebfe9dbf22e832286dafa60473e4cd239f8592f699aa5adaf10050e6e1823c",
-                "sha256:75bb3f31ea686f1197762692a9ee6a7550b59fc6ca3a1f4b5d7e32fb98e2da2a"
-            ],
-            "version": "==2.8.1"
         },
         "python-http-client": {
             "hashes": [
