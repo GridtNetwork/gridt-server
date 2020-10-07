@@ -2,39 +2,21 @@ from flask import request
 from flask_restful import Resource
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
-from gridt_server.models.user import User
+from .helpers import schema_loader
 from gridt_server.schemas import NewUserSchema
-
-from marshmallow import ValidationError
+from gridt.controllers.user import get_identity, register
 
 
 class IdentityResource(Resource):
     @jwt_required
     def get(self):
-        current_identity = User.query.get(get_jwt_identity())
-        return (
-            {
-                "id": current_identity.id,
-                "username": current_identity.username,
-                "email": current_identity.email,
-                "bio": current_identity.bio,
-                "avatar": current_identity.get_email_hash(),
-            },
-            200,
-        )
+        return get_identity(get_jwt_identity())
 
 
 class RegisterResource(Resource):
+    schema = NewUserSchema()
+
     def post(self):
-        schema = NewUserSchema()
-
-        data = None
-        try:
-            data = schema.load(request.get_json())
-        except ValidationError:
-            return {"message": "Bad request"}, 400
-
-        user = User(data["username"], data["email"], data["password"])
-        user.save_to_db()
-
+        data = schema_loader(self.schema, request.get_json())
+        register(data["username"], data["email"], data["password"])
         return {"message": "Succesfully created user."}, 201
