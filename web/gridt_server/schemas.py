@@ -4,16 +4,15 @@ from marshmallow import (
     validates,
     validates_schema,
     ValidationError,
-    post_load,
 )
 from marshmallow.validate import Length, OneOf
 from flask import current_app
 import jwt
 
 from gridt_server.models import Movement
-from gridt_server.resources.helpers import get_movement, get_user
 from gridt.controllers.movements import movement_exists, user_in_movement
 from gridt.controllers.user import user_exists
+from gridt.controllers.follower import follows_leader
 
 
 class LoginSchema(Schema):
@@ -104,37 +103,25 @@ class IdField(fields.Field):
 
 class LeaderSchema(Schema):
     movement_id = IdField(required=True)
+    follower_id = fields.Int(required=True)
     leader_id = IdField(required=True)
-    _leader = None
-    _movement = None
+
+    @validates("movement_id")
+    def movement_exists(self, value):
+        if not movement_exists(value):
+            raise ValidationError("No movement found for that id.")
 
     @validates_schema
-    def validate(self, data, **kwargs):
-        # Separate functions instead of directly validating as one relies
-        # on the other and order needs to be preserved.
-        self.ensure_subscribed(data["movement_id"])
-        self.ensure_following(data["leader_id"])
-
-    def ensure_subscribed(self, movement_id):
-        movement = get_movement(movement_id)
-
-        if self.context["user"] not in movement.current_users:
+    def in_movement_and_following(self, data, **kwargs):
+        if not user_in_movement(data["follower_id"], data["movement_id"]):
             raise ValidationError("User is not subscribed to this movement.")
-
-        self._movement = movement
-
-    def ensure_following(self, value):
-        leader = get_user(value)
         # This prevents a malicious user from finding user ids.
         # Returning a 404 for a nonexistant user would give them more
         # information than we want to share.
-        if not leader or leader not in self.context["user"].leaders(self._movement):
+        if not user_exists(data["leader_id"]) or not follows_leader(
+            data["follower_id"], data["movement_id"], data["leader_id"]
+        ):
             raise ValidationError("User is not following this leader.")
-        self._leader = leader
-
-    @post_load
-    def return_queries(self, data, *args, **kwargs):
-        return {"movement": self._movement, "leader": self._leader}
 
 
 class SingleMovementSchema(Schema):

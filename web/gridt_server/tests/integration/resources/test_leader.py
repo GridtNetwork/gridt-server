@@ -1,9 +1,6 @@
-import lorem
 from freezegun import freeze_time
-from datetime import datetime
 
 from gridt_server.db import db
-
 from gridt_server.models.movement import Movement
 from gridt_server.models.signal import Signal
 from gridt_server.models.user import User
@@ -66,8 +63,7 @@ class SwapTest(BaseTest):
             token = self.obtain_token("test1@test.com", "pass")
 
             resp = self.client.post(
-                "/movements/Flossing/leader/1",
-                headers={"Authorization": f"JWT {token}"},
+                "/movements/1/leader/1", headers={"Authorization": f"JWT {token}"},
             )
 
             self.assertEqual(resp.status_code, 400)
@@ -89,8 +85,7 @@ class SwapTest(BaseTest):
             token = self.obtain_token("test1@test.com", "pass")
 
             resp = self.client.post(
-                "/movements/Flossing/leader/2",
-                headers={"Authorization": f"JWT {token}"},
+                "/movements/1/leader/2", headers={"Authorization": f"JWT {token}"},
             )
 
             self.assertEqual(resp.status_code, 400)
@@ -133,7 +128,7 @@ class LeaderProfileTest(BaseTest):
             signals = signals[:3]
 
             resp = self.request_as_user(
-                follower_dict, "GET", f"/movements/{movement.id}/leader/{leader.id}"
+                follower_dict, "GET", f"/movements/{movement.id}/leader/{leader.id}",
             )
             expected = leader_dict.copy()
             del expected["password"]

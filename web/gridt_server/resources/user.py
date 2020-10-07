@@ -4,7 +4,6 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from marshmallow import ValidationError
 
-from passlib.apps import custom_app_context as pwd_context
 
 from gridt_server.models.user import User
 from gridt_server.schemas import (
@@ -16,7 +15,6 @@ from gridt_server.schemas import (
     ResetPasswordSchema,
 )
 
-from gridt_server.db import db
 import jwt
 from util.email_templates import (
     send_password_reset_email,

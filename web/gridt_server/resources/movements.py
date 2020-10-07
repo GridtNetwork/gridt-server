@@ -66,7 +66,7 @@ class SubscribeResource(Resource):
     def put(self, movement_id):
         schema_loader(self.schema, {"movement_id": movement_id})
         subscribe(get_jwt_identity(), movement_id)
-        return {"message": "Successfully subscribed to this movement."}, 200
+        return {"message": "Successfully subscribed to this movement."}
 
     @jwt_required
     def delete(self, movement_id):
@@ -75,7 +75,7 @@ class SubscribeResource(Resource):
         # if the user is subscribed or not, if he is, he should be removed.
         if user_in_movement(get_jwt_identity(), movement_id):
             remove_user_from_movement(get_jwt_identity(), movement_id)
-        return {"message": "Successfully unsubscribed from this movement."}, 200
+        return {"message": "Successfully unsubscribed from this movement."}
 
 
 class NewSignalResource(Resource):
