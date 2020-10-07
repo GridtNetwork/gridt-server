@@ -388,7 +388,7 @@ class SubscribeTest(BaseTest):
             resp = self.client.delete(
                 "/movements/1/subscriber", headers={"Authorization": f"JWT {token}"},
             )
-            self.assertEqual(resp.status_code, 404)
+            self.assertEqual(resp.status_code, 400)
             self.assertEqual(
                 json.loads(resp.data),
                 {"message": "movement_id: No movement found for that id."},

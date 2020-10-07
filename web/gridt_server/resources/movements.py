@@ -7,7 +7,6 @@ from gridt_server.schemas import (
     SingleMovementSchema,
     SignalSchema,
 )
-from gridt_server.models.user import User
 
 from .helpers import schema_loader
 
@@ -18,7 +17,11 @@ from gridt.controllers.movements import (
     subscribe,
 )
 from gridt.controllers.leader import send_signal
-from gridt.controllers.movements import new_movement
+from gridt.controllers.movements import (
+    new_movement,
+    remove_user_from_movement,
+    user_in_movement,
+)
 
 
 class MovementsResource(Resource):
@@ -67,11 +70,11 @@ class SubscribeResource(Resource):
 
     @jwt_required
     def delete(self, movement_id):
-        current_identity = User.query.get(get_jwt_identity())
-
-        movement = get_movement(movement_id)
-        if current_identity in movement.current_users:
-            movement.remove_user(current_identity)
+        schema_loader(self.schema, {"movement_id": movement_id})
+        # HTTP DELETE request is idempotent, meaning that it should not matter
+        # if the user is subscribed or not, if he is, he should be removed.
+        if user_in_movement(get_jwt_identity(), movement_id):
+            remove_user_from_movement(get_jwt_identity(), movement_id)
         return {"message": "Successfully unsubscribed from this movement."}, 200
 
 
