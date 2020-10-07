@@ -11,7 +11,7 @@ import jwt
 
 from gridt_server.models import Movement
 from gridt.controllers.movements import movement_exists, user_in_movement
-from gridt.controllers.user import user_exists
+from gridt.controllers.user import user_exists, verify_password_for_id
 from gridt.controllers.follower import follows_leader
 
 
@@ -49,6 +49,11 @@ class ChangePasswordSchema(Schema):
     old_password = fields.Str(required=True)
     new_password = fields.Str(required=True)
 
+    @validates("old_password")
+    def old_password_correct(self, value):
+        if not verify_password_for_id(self.context["user_id"], value):
+            raise ValidationError("Failed to identify user with given password.")
+
 
 class RequestPasswordResetSchema(Schema):
     email = fields.Email(required=True)
@@ -75,7 +80,7 @@ class RequestEmailChangeSchema(Schema):
 
     @validates("password")
     def validate_password(self, value):
-        if not self.context["user"].verify_password(value):
+        if not verify_password_for_id(self.context["user_id"], value):
             raise ValidationError("Failed to identify user with given password.")
 
 
@@ -103,6 +108,7 @@ class IdField(fields.Field):
 
 class LeaderSchema(Schema):
     movement_id = IdField(required=True)
+    # follower_id could have been made a context instead
     follower_id = fields.Int(required=True)
     leader_id = IdField(required=True)
 

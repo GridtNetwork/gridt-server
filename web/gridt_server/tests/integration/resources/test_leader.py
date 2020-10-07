@@ -48,9 +48,10 @@ class SwapTest(BaseTest):
                 headers={"Authorization": f"JWT {token}"},
             )
 
-            self.assertEqual(resp.status_code, 404)
+            self.assertEqual(resp.status_code, 400)
             self.assertEqual(
-                resp.get_json(), {"message": "This movement does not exist."}
+                resp.get_json(),
+                {"message": "movement_id: No movement found for that id."},
             )
 
     def test_swap_leader_movement_not_subscribed(self):

@@ -4,12 +4,12 @@ import os
 
 from flask import current_app
 from freezegun import freeze_time
-import datetime
 
-from marshmallow import Schema, ValidationError
+from marshmallow import ValidationError
 
 from gridt_server.tests.base_test import BaseTest
 from gridt_server.models.user import User
+from gridt_server.db import db
 
 from unittest.mock import patch
 
@@ -25,20 +25,26 @@ class UserResourceTest(BaseTest):
                 self.users[0], "PUT", "/bio", json={"bio": new_bio}
             )
 
+            # Reload user
+            db.session.expunge_all()
+            user = User.query.get(1)
+
             self.assertEqual(resp.get_json(), {"message": "Bio successfully changed."})
             self.assertEqual(user.bio, new_bio)
 
     def test_update_bio_improperly(self):
         with self.app_context():
-            user = self.create_user(generate_bio=True)
+            self.create_user(generate_bio=True)
 
             resp = self.request_as_user(self.users[0], "PUT", "/bio", json={})
 
-            self.assertEqual(resp.get_json(), {"message": "Bad request."})
+            self.assertEqual(
+                resp.get_json(), {"message": "bio: Missing data for required field."},
+            )
 
     def test_change_password_with_no_password(self):
         with self.app_context():
-            user = self.create_user()
+            self.create_user()
 
             resp = self.request_as_user(
                 self.users[0], "POST", "/user/change_password", json={}
@@ -74,7 +80,14 @@ class UserResourceTest(BaseTest):
             self.assertIn("message", resp.get_json())
             self.assertEqual(resp.status_code, 400)
 
-    @patch("util.email_templates.send_email", return_value=True)
+    @patch("gridt.util.email_templates.send_email", return_value=True)
+    @patch.dict(
+        os.environ,
+        {
+            "PASSWORD_CHANGE_NOTIFICATION_TEMPLATE": "mytemp",
+            "EMAIL_API_KEY": "random key",
+        },
+    )
     def test_change_password_with_correct_password(self, func):
         with self.app_context():
             user = self.create_user()
@@ -89,15 +102,18 @@ class UserResourceTest(BaseTest):
                 },
             )
 
-            template_id = current_app.config["PASSWORD_CHANGE_NOTIFICATION_TEMPLATE"]
             template_data = {
                 "link": "https://app.gridt.org/user/reset_password/request"
             }
 
+            # Reload user changed by gridtlib
+            db.session.expunge_all()
+            user = User.query.get(1)
+
             self.assertIn("message", resp.get_json())
             self.assertEqual(resp.status_code, 200)
             self.assertTrue(user.verify_password("somethingyoullneverguess"))
-            func.assert_called_with(user.email, template_id, template_data)
+            func.assert_called_with(user.email, "mytemp", template_data)
 
     def test_no_api_key(self):
         with self.app_context():
@@ -111,8 +127,9 @@ class UserResourceTest(BaseTest):
             self.assertIn("message", resp.get_json())
             self.assertEqual(resp.status_code, 500)
 
+    @patch("gridt.controllers.user.logging.critical")
     @patch("util.email_templates.send_email", return_value=True)
-    def test_send_password_reset_email_wrong(self, func):
+    def test_send_password_reset_email_wrong(self, email_func, log_func):
         with self.app_context():
             # Make a request with nonexistent e-mail
             email = "nonexistent@email.com"
@@ -122,7 +139,7 @@ class UserResourceTest(BaseTest):
             )
 
             # Test that email will not get sent
-            func.assert_not_called()
+            email_func.assert_not_called()
 
             # In order to not give away sensitive information
             # message must be the same as a successful attempt
@@ -130,7 +147,8 @@ class UserResourceTest(BaseTest):
             self.assertEqual(resp.status_code, 200)
 
     @freeze_time("2020-08-25 17:19:00")
-    @patch("util.email_templates.send_email", return_value=True)
+    @patch.dict("os.environ", {"PASSWORD_RESET_TEMPLATE": "random key"})
+    @patch("gridt.util.email_templates.send_email", return_value=True)
     def test_send_password_reset_email_correct(self, func):
         # Request reset password, e-mail in database
         with self.app_context():
@@ -142,12 +160,11 @@ class UserResourceTest(BaseTest):
 
             token = user.get_password_reset_token()
 
-            template_id = current_app.config["PASSWORD_RESET_TEMPLATE"]
             template_data = {
                 "link": f"https://app.gridt.org/user/reset_password/confirm?token={token}"
             }
 
-            func.assert_called_with(user.email, template_id, template_data)
+            func.assert_called_with(user.email, "random key", template_data)
             self.assertIn("message", resp.get_json())
             self.assertEqual(resp.status_code, 200)
 
@@ -219,7 +236,10 @@ class UserResourceTest(BaseTest):
             self.assertIn("message", resp.get_json())
             self.assertEqual(resp.status_code, 400)
 
-    @patch("util.email_templates.send_email", return_value=True)
+    @patch("gridt.util.email_templates.send_email", return_value=True)
+    @patch.dict(
+        os.environ, {"EMAIL_CHANGE_TEMPLATE": "random key"},
+    )
     def test_request_email_change_correct(self, func):
         with self.app_context():
             user = self.create_user()
@@ -237,21 +257,21 @@ class UserResourceTest(BaseTest):
 
                 token = user.get_email_change_token(new_email)
 
-                template_id = current_app.config["EMAIL_CHANGE_TEMPLATE"]
                 template_data = {
                     "username": user.username,
                     "link": f"https://app.gridt.org/user/change_email/confirm?token={token}",
                 }
 
-                func.assert_called_with(new_email, template_id, template_data)
+                func.assert_called_with(new_email, "random key", template_data)
                 self.assertIn("message", resp.get_json())
                 self.assertEqual(resp.status_code, 200)
 
+    @patch("gridt.controllers.user.logging.critical")
     @patch("util.email_templates.send_email", return_value=True)
-    def test_request_email_change_existing_email(self, func):
+    def test_request_email_change_existing_email(self, email_func, log_func):
         with self.app_context():
-            user1 = self.create_user()
-            user2 = self.create_user()
+            self.create_user()
+            self.create_user()
 
             resp = self.request_as_user(
                 self.users[0],
@@ -265,7 +285,7 @@ class UserResourceTest(BaseTest):
 
             self.assertIn("message", resp.get_json())
             self.assertEqual(resp.status_code, 200)
-            func.assert_not_called()
+            email_func.assert_not_called()
 
     @patch(
         "gridt_server.resources.user.RequestEmailChangeResource.schema.load",
@@ -283,7 +303,8 @@ class UserResourceTest(BaseTest):
             func.assert_called_with({})
             self.assertEqual(resp.status_code, 400)
 
-    @patch("util.email_templates.send_email", return_value=True)
+    @patch("gridt.util.email_templates.send_email", return_value=True)
+    @patch.dict("os.environ", {"EMAIL_CHANGE_NOTIFICATION_TEMPLATE": "random key"})
     def test_change_email_proper_schema(self, func):
         with self.app_context():
             user = self.create_user()
@@ -292,13 +313,16 @@ class UserResourceTest(BaseTest):
 
             resp = self.client.post("/user/change_email/confirm", json={"token": token})
 
-            template_id = current_app.config["EMAIL_CHANGE_NOTIFICATION_TEMPLATE"]
             template_data = {"username": user.username}
+
+            # Reload user from database because of conflicting sessions.
+            db.session.expunge_all()
+            user = User.query.get(1)
 
             self.assertIn("message", resp.get_json())
             self.assertEqual(resp.status_code, 200)
             self.assertEqual(user.email, "new@email.com")
-            func.assert_called_with(user.email, template_id, template_data)
+            func.assert_called_with(user.email, "random key", template_data)
 
     @patch(
         "marshmallow.Schema.load",
