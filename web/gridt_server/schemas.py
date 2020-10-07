@@ -6,12 +6,14 @@ from marshmallow import (
     ValidationError,
     post_load,
 )
-from marshmallow.validate import Length, OneOf, Equal
+from marshmallow.validate import Length, OneOf
 from flask import current_app
 import jwt
 
 from gridt_server.models import Movement
 from gridt_server.resources.helpers import get_movement, get_user
+from gridt.controllers.movements import movement_exists, user_in_movement
+from gridt.controllers.user import user_exists
 
 
 class LoginSchema(Schema):
@@ -61,7 +63,7 @@ class ResetPasswordSchema(Schema):
     def validate_token(self, value):
         secret_key = current_app.config["SECRET_KEY"]
         try:
-            token_decoded = jwt.decode(value, secret_key, algorithms=["HS256"])
+            jwt.decode(value, secret_key, algorithms=["HS256"])
         except jwt.ExpiredSignatureError:
             raise ValidationError("Signature has expired.")
         except jwt.InvalidTokenError:
@@ -85,7 +87,7 @@ class ChangeEmailSchema(Schema):
     def validate_token(self, value):
         secret_key = current_app.config["SECRET_KEY"]
         try:
-            token_decoded = jwt.decode(value, secret_key, algorithms=["HS256"])
+            jwt.decode(value, secret_key, algorithms=["HS256"])
         except jwt.ExpiredSignatureError:
             raise ValidationError("Signature has expired.")
         except jwt.InvalidTokenError:
@@ -133,3 +135,32 @@ class LeaderSchema(Schema):
     @post_load
     def return_queries(self, data, *args, **kwargs):
         return {"movement": self._movement, "leader": self._leader}
+
+
+class SingleMovementSchema(Schema):
+    movement_id = fields.Int(required=True)
+
+    @validates("movement_id")
+    def movement_exists(self, value):
+        if not movement_exists(value):
+            raise ValidationError("No movement found for that id.")
+
+
+class SignalSchema(Schema):
+    movement_id = fields.Int(required=True)
+    leader_id = fields.Int(required=True)
+
+    @validates("movement_id")
+    def movement_exists(self, value):
+        if not movement_exists(value):
+            raise ValidationError("No movement found for that id.")
+
+    @validates("leader_id")
+    def leader_exists(self, value):
+        if not user_exists(value):
+            raise ValidationError("No user found for that id.")
+
+    @validates_schema
+    def leader_in_movement(self, data, *args, **kwargs):
+        if not user_in_movement(data["leader_id"], data["movement_id"]):
+            raise ValidationError("User not subscribed to movement")

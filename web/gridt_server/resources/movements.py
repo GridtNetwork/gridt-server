@@ -1,18 +1,24 @@
 from flask import request
-from flask_restful import Resource, abort
+from flask_restful import Resource
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
-from marshmallow import ValidationError
-
-from gridt_server.schemas import MovementSchema
-from gridt_server.models.movement import Movement
+from gridt_server.schemas import (
+    MovementSchema,
+    SingleMovementSchema,
+    SignalSchema,
+)
 from gridt_server.models.user import User
-from gridt_server.models.signal import Signal
 
-from .helpers import get_movement, schema_loader
+from .helpers import schema_loader
 
 from gridt.controllers.follower import get_subscriptions
-from gridt.controllers.movements import get_all_movements
+from gridt.controllers.movements import (
+    get_all_movements,
+    get_movement,
+    subscribe,
+)
+from gridt.controllers.leader import send_signal
+from gridt.controllers.movements import new_movement
 
 
 class MovementsResource(Resource):
@@ -24,18 +30,14 @@ class MovementsResource(Resource):
 
     @jwt_required
     def post(self):
-        current_identity = User.query.get(get_jwt_identity())
         data = schema_loader(self.schema, request.get_json())
-
-        movement = Movement(
+        new_movement(
+            get_jwt_identity(),
             data["name"],
             data["interval"],
-            short_description=data["short_description"],
-            description=data.get("description"),
+            data["short_description"],
+            data.get("long_description"),
         )
-        movement.save_to_db()
-        movement.add_user(current_identity)
-
         return {"message": "Successfully created movement."}, 201
 
 
@@ -46,22 +48,21 @@ class SubscriptionsResource(Resource):
 
 
 class SingleMovementResource(Resource):
+    schema = SingleMovementSchema()
+
     @jwt_required
     def get(self, identifier):
-        current_identity = User.query.get(get_jwt_identity())
-
-        movement = get_movement(identifier)
-        return movement.dictify(current_identity), 200
+        schema_loader(self.schema, {"movement_id": identifier})
+        return get_movement(identifier, get_jwt_identity())
 
 
 class SubscribeResource(Resource):
+    schema = SingleMovementSchema()
+
     @jwt_required
     def put(self, movement_id):
-        current_identity = User.query.get(get_jwt_identity())
-
-        movement = get_movement(movement_id)
-        if not current_identity in movement.current_users:
-            movement.add_user(current_identity)
+        schema_loader(self.schema, {"movement_id": movement_id})
+        subscribe(get_jwt_identity(), movement_id)
         return {"message": "Successfully subscribed to this movement."}, 200
 
     @jwt_required
@@ -75,19 +76,17 @@ class SubscribeResource(Resource):
 
 
 class NewSignalResource(Resource):
+    schema = SignalSchema()
+
     @jwt_required
     def post(self, movement_id):
-        current_identity = User.query.get(get_jwt_identity())
-
-        movement = get_movement(movement_id)
-        if current_identity not in movement.current_users:
-            return {"message": "User is not subscribed to this movement."}, 400
-
+        schema_loader(
+            self.schema, {"leader_id": get_jwt_identity(), "movement_id": movement_id},
+        )
         message = None
         if request.get_json():
             message = request.get_json().get("message")
 
-        signal = Signal(current_identity, movement, message)
-        signal.save_to_db()
+        send_signal(get_jwt_identity(), movement_id, message)
 
         return {"message": "Successfully created signal."}, 201

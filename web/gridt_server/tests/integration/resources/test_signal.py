@@ -1,6 +1,5 @@
-import json
+from freezegun import freeze_time
 from unittest.mock import patch
-from datetime import datetime, timedelta
 
 from gridt_server.tests.base_test import BaseTest
 from gridt_server.db import db
@@ -8,15 +7,20 @@ from gridt_server.models.user import User
 from gridt_server.models.movement import Movement
 from gridt_server.models.movement import Signal
 
-NOW = datetime.now()
-LATER = datetime.now() + timedelta(hours=10)
-
 
 class SignalTest(BaseTest):
-    @patch("gridt_server.models.signal.Signal._get_now", side_effect=[NOW, LATER])
-    def test_send_signal(self, get_now_mock):
+    @patch("flask_jwt_extended.view_decorators.verify_jwt_in_request")
+    def test_send_signal(self, verify_func):
+        """
+        In the database "now" a signal by user1 in movement1 is stored.
+        It is then checked that user2 can see this. Then at "later" user1
+        sends a request to create a signal with a message. User2 requests
+        this message.
+        """
         with self.app_context():
-            # Create fake data
+            now = "1995-01-15 12:00:00+01:00"
+            later = "1996-03-15 12:00:00+01:00"
+
             user1 = User("test1", "test1@test.com", "pass")
             user2 = User("test2", "test2@test.com", "pass")
             movement1 = Movement("test movement 1", "twice daily", "Hello")
@@ -25,29 +29,30 @@ class SignalTest(BaseTest):
 
             movement1.add_user(user1)
             movement1.add_user(user2)
-            signal = Signal(user1, movement1)
-            db.session.add_all([signal])
-            db.session.commit()
+            with freeze_time(now, tz_offset=1):
+                signal = Signal(user1, movement1)
+                db.session.add_all([signal])
+                db.session.commit()
 
-            token1 = self.obtain_token("test1@test.com", "pass")
-            token2 = self.obtain_token("test2@test.com", "pass")
+            with patch(
+                "gridt_server.resources.movements.get_jwt_identity", return_value=2,
+            ):
+                resp1 = self.client.get("/movements/1")
 
-            resp1 = self.client.get(
-                "/movements/1", headers={"Authorization": f"JWT {token2}"}
-            )
-
-            expected1 = {"time_stamp": str(NOW.astimezone())}
+            expected1 = {"time_stamp": now}
             self.assertEqual(resp1.get_json()["leaders"][0]["last_signal"], expected1)
 
-            self.client.post(
-                "/movements/1/signal",
-                json={"message": "Hello"},
-                headers={"Authorization": f"JWT {token1}"},
-            )
+            with freeze_time(later, tz_offset=1), patch(
+                "gridt_server.resources.movements.get_jwt_identity", return_value=1,
+            ):
+                self.client.post(
+                    "/movements/1/signal", json={"message": "Test Message"},
+                )
 
-            resp2 = self.client.get(
-                "/movements/1", headers={"Authorization": f"JWT {token2}"}
-            )
+            with patch(
+                "gridt_server.resources.movements.get_jwt_identity", return_value=2,
+            ):
+                resp2 = self.client.get("/movements/1")
 
-            expected2 = {"time_stamp": str(LATER.astimezone()), "message": "Hello"}
+            expected2 = {"time_stamp": later, "message": "Test Message"}
             self.assertEqual(resp2.get_json()["leaders"][0]["last_signal"], expected2)
