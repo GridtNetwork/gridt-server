@@ -7,7 +7,7 @@ services:
         ports:
             - '3306:3306'
         environment:
-            MYSQL_ROOT_PASSWORD: root # TODO: Change this to something more secure on actual server!
+            MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_root_password
         volumes:
             - ./db:/docker-entrypoint-initdb.d/:ro
         networks:
@@ -20,6 +20,7 @@ services:
             args:
                 FLASK_CONFIGURATION: /etc/gridt/gridt.conf
         secrets:
+            - db
             - flask
         networks:
             - nginx_network
@@ -103,3 +104,5 @@ networks:
 secrets:
     flask:
         file: ./data/web/flask_secret_key.txt
+    db:
+        file: ./data/db/mysql_root_pass.txt

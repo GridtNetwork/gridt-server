@@ -59,6 +59,13 @@ def load_config(app, overwrite_conf):
         app.logger.error(f"Could not find file {config_file}, exiting.")
         sys.exit(1)
 
+    if app.config.get("DB_ROOT_PASSWORD_FILE"):
+        with open(app.config.get("DB_ROOT_PASSWORD_FILE"), "r") as f:
+            app.config["DB_ROOT_PASSWORD"] = f.read()
+    if app.config.get("DB_PASSWORD_FILE"):
+        with open(app.config.get("DB_PASSWORD_FILE"), "r") as f:
+            app.config["DB_PASSWORD"] = f.read()
+
     if not app.config.get("SECRET_KEY"):
         try:
             path = app.config.get("SECRET_KEY_FILE")
