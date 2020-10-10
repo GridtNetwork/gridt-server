@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f ../docker-compose.yml
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: prometheus
+  name: prometheus
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: prometheus
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f ../docker-compose.yml
+        kompose.version: 1.21.0 (992df58d8)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/db_network: "true"
+        io.kompose.network/nginx_network: "true"
+        io.kompose.service: prometheus
+    spec:
+      containers:
+      - image: prom/prometheus:v2.2.1
+        imagePullPolicy: ""
+        name: prometheus
+        ports:
+        - containerPort: 9090
+        resources: {}
+        volumeMounts:
+        - mountPath: /etc/prometheus/prometheus.yml
+          name: prometheus-claim0
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes:
+      - name: prometheus-claim0
+        persistentVolumeClaim:
+          claimName: prometheus-claim0
+status: {}
