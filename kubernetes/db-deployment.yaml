@@ -48,4 +48,6 @@ spec:
         persistentVolumeClaim:
           claimName: db-claim0
           readOnly: true
+      nodeSelector:
+        gridt-role: database
 status: {}
