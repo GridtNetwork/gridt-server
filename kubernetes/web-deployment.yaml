@@ -28,7 +28,7 @@ spec:
     spec:
       containers:
       - image: web
-        imagePullPolicy: ""
+        imagePullPolicy: IfNotPresent
         name: web
         resources: {}
         volumeMounts:
