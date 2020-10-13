@@ -1,4 +1,13 @@
 configMapGenerator:
-- name: nginx-gridt
-  files:
-  - gridt.conf=nginx/gridt.conf
+  - name: nginx-gridt
+    files:
+    - gridt.conf=nginx/gridt.conf
+  - name: web-conf
+    files:
+    - gridt.conf=web/gridt.conf
+secretGenerator:
+  - name: flask
+    files:
+    - secrets/flask_secret_key.txt
+    - secrets/mysql_root_pass.txt
+    - secrets/ca-certificate.crt

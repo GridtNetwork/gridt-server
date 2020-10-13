@@ -14,6 +14,7 @@ import click
 from functools import reduce
 
 from sqlalchemy_utils import database_exists, create_database
+import sqlalchemy
 
 from flask import Flask, jsonify
 from flask.cli import FlaskGroup

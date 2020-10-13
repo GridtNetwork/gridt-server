@@ -27,41 +27,27 @@ spec:
         io.kompose.service: web
     spec:
       containers:
-      - image: web
+      - image: drvanon/gridt
+        env:
+          - name: FLASK_CONFIGURATION
+            value: /etc/gridt/gridt.conf
         imagePullPolicy: IfNotPresent
         name: web
         resources: {}
         volumeMounts:
-        - mountPath: /run/secrets/certificate
-          name: certificate
-        - mountPath: /run/secrets/db
-          name: db
         - mountPath: /run/secrets/flask
           name: flask
         - mountPath: /etc/gridt
-          name: web-claim0
+          name: web-conf
+      imagePullSecrets:
+      - name: regcred
       restartPolicy: Always
       serviceAccountName: ""
       volumes:
-      - name: db
-        secret:
-          items:
-          - key: db
-            path: db
-          secretName: db
+      - name: web-conf
+        configMap:
+          name: web-conf-mmtg6fdcc9
       - name: flask
         secret:
-          items:
-          - key: flask
-            path: flask
-          secretName: flask
-      - name: certificate
-        secret:
-           items:
-           - key: certificate
-             path: certificate
-           secretName: certificate
-      - name: web-claim0
-        persistentVolumeClaim:
-          claimName: web-claim0
+          secretName: flask-7572dmdm7b
 status: {}
