@@ -1,0 +1,4 @@
+configMapGenerator:
+- name: nginx-gridt
+  files:
+  - gridt.conf=nginx/gridt.conf

@@ -29,8 +29,8 @@ spec:
       - args:
         - /bin/sh
         - -c
-        - while :; do sleep 6h & wait ${!}; nginx -s reload; done & nginx -g "daemon
-          off;"
+        - while :; do sleep 6h & wait ${!}; nginx -s reload; done & nginx -g "daemon off;"
+        command: ["sleep", "infinity"]
         image: nginx:alpine
         imagePullPolicy: ""
         name: nginx
@@ -40,11 +40,14 @@ spec:
         resources: {}
         volumeMounts:
         - mountPath: /etc/nginx/conf.d
-          name: nginx-claim0
+          name: nginx-conf-files
+          readOnly: true
+      nodeSelector:
+        gridt-role: database
       restartPolicy: Always
       serviceAccountName: ""
       volumes:
-      - name: nginx-claim0
-        persistentVolumeClaim:
-          claimName: nginx-claim0
+      - name: nginx-conf-files
+        configMap:
+          name: nginx-gridt-2b55kb8dg2
 status: {}

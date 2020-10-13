@@ -66,6 +66,15 @@ def load_config(app, overwrite_conf):
         with open(app.config.get("DB_PASSWORD_FILE"), "r") as f:
             app.config["DB_PASSWORD"] = f.read()
 
+    if app.config.get("DB_CA_CERT"):
+        app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+            "connect_args": {
+                "ssl": {
+                    "ca": app.config["DB_CA_CERT"]
+                }
+            }
+        }
+
     if not app.config.get("SECRET_KEY"):
         try:
             path = app.config.get("SECRET_KEY_FILE")

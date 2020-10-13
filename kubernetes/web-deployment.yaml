@@ -32,6 +32,8 @@ spec:
         name: web
         resources: {}
         volumeMounts:
+        - mountPath: /run/secrets/certificate
+          name: certificate
         - mountPath: /run/secrets/db
           name: db
         - mountPath: /run/secrets/flask
@@ -53,6 +55,12 @@ spec:
           - key: flask
             path: flask
           secretName: flask
+      - name: certificate
+        secret:
+           items:
+           - key: certificate
+             path: certificate
+           secretName: certificate
       - name: web-claim0
         persistentVolumeClaim:
           claimName: web-claim0
