@@ -31,7 +31,7 @@ spec:
         env:
           - name: FLASK_CONFIGURATION
             value: /etc/gridt/gridt.conf
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         name: web
         resources: {}
         volumeMounts:
@@ -46,8 +46,8 @@ spec:
       volumes:
       - name: web-conf
         configMap:
-          name: web-conf-mmtg6fdcc9
+          name: web-conf
       - name: flask
         secret:
-          secretName: flask-7572dmdm7b
+          secretName: flask
 status: {}
