@@ -65,7 +65,8 @@ def load_config(app, overwrite_conf):
             app.config["DB_ROOT_PASSWORD"] = f.read()
     if app.config.get("DB_PASSWORD_FILE"):
         with open(app.config.get("DB_PASSWORD_FILE"), "r") as f:
-            app.config["DB_PASSWORD"] = f.read()
+            # Remove line end whitespace
+            app.config["DB_PASSWORD"] = f.readline()[:-1]
 
     if app.config.get("DB_CA_CERT"):
         app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
@@ -195,6 +196,7 @@ def create_app(overwrite_conf=None):
 
     """
     app = Flask(__name__)
+    app.logger.setLevel(logging.INFO)
     metrics = GunicornPrometheusMetrics(app)
 
     load_config(app, overwrite_conf)
