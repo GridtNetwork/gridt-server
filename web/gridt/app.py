@@ -204,10 +204,7 @@ def create_app(overwrite_conf=None):
     try:
         db.init_app(app)
     except ConnectionRefusedError:
-        print("Connection was refused, exiting.")
-        sys.exit(1)
-    except pymysql.err.ProgrammingError:
-        print("Programming error, exiting.")
+        app.logger.critical("Connection was refused, exiting.")
         sys.exit(1)
 
     try:
