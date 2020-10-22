@@ -8,7 +8,6 @@ test environment.
 
 import os
 import sys
-import click
 
 from sqlalchemy_utils import database_exists, create_database
 from sqlalchemy.exc import OperationalError
@@ -18,8 +17,6 @@ from flask_jwt_extended import JWTManager
 from flask_restful import Api
 
 from gridt_server.db import db
-
-from gridt_server.models.movement import Movement
 
 from gridt_server.resources.register import IdentityResource, RegisterResource
 from gridt_server.resources.user import (
