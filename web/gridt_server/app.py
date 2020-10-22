@@ -8,7 +8,6 @@ test environment.
 
 import os
 import sys
-import click
 
 from sqlalchemy_utils import database_exists, create_database
 from sqlalchemy.exc import OperationalError
@@ -18,8 +17,6 @@ from flask_jwt_extended import JWTManager
 from flask_restful import Api
 
 from gridt_server.db import db
-
-from gridt_server.models.movement import Movement
 
 from gridt_server.resources.register import IdentityResource, RegisterResource
 from gridt_server.resources.user import (
@@ -116,49 +113,6 @@ def register_api_endpoints(api):
     api.add_resource(ChangeEmailResource, "/user/change_email/confirm")
 
 
-def add_cli_commands(app, db):
-    @app.cli.command("initdb")
-    def initialize_database():
-        """
-        Initialize the database.
-
-        Mainly consists of creating the tables.
-        """
-        app.logger.info(
-            f"Writing to database '{app.config['SQLALCHEMY_DATABASE_URI']}'."
-        )
-        db.create_all()
-
-    @app.cli.command("insert-test-data")
-    def insert_test_data():
-        """
-        Insert test data into the database.
-
-        Current dataset is very limited.
-        """
-        movement = Movement("test", "daily")
-        movement.save_to_db()
-
-    @app.cli.command("delete-movement")
-    @click.argument("movement_name")
-    def delete_movement(movement_name):
-        """ Delete a movement from the database. """
-        movement = Movement.find_by_name(movement_name)
-        if not movement:
-            app.logger.error(f"Could not find movement with name '{movement_name}.'")
-            return 1
-
-        q = "neither"
-        while not q in ["", "y", "n", "Y", "N", "yes", "no"]:
-            q = input(
-                f"Do you really want to delete the movement with name '{movement_name}'? [y/N]"
-            )
-        if q in ["", "n", "N", "no"]:
-            return
-
-        movement.delete_from_db()
-
-
 def create_app(overwrite_conf=None):
     """
     :param overwrite_conf: default None, argument should be the name (excluding the .conf suffix) of the conf file in conf/ that you want to use.
@@ -207,10 +161,4 @@ def create_app(overwrite_conf=None):
     # For backwards compatibility with flask-jwt
     app.config["JWT_HEADER_TYPE"] = "JWT"
 
-    add_cli_commands(app, db)
-
     return app
-
-
-if __name__ == "__main__":
-    cli()
