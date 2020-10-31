@@ -2,21 +2,25 @@
 App module
 **********
 
-This module provides ``create_app()``, it is the main entry point for the application. When executing the commmand `flask run` it will find this module and search for create_app and run it. BaseTest also uses this file to provide a
-test environment.
+This module provides ``create_app()``, it is the main entry point for the 
+application. When executing the commmand `flask run` it will find this module 
+and search for create_app and run it. BaseTest also uses this file to provide 
+a test environment.
 """
 
 import os
 import sys
 
+from sqlalchemy import create_engine
 from sqlalchemy_utils import database_exists, create_database
 from sqlalchemy.exc import OperationalError
 
 from flask import Flask
 from flask_jwt_extended import JWTManager
 from flask_restful import Api
+from flask_sqlalchemy import SQLAlchemy
 
-from gridt_server.db import db
+from gridt.db import Session
 
 from gridt_server.resources.register import IdentityResource, RegisterResource
 from gridt_server.resources.user import (
@@ -128,11 +132,19 @@ def create_app(overwrite_conf=None):
     Then you can run ``create_app('your_file')`` to overwrite whatever is in the ``FLASK_CONFIGURATION`` bash variable in that moment.
 
     """
+
+    db = SQLAlchemy()
     app = Flask(__name__)
     metrics = GunicornPrometheusMetrics(app)
 
     load_config(app, overwrite_conf)
     construct_database_url(app)
+
+    @app.before_first_request
+    def before_first_request():
+        engine = create_engine(app.config["SQLALCHEMY_DATABASE_URI"])
+        Session.configure(bind=engine)
+
     try:
         db.init_app(app)
     except ConnectionRefusedError:
@@ -149,9 +161,6 @@ def create_app(overwrite_conf=None):
         print("Could not connect to database.")
         sys.exit(1)
 
-    if app.config.get("FLASK_DEBUG", True):
-        with app.app_context():
-            db.create_all()
 
     api = Api(app)
     register_api_endpoints(api)
