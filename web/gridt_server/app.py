@@ -2,13 +2,16 @@
 App module
 **********
 
-This module provides ``create_app()``, it is the main entry point for the application. When executing the commmand `flask run` it will find this module and search for create_app and run it. BaseTest also uses this file to provide a
-test environment.
+This module provides ``create_app()``, it is the main entry point for the 
+application. When executing the commmand `flask run` it will find this module 
+and search for create_app and run it. BaseTest also uses this file to provide 
+a test environment.
 """
 
 import os
 import sys
 
+from sqlalchemy import create_engine
 from sqlalchemy_utils import database_exists, create_database
 from sqlalchemy.exc import OperationalError
 
@@ -16,7 +19,7 @@ from flask import Flask
 from flask_jwt_extended import JWTManager
 from flask_restful import Api
 
-from gridt_server.db import db
+from gridt.db import Session
 
 from gridt_server.resources.register import IdentityResource, RegisterResource
 from gridt_server.resources.user import (
@@ -133,25 +136,25 @@ def create_app(overwrite_conf=None):
 
     load_config(app, overwrite_conf)
     construct_database_url(app)
-    try:
-        db.init_app(app)
-    except ConnectionRefusedError:
-        print("Connection was refused, exiting.")
-        sys.exit(1)
-    except pymysql.err.ProgrammingError:
-        print("Programming error, exiting.")
-        sys.exit(1)
+
+    @app.before_first_request
+    def before_first_request():
+        try:
+            engine = create_engine(app.config["SQLALCHEMY_DATABASE_URI"])
+            Session.configure(bind=engine)
+        except ConnectionRefusedError:
+            app.logger.critical("Connection was refused, exiting.")
+            sys.exit(1)
+        except pymysql.err.ProgrammingError:
+            app.logger.critical("Programming error, exiting.")
+            sys.exit(1)
 
     try:
         if not database_exists(app.config["SQLALCHEMY_DATABASE_URI"]):
             create_database(app.config["SQLALCHEMY_DATABASE_URI"])
     except OperationalError:
-        print("Could not connect to database.")
+        app.logger.critical("Could not connect to database.")
         sys.exit(1)
-
-    if app.config.get("FLASK_DEBUG", True):
-        with app.app_context():
-            db.create_all()
 
     api = Api(app)
     register_api_endpoints(api)
