@@ -18,7 +18,6 @@ from sqlalchemy.exc import OperationalError
 from flask import Flask
 from flask_jwt_extended import JWTManager
 from flask_restful import Api
-from flask_sqlalchemy import SQLAlchemy
 
 from gridt.db import Session
 
@@ -132,8 +131,6 @@ def create_app(overwrite_conf=None):
     Then you can run ``create_app('your_file')`` to overwrite whatever is in the ``FLASK_CONFIGURATION`` bash variable in that moment.
 
     """
-
-    db = SQLAlchemy()
     app = Flask(__name__)
     metrics = GunicornPrometheusMetrics(app)
 
@@ -142,25 +139,22 @@ def create_app(overwrite_conf=None):
 
     @app.before_first_request
     def before_first_request():
-        engine = create_engine(app.config["SQLALCHEMY_DATABASE_URI"])
-        Session.configure(bind=engine)
-
-    try:
-        db.init_app(app)
-    except ConnectionRefusedError:
-        print("Connection was refused, exiting.")
-        sys.exit(1)
-    except pymysql.err.ProgrammingError:
-        print("Programming error, exiting.")
-        sys.exit(1)
+        try:
+            engine = create_engine(app.config["SQLALCHEMY_DATABASE_URI"])
+            Session.configure(bind=engine)
+        except ConnectionRefusedError:
+            app.logger.critical("Connection was refused, exiting.")
+            sys.exit(1)
+        except pymysql.err.ProgrammingError:
+            app.logger.critical("Programming error, exiting.")
+            sys.exit(1)
 
     try:
         if not database_exists(app.config["SQLALCHEMY_DATABASE_URI"]):
             create_database(app.config["SQLALCHEMY_DATABASE_URI"])
     except OperationalError:
-        print("Could not connect to database.")
+        app.logger.critical("Could not connect to database.")
         sys.exit(1)
-
 
     api = Api(app)
     register_api_endpoints(api)
