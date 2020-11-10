@@ -2,7 +2,6 @@ from flask import request, current_app
 from flask_restful import Resource
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
-from gridt_server.models.user import User
 from gridt_server.schemas import (
     BioSchema,
     ChangeEmailSchema,
@@ -10,12 +9,6 @@ from gridt_server.schemas import (
     ChangePasswordSchema,
     RequestPasswordResetSchema,
     ResetPasswordSchema,
-)
-
-import jwt
-from util.email_templates import (
-    send_password_reset_email,
-    send_password_change_notification,
 )
 
 from .helpers import schema_loader
@@ -26,6 +19,7 @@ from gridt.controllers.user import (
     request_email_change,
     change_email,
     request_password_reset,
+    reset_password,
 )
 
 
@@ -96,15 +90,7 @@ class ResetPasswordResource(Resource):
     schema = ResetPasswordSchema()
 
     def post(self):
-        secret_key = current_app.config["SECRET_KEY"]
         data = schema_loader(self.schema, request.get_json())
-
-        token_decoded = jwt.decode(data["token"], secret_key, algorithms=["HS256"])
-        user_id = token_decoded["user_id"]
-        password = data["password"]
-
-        user = User.find_by_id(user_id)
-        user.hash_and_store_password(password)
-
-        send_password_change_notification(user.email)
+        secret_key = current_app.config["SECRET_KEY"]
+        reset_password(data["token"], data["password"], secret_key)
         return ({"message": "Successfully changed password."}, 200)
