@@ -1,6 +1,5 @@
 import json
 from gridt_server.tests.base_test import BaseTest
-from gridt_server.models.user import User
 
 
 class RegistrationResourceTest(BaseTest):
@@ -18,21 +17,10 @@ class RegistrationResourceTest(BaseTest):
             self.assertEqual(
                 json.loads(resp.data), {"message": "Succesfully created user."}
             )
+            # check that gridt.controllers.user.register is called with stuff in user_json
 
     def test_logged_in(self):
         with self.app_context():
-            movement = self.create_movement()
-            user = self.create_user_in_movement(movement)
-
-            resp = self.request_as_user(self.users[0], "GET", "/identity")
-            self.assertEqual(resp.status_code, 200)
-            self.assertEqual(
-                json.loads(resp.data),
-                {
-                    "id": user.id,
-                    "username": user.username,
-                    "email": user.email,
-                    "bio": user.bio,
-                    "avatar": user.get_email_hash(),
-                },
-            )
+            # check that gridt.controllers.user.get_identity is called with flask_jwt_extended.get_jwt_identity
+            # (remember to import from flask_jwt_extended)
+            pass

@@ -2,15 +2,13 @@ from unittest.mock import patch
 from flask_jwt_extended import jwt_required
 
 from gridt_server.tests.base_test import BaseTest
-from gridt_server.models.user import User
 
 
 class LoginTest(BaseTest):
     @patch("flask_jwt_extended.create_access_token", return_value="mock token")
+    # patch verify_password_for_email, return_value=1
     def test_login(self, func):
         with self.app_context():
-            user = User("username", "test@test.com", "password")
-            user.save_to_db()
 
             @self.app.route("/test")
             @jwt_required
@@ -30,3 +28,6 @@ class LoginTest(BaseTest):
 
             self.assertEqual(resp.status_code, 200)
             self.assertEqual(resp.data, b"Hello World!")
+
+            # test that verify_password_for_email is called with json and returns 1
+            # test that initially gives 401, then if authorized gives 200
