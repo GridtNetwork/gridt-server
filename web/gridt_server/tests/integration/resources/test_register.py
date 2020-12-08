@@ -21,6 +21,8 @@ class RegistrationResourceTest(BaseTest):
 
     def test_logged_in(self):
         with self.app_context():
+            # patch get_jwt_identity, returnValue=1
             # check that gridt.controllers.user.get_identity is called with flask_jwt_extended.get_jwt_identity
+            # check that get_jwt_identity is called
             # (remember to import from flask_jwt_extended)
             pass

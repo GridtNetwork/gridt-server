@@ -9,6 +9,7 @@ from gridt_server.tests.base_test import BaseTest
 class MovementsTest(BaseTest):
 
     # patch mock jwt_required
+    # (Look at #89 for a solution)
     def test_get_movements(self):
         with self.app_context():
             resp = self.client.get(

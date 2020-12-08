@@ -5,18 +5,10 @@ from gridt_server.tests.base_test import BaseTest
 
 
 class LoginTest(BaseTest):
-    @patch("flask_jwt_extended.create_access_token", return_value="mock token")
     # patch verify_password_for_email, return_value=1
+    # patch create_access_token, return_value="foo"
     def test_login(self, func):
         with self.app_context():
-
-            @self.app.route("/test")
-            @jwt_required
-            def test_route():
-                return "Hello World!"
-
-            self.assertEqual(self.client.get("/test").status_code, 401)
-
             response = self.client.post(
                 "/auth",
                 headers={"Content-Type": "application/json"},
@@ -24,10 +16,11 @@ class LoginTest(BaseTest):
             )
 
             token = response.get_json()["access_token"]
+            # self.assertEqual(token, "foo")
             resp = self.client.get("/test", headers={"Authorization": f"JWT {token}"})
 
             self.assertEqual(resp.status_code, 200)
-            self.assertEqual(resp.data, b"Hello World!")
+            # assert that create_access_token has been called
 
-            # test that verify_password_for_email is called with json and returns 1
-            # test that initially gives 401, then if authorized gives 200
+    # Login with bad username and password
+    # verify_password_for_email needs to have ValueError side-effect
