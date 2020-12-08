@@ -56,7 +56,11 @@ class LoggedTestCase(TestCase):
 
 class BaseTest(LoggedTestCase):
     def setUp(self):
-        pass
+        app = create_app(overwrite_conf="conf/test.conf")
+        # Get a test client
+        self.app = app
+        self.client = app.test_client()
+        self.app_context = app.app_context
     
     def tearDown(self):
         pass
