@@ -43,18 +43,6 @@ class UserResourceTest(BaseTest):
             self.assertEqual(resp.status_code, 200)
             # Check that change_password is called
 
-    def test_no_api_key(self):
-        with self.app_context():
-            email = "any@email.com"
-            current_app.config["EMAIL_API_KEY"] = None
-
-            resp = self.client.post(
-                "/user/reset_password/request", json={"email": email},
-            )
-
-            self.assertIn("message", resp.get_json())
-            self.assertEqual(resp.status_code, 500)
-
     # patch mock jwt_required
     def test_reset_password_token_correct(self):
         with self.app_context():
