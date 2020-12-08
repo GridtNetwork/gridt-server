@@ -9,7 +9,7 @@ from gridt_server.schemas import (
 )
 
 from freezegun import freeze_time
-
+from unittest.mock import patch
 
 class SchemasTest(BaseTest):
     def test_movement_schema_long(self):
@@ -71,13 +71,43 @@ class SchemasTest(BaseTest):
                 },
             )
 
+    def test_request_email_change_schema_invalid(self):
+        # test that e-mail or username missing gives
+        # appropriate error
+        pass
+
+    def test_request_email_change_schema_email_invalid(self):
+        # test that invalid e-mail will give appropriate error
+        pass
+
+    def test_request_email_change_schema_correct(self):
+        with self.app_context():
+            proper_request = {
+                "password": "password",
+                "new_email": "proper@email.com",
+            }
+
+            # Make sure no error is thrown with this info
+            res = schema.load(proper_request)
+            self.assertEqual(res, proper_request)
+
+    def test_change_email_schema_token_expired(self):
+        with self.app_context():
+            # patch jwt validation to give ExpiredSignatureError
+            # side effect
+
+            schema = ChangeEmailSchema()
+            with self.assertRaises(ValidationError) as error:
+                schema.load(bad_request)
+
+                self.assertEqual(
+                    error.exception.messages, {"token": ["Signature has expired."]}
+                )
+
     def test_change_email_schema_token_invalid(self):
         with self.app_context():
-            bad_request = {
-                "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9."
-                "eyJpZCI6MSwiZXhwIjoxNTg3MzM0MjAwfW."
-                "2qdnq1_YJS9tgKVlIVpBbaAanyxQnCyVmV6s7QcOuBo",
-            }
+            # patch jwt validation to give InvalidTokenError
+            # side effect
 
             schema = ChangeEmailSchema()
             with self.assertRaises(ValidationError) as error:
@@ -86,3 +116,13 @@ class SchemasTest(BaseTest):
                 self.assertEqual(
                     error.exception.messages, {"token": ["Invalid token."]}
                 )
+
+    def test_change_email_schema_correct(self):
+        with self.app_context():
+            # proper_request = {"token": "foo"}
+            # patch jwt validation to not throw an error
+
+            # Make sure no error is thrown with this info
+            schema = ChangeEmailSchema()
+            res = schema.load(proper_request)
+            self.assertEqual(res, proper_request)
