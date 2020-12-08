@@ -1,9 +1,6 @@
 from flask_restful import abort
 from marshmallow import ValidationError
 
-from gridt_server.models.movement import Movement
-from gridt_server.models.user import User
-
 
 def schema_loader(schema, inp):
     """
@@ -17,26 +14,3 @@ def schema_loader(schema, inp):
         abort(400, message=f"{field}: {err.messages[field][0]}")
     else:
         return data
-
-
-def get_movement(identifier):
-    try:
-        identifier = int(identifier)
-        movement = Movement.find_by_id(identifier)
-    except ValueError:
-        movement = Movement.find_by_name(identifier)
-
-    if not movement:
-        abort(404, message="This movement does not exist.")
-
-    return movement
-
-
-def get_user(identifier):
-    try:
-        identifier = int(identifier)
-        user = User.find_by_id(identifier)
-    except ValueError:
-        user = User.find_by_name(identifier)
-
-    return user
