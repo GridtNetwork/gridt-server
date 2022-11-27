@@ -1,28 +1,28 @@
 [[source]]
-name = "pypi"
-url = "https://pypi.org/simple"
+url = "https://pypi.python.org/simple"
 verify_ssl = true
-
-[dev-packages]
-pyfakefs = "*"
-black = "*"
-lorem = "*"
-freezegun = "*"
+name = "pypi"
 
 [packages]
-flask-restful = "*"
 flask-sqlalchemy = "*"
 passlib = "*"
+gunicorn = "*"
+prometheus-flask-exporter = "*"
+sendgrid = "*"
+flask-restful = "*"
 sphinx = "*"
 flask-jwt = "*"
 click = "*"
-marshmallow = "*"
-gunicorn = "*"
-pymysql = "*"
-cryptography = "*"
 sqlalchemy-utils = "*"
-sendgrid = "*"
-prometheus-flask-exporter = "*"
+cryptography = "*"
+pymysql = "*"
+marshmallow = "*"
+
+[dev-packages]
+pyfakefs = "*"
+lorem = "*"
+black = "*"
+freezegun = "*"
 
 [requires]
 python_version = "3.8"
