@@ -5,6 +5,7 @@ verify_ssl = true
 
 [dev-packages]
 pyfakefs = "*"
+black = "*"
 lorem = "*"
 freezegun = "*"
 
@@ -13,7 +14,7 @@ flask-restful = "*"
 flask-sqlalchemy = "*"
 passlib = "*"
 sphinx = "*"
-flask-jwt-extended = "*"
+flask-jwt = "*"
 click = "*"
 marshmallow = "*"
 gunicorn = "*"
@@ -22,7 +23,6 @@ cryptography = "*"
 sqlalchemy-utils = "*"
 sendgrid = "*"
 prometheus-flask-exporter = "*"
-gridtlib = "*"
 
 [requires]
 python_version = "3.8"
