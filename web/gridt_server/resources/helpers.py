@@ -1,8 +1,8 @@
 from flask_restful import abort
 from marshmallow import ValidationError
 
-from gridt_server.models.movement import Movement
-from gridt_server.models.user import User
+from src.models.movement import Movement
+from src.models.user import User
 
 
 def schema_loader(schema, inp):

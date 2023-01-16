@@ -9,9 +9,14 @@ a test environment.
 """
 
 import os
+
+os.environ["PROMETHEUS_MULTIPROC_DIR"] = "/tmp"
+os.environ["prometheus_multiproc_dir"] = '/path/to/metrics/directory'
+
 import sys
 
 from sqlalchemy import create_engine
+from sqlalchemy.dialects.mysql import pymysql
 from sqlalchemy_utils import database_exists, create_database
 from sqlalchemy.exc import OperationalError
 
@@ -19,7 +24,7 @@ from flask import Flask
 from flask_jwt_extended import JWTManager
 from flask_restful import Api
 
-from gridt.db import Session
+from src.db import Session
 
 from gridt_server.resources.register import IdentityResource, RegisterResource
 from gridt_server.resources.user import (
@@ -132,6 +137,8 @@ def create_app(overwrite_conf=None):
 
     """
     app = Flask(__name__)
+
+
     metrics = GunicornPrometheusMetrics(app)
 
     load_config(app, overwrite_conf)

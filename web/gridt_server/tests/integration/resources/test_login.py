@@ -2,7 +2,7 @@ from unittest.mock import patch
 from flask_jwt_extended import jwt_required
 
 from gridt_server.tests.base_test import BaseTest
-from gridt_server.models.user import User
+from src.models.user import User
 
 
 class LoginTest(BaseTest):

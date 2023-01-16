@@ -8,12 +8,12 @@ from unittest import TestCase
 from gridt_server.app import create_app
 from gridt_server.db import db
 
-from gridt_server.models.movement import Movement
-from gridt_server.models.user import User
-from gridt_server.models.signal import Signal
+from src.models.movement import Movement
+from src.models.user import User
+from src.models.signal import Signal
 
 from sqlalchemy import create_engine
-from gridt.db import Base, Session
+from src.db import Base, Session
 
 
 # LoggedTestCase and LogThisTestCase accredited to:

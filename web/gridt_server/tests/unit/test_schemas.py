@@ -3,14 +3,11 @@ from marshmallow import ValidationError
 from gridt_server.tests.base_test import BaseTest
 from gridt_server.schemas import (
     MovementSchema,
-    NewUserSchema,
     RequestEmailChangeSchema,
     ChangeEmailSchema,
 )
 
 from freezegun import freeze_time
-from gridt_server.models.user import User
-
 
 class SchemasTest(BaseTest):
     def test_movement_schema_long(self):

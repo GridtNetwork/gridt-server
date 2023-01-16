@@ -10,18 +10,21 @@ from gridt_server.schemas import (
 
 from .helpers import schema_loader
 
-from gridt.controllers.follower import get_subscriptions
-from gridt.controllers.movements import (
+from src.controllers.subscription import (
+    get_subscriptions,
+    new_subscription,
+    is_subscribed
+)
+from src.controllers.movements import (
     get_all_movements,
-    get_movement,
-    subscribe,
+    get_movement
 )
-from gridt.controllers.leader import send_signal
-from gridt.controllers.movements import (
-    new_movement,
-    remove_user_from_movement,
-    user_in_movement,
+
+from src.controllers.creation import (
+    remove_creation,
+    new_movement_by_user,
 )
+from src.controllers.leader import send_signal
 
 
 class MovementsResource(Resource):
@@ -34,7 +37,7 @@ class MovementsResource(Resource):
     @jwt_required
     def post(self):
         data = schema_loader(self.schema, request.get_json())
-        new_movement(
+        new_movement_by_user(
             get_jwt_identity(),
             data["name"],
             data["interval"],
@@ -65,7 +68,7 @@ class SubscribeResource(Resource):
     @jwt_required
     def put(self, movement_id):
         schema_loader(self.schema, {"movement_id": movement_id})
-        subscribe(get_jwt_identity(), movement_id)
+        new_subscription(get_jwt_identity(), movement_id)
         return {"message": "Successfully subscribed to this movement."}
 
     @jwt_required
@@ -73,8 +76,8 @@ class SubscribeResource(Resource):
         schema_loader(self.schema, {"movement_id": movement_id})
         # HTTP DELETE request is idempotent, meaning that it should not matter
         # if the user is subscribed or not, if he is, he should be removed.
-        if user_in_movement(get_jwt_identity(), movement_id):
-            remove_user_from_movement(get_jwt_identity(), movement_id)
+        if is_subscribed(get_jwt_identity(), movement_id):
+            remove_creation(get_jwt_identity(), movement_id)
         return {"message": "Successfully unsubscribed from this movement."}
 
 

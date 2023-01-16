@@ -689,6 +689,6 @@ components:
 openapi: 3.0.1
 externalDocs:
   url: 'http://gridt-server.readthedocs.io'
-  description: Complete documentation of models and resources.
+  description: Complete documentation of test_models and resources.
 servers: 
   - url: http://api.gridt.org/

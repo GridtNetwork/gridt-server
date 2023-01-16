@@ -1,11 +1,10 @@
 import json
 from freezegun import freeze_time
-from unittest.mock import patch
 from datetime import datetime
 
 from gridt_server.tests.base_test import BaseTest
 from gridt_server.db import db
-from gridt_server.models import User, Movement, Signal
+from src.models import User, Movement, Signal
 
 
 class MovementsTest(BaseTest):

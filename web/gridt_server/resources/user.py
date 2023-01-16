@@ -2,7 +2,7 @@ from flask import request, current_app
 from flask_restful import Resource
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
-from gridt_server.models.user import User
+from src.models.user import User
 from gridt_server.schemas import (
     BioSchema,
     ChangeEmailSchema,
@@ -14,13 +14,12 @@ from gridt_server.schemas import (
 
 import jwt
 from util.email_templates import (
-    send_password_reset_email,
     send_password_change_notification,
 )
 
 from .helpers import schema_loader
 
-from gridt.controllers.user import (
+from src.controllers.user import (
     update_user_bio,
     change_password,
     request_email_change,

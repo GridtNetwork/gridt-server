@@ -3,9 +3,9 @@ from unittest.mock import patch
 
 from gridt_server.tests.base_test import BaseTest
 from gridt_server.db import db
-from gridt_server.models.user import User
-from gridt_server.models.movement import Movement
-from gridt_server.models.movement import Signal
+from src.models.user import User
+from src.models.movement import Movement
+from src.models.signal import Signal
 
 
 class SignalTest(BaseTest):

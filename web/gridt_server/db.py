@@ -3,7 +3,7 @@ db Module
 *********
 
 This module provides the application level database. To add objects to the
-send models to the database use the following piece of code: ::
+send test_models to the database use the following piece of code: ::
 
     from gridt.db import db
     db.session.add(your_model)

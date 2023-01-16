@@ -9,10 +9,11 @@ from marshmallow.validate import Length, OneOf
 from flask import current_app
 import jwt
 
-from gridt_server.models import Movement
-from gridt.controllers.movements import movement_exists, user_in_movement
-from gridt.controllers.user import user_exists, verify_password_for_id
-from gridt.controllers.follower import follows_leader
+from src.models import Movement
+from src.controllers.movements import movement_exists
+from src.controllers.creation import new_movement_by_user
+from src.controllers.user import user_exists, verify_password_for_id
+from src.controllers.follower import follows_leader
 
 
 class LoginSchema(Schema):
@@ -155,5 +156,5 @@ class SignalSchema(Schema):
 
     @validates_schema
     def leader_in_movement(self, data, *args, **kwargs):
-        if not user_in_movement(data["leader_id"], data["movement_id"]):
+        if not new_movement_by_user(data["leader_id"], data["movement_id"]):
             raise ValidationError("User not subscribed to movement")

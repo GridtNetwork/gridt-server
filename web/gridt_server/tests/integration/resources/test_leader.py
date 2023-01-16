@@ -1,9 +1,10 @@
 from freezegun import freeze_time
 
+# TODO change this to src.db
 from gridt_server.db import db
-from gridt_server.models.movement import Movement
-from gridt_server.models.signal import Signal
-from gridt_server.models.user import User
+from src.models.movement import Movement
+from src.models.signal import Signal
+from src.models.user import User
 
 from gridt_server.tests.base_test import BaseTest
 

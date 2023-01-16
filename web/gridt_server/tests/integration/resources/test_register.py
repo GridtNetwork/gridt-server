@@ -1,6 +1,6 @@
 import json
 from gridt_server.tests.base_test import BaseTest
-from gridt_server.models.user import User
+from src.models.user import User
 
 
 class RegistrationResourceTest(BaseTest):
