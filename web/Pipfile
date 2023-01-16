@@ -3,9 +3,13 @@ name = "pypi"
 url = "https://pypi.org/simple"
 verify_ssl = true
 
+[[source]]
+url = "https://test.pypi.org/simple/"
+verify_ssl = true
+name = "testpypi"
+
 [dev-packages]
 pyfakefs = "*"
-black = "*"
 lorem = "*"
 freezegun = "*"
 
@@ -14,7 +18,7 @@ flask-restful = "*"
 flask-sqlalchemy = "*"
 passlib = "*"
 sphinx = "*"
-flask-jwt = "*"
+flask-jwt-extended = "*"
 click = "*"
 marshmallow = "*"
 gunicorn = "*"
@@ -23,6 +27,8 @@ cryptography = "*"
 sqlalchemy-utils = "*"
 sendgrid = "*"
 prometheus-flask-exporter = "*"
+gridtlib = "*"
+gridtlibtest = {version = "*", index = "testpypi"}
 
 [requires]
 python_version = "3.8"
