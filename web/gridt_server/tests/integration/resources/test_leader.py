@@ -1,6 +1,6 @@
 from freezegun import freeze_time
 
-# TODO change this to src.db
+# TODO change this to gridtlib.db
 from gridt_server.db import db
 
 from gridt_server.tests.base_test import BaseTest

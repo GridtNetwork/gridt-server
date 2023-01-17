@@ -10,21 +10,21 @@ from gridt_server.schemas import (
 
 from .helpers import schema_loader
 
-from src.controllers.subscription import (
+from gridtlib.controllers.subscription import (
     get_subscriptions,
     new_subscription,
     remove_subscription,
     is_subscribed
 )
-from src.controllers.movements import (
+from gridtlib.controllers.movements import (
     get_all_movements,
     get_movement
 )
 
-from src.controllers.creation import (
+from gridtlib.controllers.creation import (
     new_movement_by_user,
 )
-from src.controllers.leader import send_signal
+from gridtlib.controllers.leader import send_signal
 
 
 class MovementsResource(Resource):

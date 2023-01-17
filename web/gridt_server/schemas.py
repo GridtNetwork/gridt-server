@@ -9,11 +9,11 @@ from marshmallow.validate import Length, OneOf
 from flask import current_app
 import jwt
 
-from src.controllers.movements import movement_exists, get_movement
-from src.controllers.creation import new_movement_by_user
-from src.controllers.user import user_exists, verify_password_for_id
-from src.controllers.follower import follows_leader
-from src.controllers.subscription import is_subscribed
+from gridtlib.controllers.movements import movement_exists, get_movement
+from gridtlib.controllers.creation import new_movement_by_user
+from gridtlib.controllers.user import user_exists, verify_password_for_id
+from gridtlib.controllers.follower import follows_leader
+from gridtlib.controllers.subscription import is_subscribed
 
 
 class LoginSchema(Schema):

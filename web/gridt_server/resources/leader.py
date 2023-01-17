@@ -2,7 +2,7 @@ from flask_restful import Resource
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from gridt_server.schemas import LeaderSchema
-from src.controllers.follower import get_leader, swap_leader
+from gridtlib.controllers.follower import get_leader, swap_leader
 from .helpers import schema_loader
 
 

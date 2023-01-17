@@ -4,7 +4,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from .helpers import schema_loader
 from gridt_server.schemas import NewUserSchema
-from src.controllers.user import get_identity, register
+from gridtlib.controllers.user import get_identity, register
 
 
 class IdentityResource(Resource):

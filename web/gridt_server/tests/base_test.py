@@ -10,7 +10,7 @@ from gridt_server.app import create_app
 from gridt_server.db import db
 
 from sqlalchemy import create_engine
-from src.db import Base, Session
+from gridtlib.db import Base, Session
 
 
 # LoggedTestCase and LogThisTestCase accredited to:

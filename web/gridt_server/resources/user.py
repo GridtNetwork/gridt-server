@@ -14,7 +14,7 @@ from gridt_server.schemas import (
 
 from .helpers import schema_loader
 
-from src.controllers.user import (
+from gridtlib.controllers.user import (
     update_user_bio,
     change_password,
     request_email_change,
