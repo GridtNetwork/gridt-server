@@ -13,6 +13,7 @@ from .helpers import schema_loader
 from src.controllers.subscription import (
     get_subscriptions,
     new_subscription,
+    remove_subscription,
     is_subscribed
 )
 from src.controllers.movements import (
@@ -21,7 +22,6 @@ from src.controllers.movements import (
 )
 
 from src.controllers.creation import (
-    remove_creation,
     new_movement_by_user,
 )
 from src.controllers.leader import send_signal
@@ -42,7 +42,7 @@ class MovementsResource(Resource):
             data["name"],
             data["interval"],
             data["short_description"],
-            data.get("long_description"),
+            data["long_description"],
         )
         return {"message": "Successfully created movement."}, 201
 
@@ -77,7 +77,7 @@ class SubscribeResource(Resource):
         # HTTP DELETE request is idempotent, meaning that it should not matter
         # if the user is subscribed or not, if he is, he should be removed.
         if is_subscribed(get_jwt_identity(), movement_id):
-            remove_creation(get_jwt_identity(), movement_id)
+            remove_subscription(get_jwt_identity(), movement_id)
         return {"message": "Successfully unsubscribed from this movement."}
 
 

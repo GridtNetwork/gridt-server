@@ -9,10 +9,11 @@ from marshmallow.validate import Length, OneOf
 from flask import current_app
 import jwt
 
-from src.controllers.movements import movement_exists
+from src.controllers.movements import movement_exists, get_movement
 from src.controllers.creation import new_movement_by_user
 from src.controllers.user import user_exists, verify_password_for_id
 from src.controllers.follower import follows_leader
+from src.controllers.subscription import is_subscribed
 
 
 class LoginSchema(Schema):
@@ -40,7 +41,7 @@ class MovementSchema(Schema):
 
     @validates("name")
     def unique_name(self, value):
-        existing_movement = Movement.find_by_name(value)
+        existing_movement = get_movement(value)
         if existing_movement:
             raise ValidationError("Movement name already in use.")
 
@@ -119,7 +120,7 @@ class LeaderSchema(Schema):
 
     @validates_schema
     def in_movement_and_following(self, data, **kwargs):
-        if not user_in_movement(data["follower_id"], data["movement_id"]):
+        if not is_subscribed(data['follower_id'], data['movement_id']):
             raise ValidationError("User is not subscribed to this movement.")
         # This prevents a malicious user from finding user ids.
         # Returning a 404 for a nonexistant user would give them more

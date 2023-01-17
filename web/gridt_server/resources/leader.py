@@ -19,7 +19,7 @@ class LeaderResource(Resource):
                 "leader_id": leader_id,
             },
         )
-        return get_leader(get_jwt_identity(), movement_id, leader_id)
+        return get_leader(follower_id=get_jwt_identity(), movement_id=movement_id, leader_id=leader_id)
 
     @jwt_required
     def post(self, movement_id, leader_id):
@@ -32,7 +32,7 @@ class LeaderResource(Resource):
             },
         )
 
-        new_leader = swap_leader(get_jwt_identity(), movement_id, leader_id)
+        new_leader = swap_leader(follower_id=get_jwt_identity(), movement_id=movement_id, leader_id=leader_id)
         if not new_leader:
             return {"message": "Could not find leader to replace the current one."}
 

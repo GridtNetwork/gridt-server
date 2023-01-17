@@ -11,10 +11,6 @@ from gridt_server.schemas import (
     ResetPasswordSchema,
 )
 
-import jwt
-from util.email_templates import (
-    send_password_change_notification,
-)
 
 from .helpers import schema_loader
 
@@ -24,6 +20,7 @@ from src.controllers.user import (
     request_email_change,
     change_email,
     request_password_reset,
+    reset_password
 )
 
 
@@ -97,12 +94,6 @@ class ResetPasswordResource(Resource):
         secret_key = current_app.config["SECRET_KEY"]
         data = schema_loader(self.schema, request.get_json())
 
-        token_decoded = jwt.decode(data["token"], secret_key, algorithms=["HS256"])
-        user_id = token_decoded["user_id"]
-        password = data["password"]
+        reset_password(token=data['token'], password=data['password'], secret_key=secret_key)
 
-        user = User.find_by_id(user_id)
-        user.hash_and_store_password(password)
-
-        send_password_change_notification(user.email)
         return ({"message": "Successfully changed password."}, 200)
