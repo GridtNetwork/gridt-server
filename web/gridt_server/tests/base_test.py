@@ -2,15 +2,12 @@ import sys
 import logging
 import lorem
 import random
+import os
 
 from unittest import TestCase
 
 from gridt_server.app import create_app
 from gridt_server.db import db
-
-from src.models.movement import Movement
-from src.models.user import User
-from src.models.signal import Signal
 
 from sqlalchemy import create_engine
 from src.db import Base, Session
@@ -61,8 +58,10 @@ class LoggedTestCase(TestCase):
 
 class BaseTest(LoggedTestCase):
     def setUp(self):
-        app = create_app(overwrite_conf="conf/test.conf")
 
+        os.environ["PROMETHEUS_MULTIPROC_DIR"] = "C:/tmp"
+
+        app = create_app(overwrite_conf="conf/test.conf")
         # Make sure db exists
         with app.app_context():
             db.init_app(app)

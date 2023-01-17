@@ -1,7 +1,5 @@
 import json
 from gridt_server.tests.base_test import BaseTest
-from src.models.user import User
-
 
 class RegistrationResourceTest(BaseTest):
     def test_registration(self):

@@ -4,7 +4,6 @@ from datetime import datetime
 
 from gridt_server.tests.base_test import BaseTest
 from gridt_server.db import db
-from src.models import User, Movement, Signal
 
 
 class MovementsTest(BaseTest):

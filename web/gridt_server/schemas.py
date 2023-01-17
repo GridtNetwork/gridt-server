@@ -9,7 +9,6 @@ from marshmallow.validate import Length, OneOf
 from flask import current_app
 import jwt
 
-from src.models import Movement
 from src.controllers.movements import movement_exists
 from src.controllers.creation import new_movement_by_user
 from src.controllers.user import user_exists, verify_password_for_id

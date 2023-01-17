@@ -2,7 +2,6 @@ from flask import request, current_app
 from flask_restful import Resource
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
-from src.models.user import User
 from gridt_server.schemas import (
     BioSchema,
     ChangeEmailSchema,

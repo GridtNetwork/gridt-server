@@ -2,8 +2,6 @@ from unittest.mock import patch
 from flask_jwt_extended import jwt_required
 
 from gridt_server.tests.base_test import BaseTest
-from src.models.user import User
-
 
 class LoginTest(BaseTest):
     @patch("flask_jwt_extended.create_access_token", return_value="mock token")

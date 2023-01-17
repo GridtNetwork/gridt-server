@@ -3,10 +3,6 @@ from unittest.mock import patch
 
 from gridt_server.tests.base_test import BaseTest
 from gridt_server.db import db
-from src.models.user import User
-from src.models.movement import Movement
-from src.models.signal import Signal
-
 
 class SignalTest(BaseTest):
     @patch("flask_jwt_extended.view_decorators.verify_jwt_in_request")
