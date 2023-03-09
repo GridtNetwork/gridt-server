@@ -375,11 +375,11 @@
         },
         "gridtlibtest": {
             "hashes": [
-                "sha256:39db807dd0886a316571f853710431bf4e4b7198a21f07b6fa03deeff6e51924",
+                "sha256:629eb9ff9996c43dc864294f01c051c4b0bf7038618ffde45aeb45b37092d343",
                 "sha256:67314e1c557bbf9766a85d2734c53e90eee0b5122a7e5c8ab4da31d1695b42e2"
             ],
             "index": "testpypi",
-            "version": "==0.0.1"
+            "version": "==0.0.3"
         },
         "gunicorn": {
             "hashes": [

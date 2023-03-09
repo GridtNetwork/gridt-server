@@ -12,7 +12,7 @@ class AppTest(TestCase):
     def test_overwrite_conf(self, mocked_fun):
         with nostderr():
             with self.assertRaises(SystemExit):
-                app = create_app("test_conf")
+                create_app("test_conf")
                 mocked_fun.assert_called_with(
                     os.getcwd() + "/gridt/conf/test_conf.conf"
                 )

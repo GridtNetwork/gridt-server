@@ -8,7 +8,7 @@ from gridtlib.controllers.user import get_identity, register
 
 
 class IdentityResource(Resource):
-    @jwt_required
+    @jwt_required()
     def get(self):
         return get_identity(get_jwt_identity())
 
