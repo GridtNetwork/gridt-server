@@ -10,7 +10,6 @@ from flask import current_app
 import jwt
 
 from gridtlib.controllers.movements import movement_exists, get_movement
-from gridtlib.controllers.creation import new_movement_by_user
 from gridtlib.controllers.user import user_exists, verify_password_for_id
 from gridtlib.controllers.follower import follows_leader
 from gridtlib.controllers.subscription import is_subscribed
@@ -115,11 +114,12 @@ class LeaderSchema(Schema):
 
     @validates("movement_id")
     def movement_exists(self, value):
-        if not movement_exists(value):
+        if not movement_exists(int(value)):
             raise ValidationError("No movement found for that id.")
 
     @validates_schema
     def in_movement_and_following(self, data, **kwargs):
+        data = {field: int(data[field]) for field in data}
         if not is_subscribed(data['follower_id'], data['movement_id']):
             raise ValidationError("User is not subscribed to this movement.")
         # This prevents a malicious user from finding user ids.
@@ -156,5 +156,5 @@ class SignalSchema(Schema):
 
     @validates_schema
     def leader_in_movement(self, data, *args, **kwargs):
-        if not new_movement_by_user(data["leader_id"], data["movement_id"]):
+        if not is_subscribed(data["leader_id"], data["movement_id"]):
             raise ValidationError("User not subscribed to movement")

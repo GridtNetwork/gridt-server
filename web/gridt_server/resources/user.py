@@ -27,7 +27,7 @@ from gridtlib.controllers.user import (
 class BioResource(Resource):
     schema = BioSchema()
 
-    @jwt_required
+    @jwt_required()
     def put(self):
         data = schema_loader(self.schema, request.get_json())
         update_user_bio(get_jwt_identity(), data["bio"])
@@ -37,7 +37,7 @@ class BioResource(Resource):
 class ChangePasswordResource(Resource):
     schema = ChangePasswordSchema()
 
-    @jwt_required
+    @jwt_required()
     def post(self):
         self.schema.context["user_id"] = get_jwt_identity()
         data = schema_loader(self.schema, request.get_json())
@@ -48,7 +48,7 @@ class ChangePasswordResource(Resource):
 class RequestEmailChangeResource(Resource):
     schema = RequestEmailChangeSchema()
 
-    @jwt_required
+    @jwt_required()
     def post(self):
         self.schema.context = {"user_id": get_jwt_identity()}
         data = schema_loader(self.schema, request.get_json())

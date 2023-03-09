@@ -9,7 +9,7 @@ from .helpers import schema_loader
 class LeaderResource(Resource):
     schema = LeaderSchema()
 
-    @jwt_required
+    @jwt_required()
     def get(self, movement_id, leader_id):
         schema_loader(
             self.schema,
@@ -19,9 +19,13 @@ class LeaderResource(Resource):
                 "leader_id": leader_id,
             },
         )
-        return get_leader(follower_id=get_jwt_identity(), movement_id=movement_id, leader_id=leader_id)
+        return get_leader(
+            follower_id=get_jwt_identity(),
+            movement_id=int(movement_id),
+            leader_id=int(leader_id)
+        )
 
-    @jwt_required
+    @jwt_required()
     def post(self, movement_id, leader_id):
         schema_loader(
             self.schema,
@@ -32,7 +36,11 @@ class LeaderResource(Resource):
             },
         )
 
-        new_leader = swap_leader(follower_id=get_jwt_identity(), movement_id=movement_id, leader_id=leader_id)
+        new_leader = swap_leader(
+            follower_id=get_jwt_identity(),
+            movement_id=int(movement_id),
+            leader_id=int(leader_id)
+        )
         if not new_leader:
             return {"message": "Could not find leader to replace the current one."}
 
