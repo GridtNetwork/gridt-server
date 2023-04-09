@@ -27,7 +27,7 @@ cryptography = "*"
 sqlalchemy-utils = "*"
 sendgrid = "*"
 prometheus-flask-exporter = "*"
-gridt-library = "*"
+gridt-library = {version = "*", index = "testpypi"}
 
 [requires]
 python_version = "3.8"
