@@ -35,6 +35,9 @@ from gridt_server.resources.user import (
     RequestPasswordResetResource,
     ResetPasswordResource,
 )
+
+from gridt_server.resources.announcement import AnnouncementsResource, SingleAnnouncementResource
+
 from gridt_server.resources.leader import LeaderResource
 from gridt_server.resources.movements import (
     MovementsResource,
@@ -119,6 +122,9 @@ def register_api_endpoints(api):
     api.add_resource(ResetPasswordResource, "/user/reset_password/confirm")
     api.add_resource(RequestEmailChangeResource, "/user/change_email/request")
     api.add_resource(ChangeEmailResource, "/user/change_email/confirm")
+    api.add_resource(AnnouncementsResource, "/movements/<movement_id>/announcements")
+    api.add_resource(SingleAnnouncementResource, "/movements/<movement_id>/announcements/<announcement_id>")
+
 
 
 def create_app(overwrite_conf=None):
@@ -137,7 +143,6 @@ def create_app(overwrite_conf=None):
 
     """
     app = Flask(__name__)
-
 
     metrics = GunicornPrometheusMetrics(app)
 

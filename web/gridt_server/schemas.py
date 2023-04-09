@@ -30,6 +30,20 @@ class NewUserSchema(Schema):
     password = fields.Str(required=True, validate=Length(max=32))
 
 
+class UpdateAnnouncementSchema(Schema):
+    message = fields.Str(required=True, validate=Length(min=10, max=140))
+    announcement_id = fields.Int(required=True)
+
+
+class DeleteAnnouncementSchema(Schema):
+    announcement_id = fields.Int(required=True)
+
+class AnnouncementSchema(Schema):
+    message = fields.Str(required=True, validate=Length(min=10, max=140))
+    poster = fields.Int(required=True)
+    movement_id = fields.Int(required=True)
+
+
 class MovementSchema(Schema):
     name = fields.Str(required=True, validate=Length(min=4, max=50))
     short_description = fields.Str(required=True, validate=Length(min=10, max=100))
@@ -126,7 +140,7 @@ class LeaderSchema(Schema):
         # Returning a 404 for a nonexistant user would give them more
         # information than we want to share.
         if not user_exists(data["leader_id"]) or not follows_leader(
-            data["follower_id"], data["movement_id"], data["leader_id"]
+                data["follower_id"], data["movement_id"], data["leader_id"]
         ):
             raise ValidationError("User is not following this leader.")
 
