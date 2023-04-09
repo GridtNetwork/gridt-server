@@ -9,7 +9,6 @@ from .helpers import schema_loader
 
 from gridtlib.controllers.announcement import (
     create_announcement,
-    _get_announcement,
     update_announcement,
     get_announcements,
     delete_announcement
