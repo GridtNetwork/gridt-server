@@ -42,9 +42,8 @@ class MovementSchema(Schema):
     )
 
     @validates("name")
-    def unique_name(self, value):
-        existing_movement = movement_name_exists(value)
-        if existing_movement:
+    def unique_name(self, name):
+        if movement_name_exists(name):
             raise ValidationError("Movement name already in use.")
 
 
