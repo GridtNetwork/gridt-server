@@ -42,7 +42,7 @@ class MovementsResource(Resource):
             data["name"],
             data["interval"],
             data["short_description"],
-            data["long_description"],
+            data.get("long_description"),
         )
         return {"message": "Successfully created movement."}, 201
 

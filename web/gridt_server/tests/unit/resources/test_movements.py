@@ -57,11 +57,8 @@ class MovementsTest(BaseTest):
         mock_get_all_movements.assert_called_once_with(self.user_id)
 
     @patch("gridt_server.resources.movements.new_movement_by_user")
-    @patch(
-        "gridt_server.schemas.get_movement",
-        return_value=mock_movement
-    )
-    def test_post_name_exists(self, mock_get_movement, mock_new_movement):
+    @patch("gridt_server.schemas.movement_name_exists", return_value=True)
+    def test_post_name_exists(self, mock_name_exists, mock_new_movement):
         body = {
             "name": "movement",
             "short_description": "testing post request",
@@ -74,13 +71,12 @@ class MovementsTest(BaseTest):
             self.assertEqual(response.status_code, 400)
             self.assertEqual(response.get_json()["message"], expect_message)
 
-        mock_get_movement.assert_called_once_with(body["name"])
+        mock_name_exists.assert_called_once_with(body["name"])
         mock_new_movement.assert_not_called()
 
-    @skip("This test is not working because the schema is wrong")
     @patch("gridt_server.resources.movements.new_movement_by_user")
-    @patch("gridt_server.schemas.get_movement", side_effect=Exception)
-    def test_interval_empty(self, mock_get_movement, mock_new_movement):
+    @patch("gridt_server.schemas.movement_name_exists", return_value=False)
+    def test_interval_empty(self, mock_name_exists, mock_new_movement):
         body = {
             "name": "movement",
             "short_description": "testing post request",
@@ -92,17 +88,16 @@ class MovementsTest(BaseTest):
             self.assertEqual(response.status_code, 400)
             self.assertEqual(response.get_json()["message"], expect_message)
 
-        mock_get_movement.assert_called_once_with(body["name"])
+        mock_name_exists.assert_called_once_with(body["name"])
         mock_new_movement.assert_not_called()
 
     @skip
     def test_name_empty(self):
         pass
 
-    @skip("This test is not working because the schema is wrong")
     @patch("gridt_server.resources.movements.new_movement_by_user")
-    @patch("gridt_server.schemas.get_movement", side_effect=Exception)
-    def test_post_successful(self, mock_get_movement, mock_new_movement):
+    @patch("gridt_server.schemas.movement_name_exists", return_value=False)
+    def test_post_successful(self, mock_name_exists, mock_new_movement):
         body = {
             "name": "movement",
             "short_description": "testing post request",
@@ -115,9 +110,13 @@ class MovementsTest(BaseTest):
             self.assertEqual(response.status_code, 201)
             self.assertEqual(response.get_json()["message"], expect_message)
 
-        mock_get_movement.assert_called_once_with(body["name"])
+        mock_name_exists.assert_called_once_with(body["name"])
         mock_new_movement.assert_called_once_with(
-            self.user_id, body["interval"], body["short_description"], None
+            self.user_id,
+            body['name'],
+            body["interval"],
+            body["short_description"],
+            None
         )
 
     def send_get_movement(self, user_id, movement_id):

@@ -9,7 +9,10 @@ from marshmallow.validate import Length, OneOf
 from flask import current_app
 import jwt
 
-from gridtlib.controllers.movements import movement_exists, get_movement
+from gridtlib.controllers.movements import (
+    movement_exists,
+    movement_name_exists,
+)
 from gridtlib.controllers.user import user_exists, verify_password_for_id
 from gridtlib.controllers.follower import follows_leader
 from gridtlib.controllers.subscription import is_subscribed
@@ -40,7 +43,7 @@ class MovementSchema(Schema):
 
     @validates("name")
     def unique_name(self, value):
-        existing_movement = get_movement(value)
+        existing_movement = movement_name_exists(value)
         if existing_movement:
             raise ValidationError("Movement name already in use.")
 
