@@ -37,7 +37,7 @@ from gridt_server.resources.user import (
 )
 
 from gridt_server.resources.announcement import AnnouncementsResource, SingleAnnouncementResource
-
+from gridt_server.resources.network import NetworkResource
 from gridt_server.resources.leader import LeaderResource
 from gridt_server.resources.movements import (
     MovementsResource,
@@ -124,7 +124,7 @@ def register_api_endpoints(api):
     api.add_resource(ChangeEmailResource, "/user/change_email/confirm")
     api.add_resource(AnnouncementsResource, "/movements/<movement_id>/announcements")
     api.add_resource(SingleAnnouncementResource, "/movements/<movement_id>/announcements/<announcement_id>")
-
+    api.add_resource(NetworkResource, "/movements/<movement_id>/data")
 
 
 def create_app(overwrite_conf=None):
