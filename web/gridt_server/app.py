@@ -24,7 +24,7 @@ from flask import Flask
 from flask_jwt_extended import JWTManager
 from flask_restful import Api
 
-from gridtlib.db import Session
+from gridt.db import Session
 
 from gridt_server.resources.register import IdentityResource, RegisterResource
 from gridt_server.resources.user import (
