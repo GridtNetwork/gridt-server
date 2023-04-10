@@ -68,7 +68,9 @@ class SubscribeResource(Resource):
     @jwt_required()
     def put(self, movement_id):
         schema_loader(self.schema, {"movement_id": movement_id})
-        new_subscription(get_jwt_identity(), int(movement_id))
+        user_id = get_jwt_identity()
+        if not is_subscribed(user_id, int(movement_id)):
+            new_subscription(user_id, int(movement_id))
         return {"message": "Successfully subscribed to this movement."}
 
     @jwt_required()
