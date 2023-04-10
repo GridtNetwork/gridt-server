@@ -5,6 +5,9 @@ from gridt_server.tests.base_test import BaseTest
 
 
 class MovementsTest(BaseTest):
+    resource_path = 'gridt_server.resources.movements'
+    schema_path = 'gridt_server.schemas'
+
     user_id = 42
     mock_movement = {
         "id": 1,
@@ -45,7 +48,7 @@ class MovementsTest(BaseTest):
         return response
 
     @patch(
-        "gridt_server.resources.movements.get_all_movements",
+        f"{resource_path}.get_all_movements",
         return_value=mock_query_results
     )
     def test_get_movements(self, mock_get_all_movements):
@@ -56,8 +59,8 @@ class MovementsTest(BaseTest):
 
         mock_get_all_movements.assert_called_once_with(self.user_id)
 
-    @patch("gridt_server.resources.movements.new_movement_by_user")
-    @patch("gridt_server.schemas.movement_name_exists", return_value=True)
+    @patch(f"{resource_path}.new_movement_by_user")
+    @patch(f"{schema_path}.movement_name_exists", return_value=True)
     def test_post_name_exists(self, mock_name_exists, mock_new_movement):
         body = {
             "name": "movement",
@@ -74,8 +77,8 @@ class MovementsTest(BaseTest):
         mock_name_exists.assert_called_once_with(body["name"])
         mock_new_movement.assert_not_called()
 
-    @patch("gridt_server.resources.movements.new_movement_by_user")
-    @patch("gridt_server.schemas.movement_name_exists", return_value=False)
+    @patch(f"{resource_path}.new_movement_by_user")
+    @patch(f"{schema_path}.movement_name_exists", return_value=False)
     def test_interval_empty(self, mock_name_exists, mock_new_movement):
         body = {
             "name": "movement",
@@ -95,8 +98,8 @@ class MovementsTest(BaseTest):
     def test_name_empty(self):
         pass
 
-    @patch("gridt_server.resources.movements.new_movement_by_user")
-    @patch("gridt_server.schemas.movement_name_exists", return_value=False)
+    @patch(f"{resource_path}.new_movement_by_user")
+    @patch(f"{schema_path}.movement_name_exists", return_value=False)
     def test_post_successful(self, mock_name_exists, mock_new_movement):
         body = {
             "name": "movement",
@@ -127,10 +130,10 @@ class MovementsTest(BaseTest):
         return response
 
     @patch(
-        'gridt_server.resources.movements.get_movement',
+        f'{resource_path}.get_movement',
         return_value=mock_movement
     )
-    @patch('gridt_server.schemas.movement_exists', return_value=True)
+    @patch(f'{schema_path}.movement_exists', return_value=True)
     def test_single_movement_by_id(
         self,
         mock_movement_exists,
@@ -147,10 +150,10 @@ class MovementsTest(BaseTest):
         mock_get_movement.assert_called_once_with(movement_id, self.user_id)
 
     @patch(
-        'gridt_server.resources.movements.get_movement',
+        f'{resource_path}.get_movement',
         return_value=mock_movement
     )
-    @patch('gridt_server.schemas.movement_exists', return_value=False)
+    @patch(f'{schema_path}.movement_exists', return_value=False)
     def test_single_movement_nonexisting(
         self,
         mock_movement_exists,
@@ -169,6 +172,9 @@ class MovementsTest(BaseTest):
 
 
 class SubscribeTest(BaseTest):
+    resource_path = 'gridt_server.resources.movements'
+    schema_path = 'gridt_server.schemas'
+
     user_id = 42
     movement_id = 1024
 
@@ -186,9 +192,12 @@ class SubscribeTest(BaseTest):
         )
         return response
 
-    @patch('gridt_server.resources.movements.new_subscription')
-    @patch('gridt_server.schemas.movement_exists', return_value=True)
-    def test_subscribe(self, mock_movement_exists, mock_new_subscription):
+    @patch(f'{resource_path}.new_subscription')
+    @patch(f'{resource_path}.is_subscribed', return_value=False)
+    @patch(f'{schema_path}.movement_exists', return_value=True)
+    def test_subscribe(
+        self, mock_movement_exists, mock_is_subscribed, mock_new_subscription
+    ):
         expected = {"message": "Successfully subscribed to this movement."}
         with self.app_context():
             response = self.send_subscribe(self.user_id, self.movement_id)
@@ -196,14 +205,18 @@ class SubscribeTest(BaseTest):
             self.assertEqual(response.get_json(), expected)
 
         mock_movement_exists.assert_called_once_with(self.movement_id)
+        mock_is_subscribed.assert_called_once_with(
+            self.user_id, self.movement_id
+        )
         mock_new_subscription.assert_called_once_with(
             self.user_id, self.movement_id
         )
 
-    @patch('gridt_server.resources.movements.new_subscription')
-    @patch('gridt_server.schemas.movement_exists', return_value=False)
+    @patch(f'{resource_path}.new_subscription')
+    @patch(f'{resource_path}.is_subscribed', return_value=False)
+    @patch(f'{schema_path}.movement_exists', return_value=False)
     def test_subscribe_nonexisting_movement(
-        self, mock_movement_exists, mock_new_subscription
+        self, mock_movement_exists, mock_is_subscribed, mock_new_subscription
     ):
         expected = {"message": "movement_id: No movement found for that id."}
         with self.app_context():
@@ -212,11 +225,30 @@ class SubscribeTest(BaseTest):
             self.assertEqual(response.get_json(), expected)
 
         mock_movement_exists.assert_called_once_with(self.movement_id)
+        mock_is_subscribed.assert_not_called()
         mock_new_subscription.assert_not_called()
 
-    @patch('gridt_server.resources.movements.remove_subscription')
-    @patch('gridt_server.resources.movements.is_subscribed', return_value=True)
-    @patch('gridt_server.schemas.movement_exists', return_value=True)
+    @patch(f'{resource_path}.new_subscription')
+    @patch(f'{resource_path}.is_subscribed', return_value=True)
+    @patch(f'{schema_path}.movement_exists', return_value=True)
+    def test_already_subscribed(
+        self, mock_movement_exists, mock_is_subscribed, mock_new_subscription
+    ):
+        expected = {"message": "Successfully subscribed to this movement."}
+        with self.app_context():
+            response = self.send_subscribe(self.user_id, self.movement_id)
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.get_json(), expected)
+
+        mock_movement_exists.assert_called_once_with(self.movement_id)
+        mock_is_subscribed.assert_called_once_with(
+            self.user_id, self.movement_id
+        )
+        mock_new_subscription.assert_not_called()
+
+    @patch(f'{resource_path}.remove_subscription')
+    @patch(f'{resource_path}.is_subscribed', return_value=True)
+    @patch(f'{schema_path}.movement_exists', return_value=True)
     def test_unsubscribe(
         self,
         mock_movement_exists,
@@ -237,8 +269,8 @@ class SubscribeTest(BaseTest):
             self.user_id, self.movement_id
         )
 
-    @patch('gridt_server.resources.movements.remove_subscription')
-    @patch('gridt_server.schemas.movement_exists', return_value=False)
+    @patch(f'{resource_path}.remove_subscription')
+    @patch(f'{schema_path}.movement_exists', return_value=False)
     def test_unsubscribe_nonexisting_movement(
         self, mock_movement_exists, mock_remove_subscription
     ):
@@ -253,6 +285,9 @@ class SubscribeTest(BaseTest):
 
 
 class NewSignalTest(BaseTest):
+    resource_path = 'gridt_server.resources.movements'
+    schema_path = 'gridt_server.schemas'
+
     user_id = 42
     movement_id = 1
     not_movement_id = 100
@@ -266,10 +301,10 @@ class NewSignalTest(BaseTest):
         )
         return response
 
-    @patch("gridt_server.resources.movements.send_signal")
-    @patch("gridt_server.schemas.movement_exists", return_value=True)
-    @patch("gridt_server.schemas.user_exists", return_value=True)
-    @patch("gridt_server.schemas.is_subscribed", return_value=True)
+    @patch(f"{resource_path}.send_signal")
+    @patch(f"{schema_path}.movement_exists", return_value=True)
+    @patch(f"{schema_path}.user_exists", return_value=True)
+    @patch(f"{schema_path}.is_subscribed", return_value=True)
     def test_create_new_signal(
         self,
         mock_is_sub,
@@ -292,10 +327,10 @@ class NewSignalTest(BaseTest):
             self.user_id, self.movement_id, self.message
         )
 
-    @patch("gridt_server.resources.movements.send_signal")
-    @patch("gridt_server.schemas.movement_exists", return_value=False)
-    @patch("gridt_server.schemas.user_exists", return_value=True)
-    @patch("gridt_server.schemas.is_subscribed", side_effect=False)
+    @patch(f"{resource_path}.send_signal")
+    @patch(f"{schema_path}.movement_exists", return_value=False)
+    @patch(f"{schema_path}.user_exists", return_value=True)
+    @patch(f"{schema_path}.is_subscribed", side_effect=False)
     def test_signal_nonexisting_movement(
         self,
         mock_is_subscribed,
@@ -316,10 +351,10 @@ class NewSignalTest(BaseTest):
         mock_is_subscribed.assert_not_called()
         mock_send_signal.assert_not_called()
 
-    @patch("gridt_server.resources.movements.send_signal")
-    @patch("gridt_server.schemas.movement_exists", return_value=True)
-    @patch("gridt_server.schemas.user_exists", return_value=True)
-    @patch("gridt_server.schemas.is_subscribed", return_value=False)
+    @patch(f"{resource_path}.send_signal")
+    @patch(f"{schema_path}.movement_exists", return_value=True)
+    @patch(f"{schema_path}.user_exists", return_value=True)
+    @patch(f"{schema_path}.is_subscribed", return_value=False)
     def test_movement_not_subscribed(
         self,
         mock_is_sub,
@@ -342,6 +377,9 @@ class NewSignalTest(BaseTest):
 
 
 class SubscriptionsResourceTest(BaseTest):
+    resource_path = 'gridt_server.resources.movements'
+    schema_path = 'gridt_server.schemas'
+
     user_id = 42
     movement = {
         "id": 1,
@@ -355,7 +393,7 @@ class SubscriptionsResourceTest(BaseTest):
     }
 
     @patch(
-        'gridt_server.resources.movements.get_subscriptions',
+        f'{resource_path}.get_subscriptions',
         return_value=[movement]
     )
     def test_get_subscriptions(self, mock_get_subscriptions):
