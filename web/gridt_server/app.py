@@ -24,7 +24,7 @@ from flask import Flask
 from flask_jwt_extended import JWTManager
 from flask_restful import Api
 
-from gridt.db import Session
+from gridt.db import Session, Base
 
 from gridt_server.resources.register import IdentityResource, RegisterResource
 from gridt_server.resources.user import (
@@ -154,6 +154,7 @@ def create_app(overwrite_conf=None):
         try:
             engine = create_engine(app.config["SQLALCHEMY_DATABASE_URI"])
             Session.configure(bind=engine)
+            Base.metadata.create_all(engine)
         except ConnectionRefusedError:
             app.logger.critical("Connection was refused, exiting.")
             sys.exit(1)
