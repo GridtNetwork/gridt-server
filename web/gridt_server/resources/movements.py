@@ -10,21 +10,21 @@ from gridt_server.schemas import (
 
 from .helpers import schema_loader
 
-from gridtlib.controllers.subscription import (
+from gridt.controllers.subscription import (
     get_subscriptions,
     new_subscription,
     remove_subscription,
     is_subscribed
 )
-from gridtlib.controllers.movements import (
+from gridt.controllers.movements import (
     get_all_movements,
     get_movement
 )
 
-from gridtlib.controllers.creation import (
+from gridt.controllers.creation import (
     new_movement_by_user,
 )
-from gridtlib.controllers.leader import send_signal
+from gridt.controllers.leader import send_signal
 
 
 class MovementsResource(Resource):
@@ -42,7 +42,7 @@ class MovementsResource(Resource):
             data["name"],
             data["interval"],
             data["short_description"],
-            data["long_description"],
+            data.get("long_description"),
         )
         return {"message": "Successfully created movement."}, 201
 

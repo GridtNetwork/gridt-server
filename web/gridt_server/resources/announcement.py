@@ -3,11 +3,11 @@ from flask_restful import Resource
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from gridt_server.schemas import AnnouncementSchema, UpdateAnnouncementSchema, DeleteAnnouncementSchema
-from gridtlib.exc import AnnouncementNotFoundError
+from gridt.exc import AnnouncementNotFoundError
 
 from .helpers import schema_loader
 
-from gridtlib.controllers.announcement import (
+from gridt.controllers.announcement import (
     create_announcement,
     update_announcement,
     get_announcements,

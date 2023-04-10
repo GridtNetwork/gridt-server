@@ -8,18 +8,13 @@ from gridt_server.schemas import (
 )
 
 from unittest.mock import patch
-from unittest import skip
 
 import jwt
 
 
 class SchemasTest(BaseTest):
-    @skip("This test shows misimplementation of schema should be looked at")
-    @patch(
-        "gridt_server.schemas.get_movement",
-        side_effect=Exception()
-    )
-    def test_movement_schema_long(self, mock_get_movement):
+    @patch("gridt_server.schemas.movement_name_exists", return_value=False)
+    def test_movement_schema_long(self, mock_name_exists):
         with self.app_context():
             proper_movement = {
                 "name": "flossing",
@@ -32,14 +27,10 @@ class SchemasTest(BaseTest):
             schema = MovementSchema()
             res = schema.load(proper_movement)
             self.assertEqual(res, proper_movement)
-            mock_get_movement.assert_called_once_with("flossing")
+            mock_name_exists.assert_called_once_with("flossing")
 
-    @skip("This test shows misimplementation of schema should be looked at")
-    @patch(
-        "gridt_server.schemas.get_movement",
-        side_effect=Exception()
-    )
-    def test_movement_schema_short2(self, mock_get_movement):
+    @patch("gridt_server.schemas.movement_name_exists", return_value=False)
+    def test_movement_schema_short2(self, mock_name_exists):
         with self.app_context():
             proper_movement = {
                 "name": "flossing",
@@ -51,10 +42,10 @@ class SchemasTest(BaseTest):
             schema = MovementSchema()
             res = schema.load(proper_movement)
             self.assertEqual(res["name"], "flossing")
-            mock_get_movement.assert_called_once_with("flossing")
+            mock_name_exists.assert_called_once_with("flossing")
 
-    @skip("This test is also showing incorrect implementation")
-    def test_movement_schema_bad_interval(self):
+    @patch("gridt_server.schemas.movement_name_exists", return_value=False)
+    def test_movement_schema_bad_interval(self, mock_name_exists):
         with self.app_context():
             bad_movement = {"name": "flossing", "interval": "daily"}
 
@@ -66,6 +57,7 @@ class SchemasTest(BaseTest):
                     error.exception.messages,
                     {"short_description": ["Missing data for required field."],},
                 )
+            mock_name_exists.assert_called_once_with("flossing")
 
     def test_movement_schema_lengths(self):
         bad_movement = {

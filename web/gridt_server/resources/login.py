@@ -7,7 +7,7 @@ from flask_jwt_extended import create_access_token
 from .helpers import schema_loader
 from gridt_server.schemas import LoginSchema
 
-from gridtlib.controllers.user import verify_password_for_email
+from gridt.controllers.user import verify_password_for_email
 from sqlalchemy.exc import NoResultFound
 
 
