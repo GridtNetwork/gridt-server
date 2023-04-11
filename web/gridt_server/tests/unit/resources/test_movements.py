@@ -2,6 +2,7 @@ from unittest import skip
 from unittest.mock import patch
 
 from gridt_server.tests.base_test import BaseTest
+from gridt.exc import UserNotAdmin
 
 
 class MovementsTest(BaseTest):
@@ -115,11 +116,35 @@ class MovementsTest(BaseTest):
 
         mock_name_exists.assert_called_once_with(body["name"])
         mock_new_movement.assert_called_once_with(
-            self.user_id,
-            body['name'],
-            body["interval"],
-            body["short_description"],
-            None
+            user_id=self.user_id,
+            name=body['name'],
+            interval=body["interval"],
+            short_description=body["short_description"],
+            description=None
+        )
+
+    @patch(f"{resource_path}.new_movement_by_user", side_effect=UserNotAdmin)
+    @patch(f"{schema_path}.movement_name_exists", return_value=False)
+    def test_post_non_admin(self, mock_name_exists, mock_new_movement):
+        body = {
+            "name": "movement",
+            "short_description": "testing post request",
+            "interval": "daily"
+        }
+        expect_message = "Insufficient privileges to create a movement."
+
+        with self.app_context():
+            response = self.send_add_movement(self.user_id, body)
+            self.assertEqual(response.status_code, 403)
+            self.assertEqual(response.get_json()["message"], expect_message)
+
+        mock_name_exists.assert_called_once_with(body["name"])
+        mock_new_movement.assert_called_once_with(
+            user_id=self.user_id,
+            name=body['name'],
+            interval=body["interval"],
+            short_description=body["short_description"],
+            description=None
         )
 
     def send_get_movement(self, user_id, movement_id):

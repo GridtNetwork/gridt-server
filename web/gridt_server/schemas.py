@@ -31,6 +31,7 @@ class NewUserSchema(Schema):
     username = fields.Str(required=True, validate=Length(max=32))
     email = fields.Str(required=True, validate=Length(max=40))
     password = fields.Str(required=True, validate=Length(max=32))
+    admin_key = fields.Str(required=False, validate=Length(max=32))
 
 
 class UpdateAnnouncementSchema(Schema):
@@ -40,6 +41,7 @@ class UpdateAnnouncementSchema(Schema):
 
 class DeleteAnnouncementSchema(Schema):
     announcement_id = fields.Int(required=True)
+
 
 class AnnouncementSchema(Schema):
     message = fields.Str(required=True, validate=Length(min=10, max=140))

@@ -1,4 +1,4 @@
-from flask import request
+from flask import request, current_app
 from flask_restful import Resource
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
@@ -18,5 +18,11 @@ class RegisterResource(Resource):
 
     def post(self):
         data = schema_loader(self.schema, request.get_json())
-        register(data["username"], data["email"], data["password"])
+
+        request_admin_key = data.get("admin_key")
+        has_key = request_admin_key is not None
+        if has_key and request_admin_key != current_app.config["ADMIN_KEY"]:
+            return {"message": "Incorrect admin key."}, 403
+
+        register(data["username"], data["email"], data["password"], has_key)
         return {"message": "Succesfully created user."}, 201
