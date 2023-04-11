@@ -20,7 +20,7 @@ from gridt.controllers.movements import (
     get_all_movements,
     get_movement
 )
-
+import gridt.exc as GridtExpections
 from gridt.controllers.creation import (
     new_movement_by_user,
 )
@@ -37,13 +37,17 @@ class MovementsResource(Resource):
     @jwt_required()
     def post(self):
         data = schema_loader(self.schema, request.get_json())
-        new_movement_by_user(
-            get_jwt_identity(),
-            data["name"],
-            data["interval"],
-            data["short_description"],
-            data.get("long_description"),
-        )
+        try:
+            new_movement_by_user(
+                user_id=get_jwt_identity(),
+                name=data["name"],
+                interval=data["interval"],
+                short_description=data.get("short_description"),
+                description=data.get("long_description"),
+            )
+        except GridtExpections.UserNotAdmin:
+            message = "Insufficient privileges to create a movement."
+            return {"message": message}, 403
         return {"message": "Successfully created movement."}, 201
 
 
