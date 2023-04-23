@@ -343,11 +343,11 @@
         },
         "gridt-library": {
             "hashes": [
-                "sha256:89983b91dd8d2367163b597da5cd3bd5bf3101294985c2f67685e47b6f2e397e",
-                "sha256:cceb36c426580c27c8b13e0613822963a542163d9ddfc967d1127b7fbfe33aa1"
+                "sha256:8a101ce6e2941c7fe66d0e09b2efdd106c3e271c6bb770cf1e967474affe43aa",
+                "sha256:7045745ffe4e0480c874b0a0bb08f00179208dee9d6cb9d23b27a8c3b59ddd0d"
             ],
             "index": "testpypi",
-            "version": "==0.0.5"
+            "version": "==0.1.0"
         },
         "gunicorn": {
             "hashes": [
