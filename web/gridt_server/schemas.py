@@ -54,7 +54,10 @@ class MovementSchema(Schema):
     short_description = fields.Str(required=True, validate=Length(min=10, max=100))
     description = fields.Str(validate=Length(max=1000))
     interval = fields.Str(
-        required=True, validate=OneOf(["daily", "twice daily", "weekly"])
+        required=True, validate=OneOf([
+            '1 minute', '15 minutes', '30 minutes', 'hourly',
+            "daily", "twice daily", "weekly"
+        ])
     )
 
     @validates("name")
