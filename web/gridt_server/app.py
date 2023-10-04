@@ -149,19 +149,6 @@ def create_app(overwrite_conf=None):
     load_config(app, overwrite_conf)
     construct_database_url(app)
 
-    @app.before_first_request
-    def before_first_request():
-        try:
-            engine = create_engine(app.config["SQLALCHEMY_DATABASE_URI"])
-            Session.configure(bind=engine)
-            Base.metadata.create_all(engine)
-        except ConnectionRefusedError:
-            app.logger.critical("Connection was refused, exiting.")
-            sys.exit(1)
-        except pymysql.err.ProgrammingError:
-            app.logger.critical("Programming error, exiting.")
-            sys.exit(1)
-
     try:
         if not database_exists(app.config["SQLALCHEMY_DATABASE_URI"]):
             create_database(app.config["SQLALCHEMY_DATABASE_URI"])
@@ -176,5 +163,16 @@ def create_app(overwrite_conf=None):
 
     # For backwards compatibility with flask-jwt
     app.config["JWT_HEADER_TYPE"] = "JWT"
+
+    try:
+        engine = create_engine(app.config["SQLALCHEMY_DATABASE_URI"])
+        Session.configure(bind=engine)
+        Base.metadata.create_all(engine)
+    except ConnectionRefusedError:
+        app.logger.critical("Connection was refused, exiting.")
+        sys.exit(1)
+    except pymysql.err.ProgrammingError:
+        app.logger.critical("Programming error, exiting.")
+        sys.exit(1)
 
     return app
